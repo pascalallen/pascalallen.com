@@ -41,7 +41,7 @@ Route::get('/sayhello/{name?}', function($name = 'Pascal')
     }
 });
 
-Route::get('/rolldice/{guess}', function($guess)
+Route::get('/rolldice/{guess?}', function($guess = '1')
 {	
 	$randNum = rand(1, 6);
 	$data = array(
@@ -50,6 +50,17 @@ Route::get('/rolldice/{guess}', function($guess)
 	);
     return View::make('roll-dice')->with($data);
 });
+
+Route::get('/resume', function()
+{
+    return View::make('resume');
+});
+
+Route::get('/portfolio', function()
+{
+    return View::make('portfolio');
+});
+
 
 
 

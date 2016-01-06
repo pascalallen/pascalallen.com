@@ -61,6 +61,28 @@ ALTER HELLO.PHP FILE UNDER BLOG.DEV
 ## Everything we do will be mostly in models, controllers, views
 ## css js img go in public
 
+## BLADE
+---------------------------------
+{{{ $SOMETHING }}} // to protect code using blade
+
+@if($name == ’something’) // if statement in blade
+	<h1>soasdfasd</h1>
+@endif
+
+@foreach ($cohorts as $className) //foreach in blade
+	<h3>{{{ $className }}}</h3>
+@endforeach
+
+@yield('content') // will go in layout
+
+@extends('layouts.master') // will go in view
+
+@section('content')
+	<h1>Guess: {{{ $guess }}} Random Number: {{{ $randNum }}}!</h1>
+@stop
+	
+
+
 
 
 
