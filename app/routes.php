@@ -30,3 +30,29 @@ Route::get('user/{name?}', function($name = 'Pascal')
 {
     return $name;
 });
+
+Route::get('/sayhello/{name?}', function($name = 'Pascal')
+{
+    if ($name == "Chris") {
+        return Redirect::to('/');
+    } else {
+    	$data = array('name' => $name);
+        return View::make('my-first-view')->with($data);
+    }
+});
+
+Route::get('/rolldice/{guess}', function($guess)
+{	
+	$randNum = rand(1, 6);
+	$data = array(
+		'guess' => $guess, 
+		'randNum' => $randNum
+	);
+    return View::make('roll-dice')->with($data);
+});
+
+
+
+
+
+

@@ -30,4 +30,4 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 - Create a `.env.local.php` file inside of `blog.dev/`
 - Add the contents of `env-template.php` to `.env.local.php`
 - Add your database logins to the values
-- Run `compose install`
+- Run `composer install`
