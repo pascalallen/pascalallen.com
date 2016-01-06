@@ -25,3 +25,8 @@ Route::get('/portfolio', function()
 {
     return "This is my portfolio";
 });
+
+Route::get('user/{name?}', function($name = 'Pascal')
+{
+    return $name;
+});
