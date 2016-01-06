@@ -16,21 +16,12 @@ Route::get('/', function()
 	return View::make('hello');
 });
 
-Route::get('/sayhello', function()
+Route::get('/resume', function()
 {
-    return "Hello, Codeup!";
+    return "This is my resume";
 });
 
-Route::get('/sayhello/{name}', function($name)
+Route::get('/portfolio', function()
 {
-    return "Hello, $name!";
-});
-
-Route::get('/sayhello/{name}', function($name)
-{
-    if ($name == "Chris") {
-        return Redirect::to('/');
-    } else {
-        return "Hello, $name!";
-    }
+    return "This is my portfolio";
 });
