@@ -11,55 +11,17 @@
 |
 */
 
-Route::get('/', function()
-{
-	return View::make('hello');
-});
+Route::get('/', 'HomeController@showWelcome');
 
-Route::get('/resume', function()
-{
-    return "This is my resume";
-});
+Route::get('user/{name?}', 'HomeController@showName');
 
-Route::get('/portfolio', function()
-{
-    return "This is my portfolio";
-});
+Route::get('/sayhello/{name?}', 'HomeController@sayHello');
 
-Route::get('user/{name?}', function($name = 'Pascal')
-{
-    return $name;
-});
+Route::get('/rolldice/{guess?}', 'HomeController@rollDice');
 
-Route::get('/sayhello/{name?}', function($name = 'Pascal')
-{
-    if ($name == "Chris") {
-        return Redirect::to('/');
-    } else {
-    	$data = array('name' => $name);
-        return View::make('my-first-view')->with($data);
-    }
-});
+Route::get('/resume', 'HomeController@showResume');
 
-Route::get('/rolldice/{guess?}', function($guess = '1')
-{	
-	$randNum = rand(1, 6);
-	$data = array(
-		'guess' => $guess, 
-		'randNum' => $randNum
-	);
-    return View::make('roll-dice')->with($data);
-});
-
-Route::get('/resume', function()
-{
-    return View::make('resume');
-});
-
-Route::get('/portfolio', function()
-{
-    return View::make('portfolio');
-});
+Route::get('/portfolio', 'HomeController@showPortfolio');
 
 
 
