@@ -81,8 +81,30 @@ ALTER HELLO.PHP FILE UNDER BLOG.DEV
 	<h1>Guess: {{{ $guess }}} Random Number: {{{ $randNum }}}!</h1>
 @stop
 	
+<!-- CREATE A DATABASE -->
+php artisan migrate:install <!-- install the migrations table -->
+php artisan migrate:make create_posts_table <!-- create a new migration file -->
+class CreatePostsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('posts', function($table)
+        {
+            $table->increments('id');
+            $table->string('title', 100);
+            $table->text('body');
+            $table->timestamps();
+        });
+    }
 
-
+    public function down()
+    {
+        Schema::drop('posts');
+    }
+}
+php artisan migrate <!-- write and create table -->
+php artisan migrate:rollback <!-- rollback a single migration -->
+php artisan migrate:reset <!-- rollback and then re-run all migrations -->
 
 
 

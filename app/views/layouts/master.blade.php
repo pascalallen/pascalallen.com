@@ -16,7 +16,6 @@
 		@yield('content')
 		<!-- JQUERY -->
 		<script src="/js/jquery-2.1.4.min.js"></script>
-		<script src="/js/jquery.validate.js"></script>
 		<!-- BOOTSTRAP JS -->
 		<script src="/js/bootstrap.min.js"></script>
 		<!-- CUSTOM JS -->

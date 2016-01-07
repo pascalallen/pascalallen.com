@@ -1,0 +1,23 @@
+@media (min-width: 768px)
+header {
+    min-height: 100%;
+}
+header {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	text-align: center;
+	background-image: url('../img/header.jpg');
+	background-position: center;
+	background-size: cover;
+}
+
+.header-content {
+    position: relative;
+    width: 100%;
+    padding: 100px 15px;
+    text-align: center;
+    font-size: 65px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
