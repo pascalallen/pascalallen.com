@@ -2,7 +2,7 @@
 header {
     min-height: 100%;
 }
-header {
+.container {
 	position: relative;
 	height: 100%;
 	width: 100%;
@@ -10,6 +10,8 @@ header {
 	background-image: url('../img/header.jpg');
 	background-position: center;
 	background-size: cover;
+    background-attachment: fixed;
+    overflow: scroll;
 }
 
 .header-content {
@@ -20,4 +22,21 @@ header {
     font-size: 65px;
     text-transform: uppercase;
     font-weight: 700;
+}
+
+.body-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    height: 100%;
+    background-color: white;
+    margin-left: 5%;
+    opacity: 0.4;
+    filter: alpha(opacity=40); /* For IE8 and earlier */
+}
+.text {
+    color: black;
+    padding: 5%;
+    
 }

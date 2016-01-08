@@ -106,8 +106,21 @@ php artisan migrate <!-- write and create table -->
 php artisan migrate:rollback <!-- rollback a single migration -->
 php artisan migrate:reset <!-- rollback and then re-run all migrations -->
 
+## NOTES ON HOW TO PULL PROJECT FROM GITHUB
+-- from sites dir
+-- git clone //link here //name site
+-- ##from vagrant-lamp
+-- ansible-playbook ansible/playbooks/vagrant/sites/php.yml
+-- composer install from vagrant ssh  site.dev
+-- fill out env-template with db credentials
 
-
-
+Verb    Path    Controller Method/Action    Description
+GET    /posts               index      Show a list of all posts
+GET    /posts/create        create     Show a form for creating a post
+POST   /posts               store      Store the new post
+GET    /posts/{post}        show       Show a specific post
+GET    /posts/{post}/edit   edit       Show a form for editing a specific post
+PUT    /posts/{post}        update     Update a specific post
+DELETE /posts/{post}        destroy    Delete a specific post
 
 
