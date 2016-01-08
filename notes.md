@@ -124,3 +124,32 @@ PUT    /posts/{post}        update     Update a specific post
 DELETE /posts/{post}        destroy    Delete a specific post
 
 
+## SHOWING OLD INPUT
+<input type="text" name="name" value="{{{ Input::old('name') }}}">
+
+
+## DEFAULT VALUE
+$name = Input::get('name', 'Bob');
+
+// would be equivalent to:
+
+$name = 'Bob';
+if (isset($_REQUEST['name'])) {
+    $name = $_REQUEST['name'];
+}
+
+// or:
+
+$name = isset($_REQUEST['name']) ? $_REQUEST['name'] : 'Bob';
+
+## REDIRECT BACK WITH OLD INPUT
+return Redirect::back()->withInput();
+
+// or:
+
+return Redirect::action('PostsController@create')->withInput();
+
+
+
+
+

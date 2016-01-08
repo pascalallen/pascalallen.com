@@ -9,7 +9,7 @@ class PostsController extends \BaseController {
 	 */
 	public function index()
 	{
-		return View::make('/posts');
+		return 'posts';
 	}
 
 
@@ -20,7 +20,7 @@ class PostsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('/create');
+		return View::make('posts/create');
 	}
 
 
@@ -31,7 +31,7 @@ class PostsController extends \BaseController {
 	 */
 	public function store()
 	{
-		return View::make('/posts');
+		return Redirect::back()->withInput();
 	}
 
 
@@ -43,7 +43,7 @@ class PostsController extends \BaseController {
 	 */
 	public function show($id)
 	{
-		return View::make('/posts/{post}');
+		return 'show';
 	}
 
 
@@ -55,7 +55,7 @@ class PostsController extends \BaseController {
 	 */
 	public function edit($id)
 	{
-		return View::make('/posts/{post}/edit');
+		return 'edit';
 	}
 
 
@@ -67,7 +67,7 @@ class PostsController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		return View::make('/posts/{post}');
+		return 'update';
 	}
 
 
@@ -79,8 +79,12 @@ class PostsController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
-		return View::make('/posts/{post}');
+		return 'destroy';
 	}
 
+	public function showAuthorPosts($username)
+	{
+		
+	}
 
 }

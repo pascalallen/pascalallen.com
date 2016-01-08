@@ -25,7 +25,4 @@ Route::get('/portfolio', 'HomeController@showPortfolio');
 
 Route::resource('/posts', 'PostsController');
 
-
-
-
-
+Route::get('/posts/my-posts/{username}', 'PostsController@showAuthorPosts');
