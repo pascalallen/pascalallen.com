@@ -1,42 +1,47 @@
-@media (min-width: 768px)
-header {
-    min-height: 100%;
-}
 .container {
-	position: relative;
 	height: 100%;
 	width: 100%;
-	text-align: center;
 	background-image: url('../img/header.jpg');
 	background-position: center;
 	background-size: cover;
-    background-attachment: fixed;
-    overflow: scroll;
+    overflow: auto
 }
 
-.header-content {
-    position: relative;
-    width: 100%;
-    padding: 100px 15px;
-    text-align: center;
-    font-size: 65px;
-    text-transform: uppercase;
-    font-weight: 700;
+.img-container {
+    padding: 2% 2% 2% 0%;
+    float: left;
 }
 
-.body-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 90%;
-    height: 100%;
-    background-color: white;
-    margin-left: 5%;
-    opacity: 0.4;
-    filter: alpha(opacity=40); /* For IE8 and earlier */
+.image-circle {
+    border-radius: 50%;
+    box-shadow: 5px 5px 20px black;
 }
-.text {
-    color: black;
-    padding: 5%;
-    
+
+.header {
+    font-size: 60px;
+    text-align: left;
+    padding: 5% 0% 0% 0%;
+    color: #43ABC9; 
+    text-shadow: 2px 2px 8px #000;
+    font-family: 'Ubuntu', sans-serif;
 }
+
+.subheader {
+    font-size: 30px;
+    text-align: left;
+    padding: 0% 0% 0% 0%;
+    color: #1277A8;
+    text-shadow: 2px 2px 8px #000;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+.resume-pdf {
+    width: 80%;
+    height: 80%;
+    margin-left: 10%;
+    padding: 0%;
+}
+
+
+
+

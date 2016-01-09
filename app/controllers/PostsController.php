@@ -31,7 +31,17 @@ class PostsController extends \BaseController {
 	 */
 	public function store()
 	{
-		return Redirect::back()->withInput();
+		$post = new Post();
+		$post->title = Input::get('title');
+		$post->body = Input::get('body');
+
+		$result = $post->save();
+
+		if($result) {
+			return "Your post was saved";
+		} else {
+			return Redirect::back()->withInput();
+		}
 	}
 
 
