@@ -16,5 +16,6 @@
 	<div class="resume">
 		<img class="resume-pdf" src="../img/web_dev_resume.jpg">
 	</div>
+	{{-- put buttons to download pdf and word document type resume files here --}}
 </div>
 @stop
