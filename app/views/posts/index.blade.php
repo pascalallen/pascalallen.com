@@ -10,13 +10,15 @@
 			<tr>
 				<th>Title</th>
 				<th>Body</th>
+				<th>Id</th>
 			</tr>
 		</thead>
 		<tbody>
 				@foreach ($posts as $post)
 					<tr>
-						<td>{{{ $post->title }}}</td>
+						<td><a href="{{{ action('PostController@show', $post->id) }}}">{{{ $post->title }}}</a></td>
 						<td>{{{ $post->body }}}</td>
+						<td>{{{ $post->id }}}</td>
 					</tr>
 				@endforeach
 		</tbody>

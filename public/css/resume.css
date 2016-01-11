@@ -7,8 +7,8 @@
     overflow: auto;
 }
 
-.subcontainer {
-    animation-duration: 3s;
+hr {
+    animation-duration: 1s;
     animation-name: slidein;
 }
 
@@ -29,8 +29,6 @@
     color: #43ABC9; 
     text-shadow: 2px 2px 8px #000;
     font-family: 'Ubuntu', sans-serif;
-    animation-duration: 3s;
-    animation-name: dropdown;
 }
 
 .subheader {
@@ -61,6 +59,8 @@
     font-family: 'Ubuntu', sans-serif;
     color: #333;
     text-align: center;
+    animation-duration: 2s;
+    animation-name: dropdown;
 }
 
 .port-text {
@@ -96,16 +96,22 @@ footer {
 /* Subheader animate */
 @keyframes slidein {
   from {
-    margin-left: 100%;
-    width: 300%; 
+    margin-right: 100%;
   }
 
   to {
-    margin-left: 0%;
-    width: 100%;
+    margin-right: 0%;
   }
 }
 
+@keyframes dropdown {
+   from {
+    margin-top: -10%;
+  }
 
+  to {
+    margin-top: 2%;
+  } 
+}
 
-
+@keyframes 

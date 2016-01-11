@@ -58,6 +58,10 @@ class PostController extends \BaseController {
 	public function show($id)
 	{
 		$post = Post::find($id);
+		$data = array(
+			'post' => $post
+		);
+		return View::make('/posts/show')->with($data);
 	}
 
 

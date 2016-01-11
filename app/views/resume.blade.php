@@ -12,7 +12,7 @@
 @section('content')
 <div class="container">
 	<div class="subcontainer">
-		<a href="#">
+		<a href="/portfolio">
 			<div class="portfolio">
 				<div class="port-text">Visit My Porfolio<br><i class="fa fa-folder"></i></div>
 			</div>
@@ -30,7 +30,7 @@
 		<div class="resume">
 			<img class="resume-pdf" src="../img/web_dev_resume.jpg">
 		</div>
-		<br>
+		<br class="test">
 		<div class="footer-icon">
 			<a class="btn btn-lg btn-success" href="#"><i class="fa fa-file-pdf-o fa-lg"></i></a>
 			<a class="btn btn-lg btn-success" href="#"><i class="fa fa-file-word-o fa-lg"></i></a>
