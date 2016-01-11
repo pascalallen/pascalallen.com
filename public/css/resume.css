@@ -1,10 +1,10 @@
 .container {
 	height: 100%;
 	width: 100%;
-	background-image: url('../img/header.jpg');
+	/*background-image: url('../img/header.jpg');
 	background-position: center;
 	background-size: cover;
-    overflow: auto;
+    overflow: auto;*/
 }
 
 hr {
@@ -93,7 +93,7 @@ footer {
     text-align: center;
 }
 
-/* Subheader animate */
+/*HR ANIMATE*/
 @keyframes slidein {
   from {
     margin-right: 100%;
@@ -104,6 +104,7 @@ footer {
   }
 }
 
+/*PORTFOLIO ANIMATE*/
 @keyframes dropdown {
    from {
     margin-top: -10%;
@@ -113,5 +114,3 @@ footer {
     margin-top: 2%;
   } 
 }
-
-@keyframes 
