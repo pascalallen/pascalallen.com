@@ -18,6 +18,8 @@ class CreatePostsTable extends Migration {
             $table->string('title', 100);
             $table->text('body');
             $table->timestamps();
+            $table->integer('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users');
         });
 	}
 
@@ -28,6 +30,10 @@ class CreatePostsTable extends Migration {
 	 */
 	public function down()
 	{
+		Schema::table('posts', function($table) {
+			$table->dropForeign('posts_user_id_foreign');
+		});
+
 		Schema::drop('posts');
 	}
 

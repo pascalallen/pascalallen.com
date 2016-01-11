@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
-	<form role="form" method="POST" action="{{{ action('PostsController@store') }}}">
+	<form role="form" method="POST" action="{{{ action('PostController@store') }}}">
 		<div class="form-group">
 			<label for="title">Title: </label>
 			<input type="text" class="form-control" id="title" name="title" value="{{{ Input::old('title') }}}">

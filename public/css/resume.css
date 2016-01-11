@@ -4,7 +4,12 @@
 	background-image: url('../img/header.jpg');
 	background-position: center;
 	background-size: cover;
-    overflow: auto
+    overflow: auto;
+}
+
+.subcontainer {
+    animation-duration: 3s;
+    animation-name: slidein;
 }
 
 .img-container {
@@ -24,6 +29,8 @@
     color: #43ABC9; 
     text-shadow: 2px 2px 8px #000;
     font-family: 'Ubuntu', sans-serif;
+    animation-duration: 3s;
+    animation-name: dropdown;
 }
 
 .subheader {
@@ -35,9 +42,70 @@
     font-family: 'Ubuntu', sans-serif;
 }
 
+.nav {
+    float: left;
+}
+
+.portfolio {
+    border-radius: 50%;
+    border-color: #4cae4c;
+    border-width: 2px;
+    border-style: solid;
+    background-color: #5cb85c;
+    width: 80px;
+    height: 80px;
+    float: right;
+    padding: 0% 0% 0% 0%;
+    margin-top: 2%;
+    margin-right: 2%;
+    font-family: 'Ubuntu', sans-serif;
+    color: #333;
+    text-align: center;
+}
+
+.port-text {
+    margin: 15% 0% 0% 0%; 
+}
+
 .resume-pdf {
     width: 80%;
     height: 80%;
     margin-left: 10%;
     padding: 0%;
 }
+
+.footer-icon {
+    text-align: center;
+}
+
+.fa { 
+    -webkit-transition: width 2s, height 2s, -webkit-transform 2s; /* Safari */
+    transition: width 2s, height 2s, transform 2s;
+    color: #333;
+}
+
+.fa:hover { 
+    -webkit-transform: rotate(360deg); /* Safari */
+    transform: rotate(360deg);
+}
+
+footer {
+    text-align: center;
+}
+
+/* Subheader animate */
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+    width: 300%; 
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+
+
+
+

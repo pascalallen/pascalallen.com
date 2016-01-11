@@ -23,7 +23,7 @@ Route::get('/resume', 'HomeController@showResume');
 
 Route::get('/portfolio', 'HomeController@showPortfolio');
 
-Route::get('/posts/my-posts/{username}', 'PostsController@showAuthorPosts'); // to create and route a new method
+// Route::get('/posts/my-posts/{username}', 'PostsController@showAuthorPosts'); // to create and route a new method
 
 // RESOURCE GOES LAST
-Route::resource('/posts', 'PostsController');
+Route::resource('/posts', 'PostController');

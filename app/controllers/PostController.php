@@ -1,6 +1,6 @@
 <?php
 
-class PostsController extends \BaseController {
+class PostController extends \BaseController {
 
 	/**
 	 * Display a listing of the resource.
@@ -9,7 +9,11 @@ class PostsController extends \BaseController {
 	 */
 	public function index()
 	{
-		return 'posts';
+		$posts = Post::all();
+		$data = array(
+			'posts' => $posts
+		);
+		return View::make('/posts/index')->with($data);
 	}
 
 
@@ -38,7 +42,7 @@ class PostsController extends \BaseController {
 		$result = $post->save();
 
 		if($result) {
-			return "Your post was saved";
+			return View::make('posts/index');
 		} else {
 			return Redirect::back()->withInput();
 		}
@@ -53,7 +57,7 @@ class PostsController extends \BaseController {
 	 */
 	public function show($id)
 	{
-		return 'show';
+		$post = Post::find($id);
 	}
 
 
@@ -65,7 +69,10 @@ class PostsController extends \BaseController {
 	 */
 	public function edit($id)
 	{
-		return 'edit';
+		$post = Post::find($id);
+		$post->title = '';
+		$post->body = '';
+		$post->save();
 	}
 
 
@@ -89,7 +96,8 @@ class PostsController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
-		return 'destroy';
+		$post = Post::find($id);
+		$post->delete();
 	}
 
 	public function showAuthorPosts($username)
