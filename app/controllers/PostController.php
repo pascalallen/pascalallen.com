@@ -96,7 +96,25 @@ class PostController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		return 'update';
+		$validator = Validator::make(Input::all(), Post::$rules);
+
+		if ($validator->fails()) {
+	        // validation failed, redirect to the post create page with validation errors and old inputs
+	        return Redirect::back()->withInput()->withErrors($validator);
+	    } else {
+			$post = Post::find($id);
+			$post->title = Input::get('title');
+			$post->body = Input::get('body');
+			$post->image = '/img/header.jpg';
+
+			$result = $post->save();
+
+			if($result) {
+				return Redirect::action('posts.index');
+			} else {
+				return Redirect::back()->withInput();
+			}
+		}
 	}
 
 

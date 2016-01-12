@@ -33,13 +33,13 @@
 	                    	<a class="page-scroll" href="/posts/create">Create A Post</a>
 	                    </li>
 	                    <li class="">
-	                        <a class="page-scroll" href="../posts">Home</a>
+	                        <a class="page-scroll" href="/posts">Home</a>
 	                    </li>
 	                    <li class="">
-	                        <a class="page-scroll" href="../portfolio">Portfolio</a>
+	                        <a class="page-scroll" href="/portfolio">Portfolio</a>
 	                    </li>
 	                    <li class="">
-	                        <a class="page-scroll" href="../resume">Resume</a>
+	                        <a class="page-scroll" href="/resume">Resume</a>
 	                    </li>
 	                </ul>
 	            </div>
