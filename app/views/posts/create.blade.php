@@ -1,18 +1,41 @@
 @extends('layouts.master')
 
+@section('top-script')
+	{{-- CUSTOM CSS --}}
+	<link rel="stylesheet" type="text/css" href="/css/posts-create.css">
+	{{-- CUSTOM FONT --}}
+	<link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+	{{-- FONT AWESOME --}}
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+@stop
+
 @section('content')
-	<form role="form" method="POST" action="{{{ action('PostController@store') }}}">
-		<div class="form-group">
-			<label for="title">Title: </label>
-			<input type="text" class="form-control" id="title" name="title" value="{{{ Input::old('title') }}}">
-		</div>
-		<div class="form-group">
-			<label for="body">Body: </label>
-			<input type="text" class="form-control" id="body" name="body" value="{{{ Input::old('body') }}}">
-		</div>
-		<div class="checkbox">
-			<label><input type="checkbox"> Remember me</label>
-		</div>
-		<button type="submit" class="btn btn-default">Submit</button>
-	</form>
+	<div class="container">
+		<div class="header">Bloggy Blog</div>
+		<div class="subheader">Blog Stuffz</div>
+		<hr>
+
+		{{ Form::open(array('action' => 'PostController@store')) }}
+
+			<div class="form-group {{ ($errors->has('title')) ? 'has-error' : '' }}">
+				{{ $errors->first('title', '<div class="alert alert-danger">:message</div>') }}
+				{{ Form::label('title', 'Title') }}
+				{{ Form::text('title', null, ['class' => 'form-control', 'placeholder' => 'Enter your title']) }}
+			</div>
+
+			<div class="form-group {{ ($errors->has('body')) ? 'has-error' : '' }}">
+				{{ $errors->first('body', '<div class="alert alert-danger">:message</div>') }}
+				{{ Form::label('body', 'Body') }}
+				{{ Form::textarea('body', null, ['class' => 'form-control', 'placeholder' => 'Enter your body']) }}
+			</div>
+
+			<div class="form-group {{ ($errors->has('image')) ? 'has-error' : '' }}">
+				{{ $errors->first('image', '<div class="alert alert-danger">:message</div>') }}
+				{{ Form::label('image', 'Image') }}
+				{{ Form::file('image') }}
+			</div>
+
+			<button type="submit" class="btn btn-default">Submit</button>
+		{{ Form::close() }}
+	</div>
 @stop

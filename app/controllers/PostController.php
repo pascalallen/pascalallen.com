@@ -9,11 +9,10 @@ class PostController extends \BaseController {
 	 */
 	public function index()
 	{
-		$posts = Post::all();
-		$data = array(
-			'posts' => $posts
-		);
-		return View::make('/posts/index')->with($data);
+		$posts = Post::paginate(4);
+		// $posts = DB::table('posts')->paginate(4);
+
+		return View::make('posts.index')->with('posts', $posts);
 	}
 
 
@@ -24,7 +23,7 @@ class PostController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('posts/create');
+		return View::make('posts.create');
 	}
 
 
@@ -35,17 +34,28 @@ class PostController extends \BaseController {
 	 */
 	public function store()
 	{
-		$post = new Post();
-		$post->title = Input::get('title');
-		$post->body = Input::get('body');
+		$validator = Validator::make(Input::all(), Post::$rules);
 
-		$result = $post->save();
+		if ($validator->fails()) {
+	        // validation failed, redirect to the post create page with validation errors and old inputs
+	        return Redirect::back()->withInput()->withErrors($validator);
+	    } else {
+	        // validation succeeded, create and save the post
+			$post = new Post();
+			$post->title = Input::get('title');
+			$post->body = Input::get('body');
+			$post->user_id = 1;
+			$post->image = '/img/header.jpg';
 
-		if($result) {
-			return View::make('posts/index');
-		} else {
-			return Redirect::back()->withInput();
-		}
+			$result = $post->save();
+
+			if($result) {
+				return Redirect::action('posts.index');
+			} else {
+				return Redirect::back()->withInput();
+			}
+	    }
+
 	}
 
 
@@ -61,7 +71,7 @@ class PostController extends \BaseController {
 		$data = array(
 			'post' => $post
 		);
-		return View::make('/posts/show')->with($data);
+		return View::make('posts.show')->with($data);
 	}
 
 
@@ -74,9 +84,7 @@ class PostController extends \BaseController {
 	public function edit($id)
 	{
 		$post = Post::find($id);
-		$post->title = '';
-		$post->body = '';
-		$post->save();
+		return View::make('posts.edit')->with('post', $post);
 	}
 
 

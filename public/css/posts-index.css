@@ -16,10 +16,6 @@
     font-family: 'Ubuntu', sans-serif;
 }
 
-.table {
-    background-color: rgba(, , , 0.5);
-}
-
 thead {
     font-size: 30px;
     color: #1277A8;
@@ -53,3 +49,4 @@ thead {
     margin: 0 auto !important;
     float: none !important;
 }
+

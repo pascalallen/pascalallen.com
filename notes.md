@@ -150,6 +150,24 @@ return Redirect::back()->withInput();
 return Redirect::action('PostsController@create')->withInput();
 
 
+#####FORMS
+POST
+{{ Form::open(array('action' => 'PostsController@store')) }}
+{{ Form::close() }}
+
+PUT/DELETE
+{{ Form::open(array('action' => array('PostsController@update', $post->id), 'method' => 'PUT')) }}
+{{ Form::close() }}
+
+{{ Form::open($post, array('action' => array('PostsController@update', $post->id), 'method' => 'PUT')) }}
+{{ Form::close() }}
+
+####FORM INPUTS
+--LABEL
+{{ Form::label('title', 'Title') }}
+--INPUT
+{{ Form::text('title', null, ['class' => 'form-control', 'placeholder' => 'Enter your title']) }}
+
 
 
 
