@@ -15,6 +15,15 @@
 		<div class="header">Bloggy Blog</div>
 		<div class="subheader">Blog Stuffz</div>
 		<hr>
+
+		{{ Form::open(array('action' => array('PostController@destroy', $post->id), 'method' => 'DELETE')) }}
+		
+			<a href="{{{ action('PostController@edit', $post->id) }}}" class="btn btn-info">Edit</a>
+
+			<button class="btn btn-danger">Delete</button>
+
+		{{ Form::close() }}
+
 		<h1>{{{ $post->title }}}</h1>
 		<p>{{{ $post->body }}}</p>
 	</div>

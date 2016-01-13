@@ -34,27 +34,8 @@ class PostController extends \BaseController {
 	 */
 	public function store()
 	{
-		$validator = Validator::make(Input::all(), Post::$rules);
-
-		if ($validator->fails()) {
-	        // validation failed, redirect to the post create page with validation errors and old inputs
-	        return Redirect::back()->withInput()->withErrors($validator);
-	    } else {
-	        // validation succeeded, create and save the post
-			$post = new Post();
-			$post->title = Input::get('title');
-			$post->body = Input::get('body');
-			$post->user_id = 1;
-			$post->image = '/img/header.jpg';
-
-			$result = $post->save();
-
-			if($result) {
-				return Redirect::action('posts.index');
-			} else {
-				return Redirect::back()->withInput();
-			}
-	    }
+		$post = new Post();
+		return $this->validateAndSave($post);
 
 	}
 
@@ -68,10 +49,11 @@ class PostController extends \BaseController {
 	public function show($id)
 	{
 		$post = Post::find($id);
-		$data = array(
-			'post' => $post
-		);
-		return View::make('posts.show')->with($data);
+		if(!$post) {
+			return Redirect::action('PostController@index');
+		}
+
+		return View::make('posts.show')->with('post', $post);
 	}
 
 
@@ -96,25 +78,8 @@ class PostController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		$validator = Validator::make(Input::all(), Post::$rules);
-
-		if ($validator->fails()) {
-	        // validation failed, redirect to the post create page with validation errors and old inputs
-	        return Redirect::back()->withInput()->withErrors($validator);
-	    } else {
-			$post = Post::find($id);
-			$post->title = Input::get('title');
-			$post->body = Input::get('body');
-			$post->image = '/img/header.jpg';
-
-			$result = $post->save();
-
-			if($result) {
-				return Redirect::action('posts.index');
-			} else {
-				return Redirect::back()->withInput();
-			}
-		}
+		$post = Post::find($id);
+		return $this->validateAndSave($post);
 	}
 
 
@@ -128,11 +93,31 @@ class PostController extends \BaseController {
 	{
 		$post = Post::find($id);
 		$post->delete();
+
+		return Redirect::action('posts.index');
 	}
 
-	public function showAuthorPosts($username)
+	protected function validateAndSave($post)
 	{
-		
+		$validator = Validator::make(Input::all(), Post::$rules);
+
+		if ($validator->fails()) {
+	        // validation failed, redirect to the post create page with validation errors and old inputs
+	        return Redirect::back()->withInput()->withErrors($validator);
+	    } else {
+			$post->title = Input::get('title');
+			$post->body = Input::get('body');
+			$post->image = '/img/header.jpg';
+			$post->user_id =
+
+			$result = $post->save();
+
+			if($result) {
+				return Redirect::action('PostController@show', $post->id);
+			} else {
+				return Redirect::back()->withInput();
+			}
+		}
 	}
 
 }
