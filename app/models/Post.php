@@ -1,6 +1,8 @@
 <?php
 
-class Post extends Eloquent
+use Carbon\Carbon;
+
+class Post extends BaseModel
 {
     protected $table = 'posts';
 
@@ -11,4 +13,9 @@ class Post extends Eloquent
 	    'body'       => 'required|min:2|max:10000',
 	    'image'		 => 'image'
 	);
+
+    public function user()
+	{
+	    return $this->belongsTo('User');
+	}
 }

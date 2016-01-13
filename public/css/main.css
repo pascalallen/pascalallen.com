@@ -103,3 +103,14 @@ html, body {
         color: #f05f40;
     }
 }
+
+.missing {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.not-found {
+    position: fixed;
+    width: 91%;
+}

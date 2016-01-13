@@ -21,6 +21,7 @@
 				<th>Title</th>
 				<th>Body</th>
 				<th>Image</th>
+				<th>Created</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -29,6 +30,7 @@
 						<td><a href="{{{ action('PostController@show', $post->id) }}}" class="posts-title">{{{ $post->title }}}</a></td>
 						<td>{{{ $post->body }}}</td>
 						<td>{{{ $post->image }}}</td>
+						<td>{{{ $post->created_at->diffForHumans() }}}</td>
 					</tr>
 				@endforeach
 		</tbody>

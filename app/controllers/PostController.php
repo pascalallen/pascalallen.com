@@ -35,8 +35,9 @@ class PostController extends \BaseController {
 	public function store()
 	{
 		$post = new Post();
+		Session::flash('successMessage', 'Your post has been saved.');
+		Log::info(Input::all());
 		return $this->validateAndSave($post);
-
 	}
 
 
@@ -50,7 +51,7 @@ class PostController extends \BaseController {
 	{
 		$post = Post::find($id);
 		if(!$post) {
-			return Redirect::action('PostController@index');
+			App::abort(404);
 		}
 
 		return View::make('posts.show')->with('post', $post);
@@ -79,6 +80,7 @@ class PostController extends \BaseController {
 	public function update($id)
 	{
 		$post = Post::find($id);
+		Session::flash('successMessage', 'Your change has been saved.');
 		return $this->validateAndSave($post);
 	}
 
@@ -93,7 +95,7 @@ class PostController extends \BaseController {
 	{
 		$post = Post::find($id);
 		$post->delete();
-
+		Session::flash('errorMessage', 'Your post has been deleted.');
 		return Redirect::action('posts.index');
 	}
 
@@ -108,7 +110,7 @@ class PostController extends \BaseController {
 			$post->title = Input::get('title');
 			$post->body = Input::get('body');
 			$post->image = '/img/header.jpg';
-			$post->user_id =
+			$post->user_id = 1;
 
 			$result = $post->save();
 

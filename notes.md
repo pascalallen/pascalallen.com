@@ -169,5 +169,6 @@ PUT/DELETE
 {{ Form::text('title', null, ['class' => 'form-control', 'placeholder' => 'Enter your title']) }}
 
 
-
+###DATE IN CARBON
+Carbon::now()->subMinutes(2)->diffForHumans();
 

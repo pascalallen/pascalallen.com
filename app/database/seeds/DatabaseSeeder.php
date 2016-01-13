@@ -11,6 +11,10 @@ class DatabaseSeeder extends Seeder {
 	{
 		Eloquent::unguard();
 
+		DB:table('posts')->delete();
+		DB:table('users')->delete();
+		
+		// DELETE DATA OPPOSITE WAY THAT YOU ADD DATA
 		$this->call('UserTableSeeder');
 		$this->call('PostTableSeeder');
 	}
