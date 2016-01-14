@@ -9,9 +9,8 @@ class PostController extends \BaseController {
 	 */
 	public function index()
 	{
-		$posts = Post::paginate(4);
+		$posts = Post::with('user')->orderBy('created_at', 'desc')->paginate(4);
 		// $posts = DB::table('posts')->paginate(4);
-
 		return View::make('posts.index')->with('posts', $posts);
 	}
 
