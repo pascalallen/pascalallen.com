@@ -29,7 +29,7 @@
 					<tr>
 						<td><a href="{{{ action('PostController@show', $post->id) }}}" class="posts-title">{{{ $post->title }}}</a></td>
 						<td>{{{ $post->body }}}</td>
-						<td>{{{ $post->image }}}</td>
+						<td><img src="{{{ $post->image }}}" class="post-image"></td>
 						<td>{{{ $post->created_at->diffForHumans() }}}</td>
 					</tr>
 				@endforeach

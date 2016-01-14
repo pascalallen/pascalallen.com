@@ -23,6 +23,13 @@ thead {
     font-family: 'Ubuntu', sans-serif;
 }
 
+.post-image {
+    height: auto; 
+    width: auto; 
+    max-width: 50%; 
+    max-height: 50%;
+}
+
 .posts-title {
     color: #5cb85c;
 }

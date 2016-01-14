@@ -172,3 +172,46 @@ PUT/DELETE
 ###DATE IN CARBON
 Carbon::now()->subMinutes(2)->diffForHumans();
 
+###DEFINING RELATIONSHIPS THROUGH MIGRATION
+UP METHOD OF NEW MIGRATION
+----------------------------
+Schema::table('posts', function($table)
+{
+    $table->integer('user_id')->unsigned();
+    $table->foreign('user_id')->references('id')->on('users');
+});
+
+DOWN METHOD OF NEW MIGRATION
+------------------------------
+Schema::table('posts', function($table)
+{
+    $table->dropForeign('posts_user_id_foreign');
+    $table->dropColumn('user_id');
+});
+
+ADD METHOD TO MODEL FOR ACCESS
+-------------------------------
+public function posts()
+{
+    return $this->hasMany('Post');
+}
+
+ADD METHOD TO MODEL TO ALLOW LINKING
+-------------------------------------
+public function user()
+{
+    return $this->belongsTo('User');
+}
+
+<!-- TO RUN ALL UP METHODS IN MIGRATION FILES -->
+PHP ARTISAN MIGRATE
+
+<!-- TO RUN ALL DOWN METHODS IN MIGRATION FILES -->
+PHP ARTISAN MIGRATE:RESET
+
+<!-- TO CREATE A MIGRATE FILE -->
+php artisan migrate:make create_posts_table
+
+<!-- TO ADD TO MIGRATE FILE -->
+php artisan migrate:make add_image_to_posts --table=posts
+
