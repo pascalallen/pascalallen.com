@@ -1,6 +1,12 @@
 <?php
 
 class PostController extends \BaseController {
+	public function __construct()
+	{
+		parent::__construct();
+
+		$this->beforeFilter('auth', array('except' => array('index', 'show')));
+	}
 
 	/**
 	 * Display a listing of the resource.
@@ -109,7 +115,7 @@ class PostController extends \BaseController {
 			$post->title = Input::get('title');
 			$post->body = Input::get('body');
 			$post->image = '/img/header.jpg';
-			$post->user_id = 1;
+			$post->user_id = Auth::id();
 
 			$result = $post->save();
 

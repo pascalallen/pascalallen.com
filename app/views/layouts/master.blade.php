@@ -41,6 +41,18 @@
 	                    <li class="">
 	                        <a class="page-scroll" href="/resume">Resume</a>
 	                    </li>
+	                    @if (Auth::check())
+	                    <li class="">
+	                        <a class="page-scroll" href="{{ action('HomeController@getLogout') }}">Logout</a>
+	                    </li>
+	                    @else
+	                    <li class="">
+	                        <a class="page-scroll" href="/login">Login</a>
+	                    </li>
+	                    <li class="">
+	                        <a class="page-scroll" href="/login">Sign Up</a>
+	                    </li>
+	                    @endif
 	                </ul>
 	            </div>
 	            <!-- /.navbar-collapse -->

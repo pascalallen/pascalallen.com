@@ -17,7 +17,7 @@ class HomeController extends BaseController {
 
 	public function showWelcome()
 	{
-		return Redirect::action('HomeController@sayHello', array('Bob'));
+		return View::make('welcome');
 	}
 
 	public function showResume()
@@ -30,28 +30,29 @@ class HomeController extends BaseController {
 		return View::make('portfolio');
 	}
 
-	public function showName($name = 'Pascal')
+	public function getLogin()
 	{
-		return $name;
+		return View::make('login');
 	}
 
-	public function sayHello($name = 'Pascal')
+	public function postLogin()
 	{
-		if ($name == "Chris") {
-        	return Redirect::to('/');
-    	} else {
-    		$data = array('name' => $name);
-        	return View::make('my-first-view')->with($data);
-    	}
+		$email = Input::get('email');
+		$password = Input::get('password');
+
+		if (Auth::attempt(array('email' => $email, 'password' => $password))) {
+		    return Redirect::intended('/posts/create');
+		} else {
+		    // login failed, go back to the login screen
+		    Session::flash('errorMessage', 'Wrong email or password!');
+		    return Redirect::back()->withInput();
+		}
+
 	}
 
-	public function rollDice($guess = '1')
+	public function getLogout()
 	{
-		$randNum = rand(1, 6);
-		$data = array(
-			'guess' => $guess, 
-			'randNum' => $randNum
-		);
-    	return View::make('roll-dice')->with($data);
+		Auth::logout();
+		return Redirect::action('HomeController@showWelcome');
 	}
 }

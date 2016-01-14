@@ -11,19 +11,21 @@
 |
 */
 
-Route::get('/', 'HomeController@showWelcome');
+Route::get('/',			 'HomeController@showWelcome');
 
-Route::get('user/{name?}', 'HomeController@showName');
-
-Route::get('/sayhello/{name?}', 'HomeController@sayHello');
-
-Route::get('/rolldice/{guess?}', 'HomeController@rollDice');
-
-Route::get('/resume', 'HomeController@showResume');
+Route::get('/resume', 	 'HomeController@showResume');
 
 Route::get('/portfolio', 'HomeController@showPortfolio');
+
+Route::get('login', 	 'HomeController@getLogin');
+
+Route::post('login', 	 'HomeController@postLogin');
+
+Route::get('logout', 	 'HomeController@getLogout');
 
 // Route::get('/posts/my-posts/{username}', 'PostsController@showAuthorPosts'); // to create and route a new method
 
 // RESOURCE GOES LAST
 Route::resource('/posts', 'PostController');
+
+
