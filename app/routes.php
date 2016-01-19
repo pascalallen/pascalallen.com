@@ -25,7 +25,9 @@ Route::get('logout', 	 'HomeController@getLogout');
 
 // Route::get('/posts/my-posts/{username}', 'PostsController@showAuthorPosts'); // to create and route a new method
 
+Route::get('/posts/edit-image/{id}', 'PostController@editImage');
 // RESOURCE GOES LAST
 Route::resource('/posts', 'PostController');
 
+Route::resource('tags', 'TagsController');
 

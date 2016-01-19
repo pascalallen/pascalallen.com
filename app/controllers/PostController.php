@@ -15,9 +15,17 @@ class PostController extends \BaseController {
 	 */
 	public function index()
 	{
-		$posts = Post::with('user')->orderBy('created_at', 'desc')->paginate(4);
-		// $posts = DB::table('posts')->paginate(4);
-		return View::make('posts.index')->with('posts', $posts);
+		$search = Input::get('search');
+		
+		if ($search) {
+			$query = Post::with('user')->where('title', 'LIKE', '%' . $search . '%')->orWhere('body', 'LIKE', '%' . $search . '%');
+		} else {
+			$query = Post::with('user');
+		}
+
+		$posts = $query->orderBy('created_at', 'desc')->paginate(4);
+
+		return View::make('posts.index')->with(['posts' => $posts, 'search' => $search]);
 	}
 
 
@@ -75,6 +83,11 @@ class PostController extends \BaseController {
 		return View::make('posts.edit')->with('post', $post);
 	}
 
+	public function editImage($id)
+	{
+		$post = Post::find($id);
+		return View::make('posts.edit-image')->with('post', $post);
+	}
 
 	/**
 	 * Update the specified resource in storage.
@@ -85,7 +98,6 @@ class PostController extends \BaseController {
 	public function update($id)
 	{
 		$post = Post::find($id);
-		Session::flash('successMessage', 'Your change has been saved.');
 		return $this->validateAndSave($post);
 	}
 
@@ -100,7 +112,7 @@ class PostController extends \BaseController {
 	{
 		$post = Post::find($id);
 		$post->delete();
-		Session::flash('errorMessage', 'Your post has been deleted.');
+		Session::flash('successMessage', 'Your post has been deleted.');
 		return Redirect::action('posts.index');
 	}
 
@@ -114,12 +126,13 @@ class PostController extends \BaseController {
 	    } else {
 			$post->title = Input::get('title');
 			$post->body = Input::get('body');
-			$post->image = '/img/header.jpg';
+			$post->image = Input::get('image');
 			$post->user_id = Auth::id();
 
 			$result = $post->save();
 
 			if($result) {
+				Session::flash('successMessage', 'Your post has been saved.');
 				return Redirect::action('PostController@show', $post->id);
 			} else {
 				return Redirect::back()->withInput();

@@ -1,12 +1,10 @@
 @extends('layouts.master')
 
 @section('top-script')
+
 	{{-- CUSTOM CSS --}}
 	<link rel="stylesheet" type="text/css" href="/css/posts-create.css">
-	{{-- CUSTOM FONT --}}
-	<link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
-	{{-- FONT AWESOME --}}
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+	
 @stop
 
 @section('content')
@@ -15,7 +13,7 @@
 		<div class="subheader">Blog Stuffz</div>
 		<hr>
 
-		{{ Form::open(array('action' => 'PostController@store')) }}
+		{{ Form::open(array('action' => 'PostController@store', 'files' => true)) }}
 
 			<div class="form-group {{ ($errors->has('title')) ? 'has-error' : '' }}">
 				{{ $errors->first('title', '<div class="alert alert-danger">:message</div>') }}

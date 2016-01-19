@@ -6,7 +6,7 @@ class Post extends BaseModel
 {
     protected $table = 'posts';
 
-    protected $fillable = array('title', 'body');
+    protected $fillable = array('title', 'body', 'image');
 
     public static $rules = array(
 	    'title'      => 'required|min:2|max:100',

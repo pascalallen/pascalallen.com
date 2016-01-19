@@ -215,3 +215,26 @@ php artisan migrate:make create_posts_table
 <!-- TO ADD TO MIGRATE FILE -->
 php artisan migrate:make add_image_to_posts --table=posts
 
+###QUERY NOTES
+----------------------------------------
+<!-- QUERY EXAMPLES -->
+$query = Post::with('user');
+
+if (Input::has('search')) {
+    $query->where('title', 'like', '%asdf%');
+    $query->orWhere('body', 'like', '%asdf%');
+
+    $query->orWhereHas('user', function($q) {
+        $q->where('email', 'like', '%yahoo%');
+    });
+}
+
+###COMPOSER DUMP-AUTOLOAD
+IF YOU CHANGE CLASSNAMES THIS WILL DUMP CACHE
+
+
+##LARAVEL ADD ONS THAT I INSTALLED
+-- DEBUG BAR
+-- WAYS GENERATOR
+
+
