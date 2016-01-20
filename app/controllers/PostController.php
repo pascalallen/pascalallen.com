@@ -83,12 +83,6 @@ class PostController extends \BaseController {
 		return View::make('posts.edit')->with('post', $post);
 	}
 
-	public function editImage($id)
-	{
-		$post = Post::find($id);
-		return View::make('posts.edit-image')->with('post', $post);
-	}
-
 	/**
 	 * Update the specified resource in storage.
 	 *
@@ -124,9 +118,15 @@ class PostController extends \BaseController {
 	        // validation failed, redirect to the post create page with validation errors and old inputs
 	        return Redirect::back()->withInput()->withErrors($validator);
 	    } else {
+
+	    	$image = Input::file('image');
+			$filename = $image->getClientOriginalName();
+
 			$post->title = Input::get('title');
 			$post->body = Input::get('body');
-			$post->image = Input::get('image');
+			$post->image = '/img/' . $filename;
+			$image->move('img/', $filename);
+
 			$post->user_id = Auth::id();
 
 			$result = $post->save();

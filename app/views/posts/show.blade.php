@@ -17,8 +17,6 @@
 		
 			<a href="{{{ action('PostController@edit', $post->id) }}}" class="btn btn-info">Edit Post</a>
 
-			<a href="{{{ action('PostController@editImage', $post->id) }}}" class="btn btn-info">Edit Image</a>
-
 			<button class="btn btn-danger">Delete</button>
 
 		{{ Form::close() }}
