@@ -1,1 +1,0 @@
-/vagrant/sites/blog.dev/app/views/tags/edit.blade.php
