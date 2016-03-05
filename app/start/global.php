@@ -46,7 +46,6 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 |
 */
 
-// 500 server error and 403 access denied
 App::error(function(Exception $exception, $code)
 {
 	Log::error($exception);
@@ -78,11 +77,5 @@ App::down(function()
 | definitions instead of putting them all in the main routes file.
 |
 */
-
-// 404 page not found
-App::missing(function($exception)
-{
-    return Response::view('errors.missing', array(), 404);
-});
 
 require app_path().'/filters.php';

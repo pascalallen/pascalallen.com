@@ -11,23 +11,18 @@
 |
 */
 
-Route::get('/',			 'HomeController@showWelcome');
+Route::get('/', 'HomeController@showWelcome');
 
-Route::get('/resume', 	 'HomeController@showResume');
+Route::get('login', 'HomeController@getLogin');
 
-Route::get('/portfolio', 'HomeController@showPortfolio');
+Route::post('login', 'HomeController@postLogin');
 
-Route::get('login', 	 'HomeController@getLogin');
+Route::get('logout', 'HomeController@getLogout');
 
-Route::post('login', 	 'HomeController@postLogin');
+Route::get('/search', 'HomeController@search');
 
-Route::get('logout', 	 'HomeController@getLogout');
+Route::get('search-show/{id}', 'HomeController@searchShow');
 
-// Route::get('/posts/my-posts/{username}', 'PostsController@showAuthorPosts'); // to create and route a new method
+Route::resource('posts', 'PostsController');
 
-Route::get('/posts/edit-image/{id}', 'PostController@editImage');
-// RESOURCE GOES LAST
-Route::resource('/posts', 'PostController');
-
-Route::resource('tags', 'TagsController');
-
+Route::resource('users', 'UsersController');

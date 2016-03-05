@@ -23,11 +23,3 @@ Documentation for the entire framework can be found on the [Laravel website](htt
 ### License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
-
-## Getting Started
-- Clone this repo
-- Create a database for this app
-- Create a `.env.local.php` file inside of `blog.dev/`
-- Add the contents of `env-template.php` to `.env.local.php`
-- Add your database logins to the values
-- Run `composer install`

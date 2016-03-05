@@ -2,34 +2,44 @@
 
 @section('top-script')
 
-	{{-- CUSTOM CSS --}}
-	<link rel="stylesheet" type="text/css" href="/css/login.css">
+	<style type="text/css">
+
+		.row {
+			margin: 0;
+			text-align: center;
+		}
+
+		.login {
+			position: absolute;
+			margin-top: 150px;
+		}
+
+	</style>
 
 @stop
 
 @section('content')
-	<div class="container">
-		<div class="header">Bloggy Blog</div>
-		<div class="subheader">Log In</div>
-		<hr>
 
-		{{ Form::open(array('action' => 'HomeController@postLogin')) }}
-
-			<div class="form-group {{ ($errors->has('email')) ? 'has-error' : '' }}">
-				{{ $errors->first('email', '<div class="alert alert-danger">:message</div>') }}
-				{{ Form::label('email', 'Email') }}
-				{{ Form::text('email', Input::old('email'), array('class' => 'form-control')) }}
-			</div>
-
-			<div class="form-group {{ ($errors->has('password')) ? 'has-error' : '' }}">
-				{{ $errors->first('password', '<div class="alert alert-danger">:message</div>') }}
-				{{ Form::label('password', 'Password') }}
-				{{ Form::password('password', array('class' => 'form-control')) }}
-			<button type="submit" class="btn btn-default">Submit</button>
-			</div>
-
-
-		{{ Form::close() }}
-
+	<div class="row">
+		<div class="col-xs-4 col-xs-offset-4 login">
+			{{ Form::open(array('action' => 'HomeController@postLogin')) }}
+				<div class="{{ ($errors->has('email')) ? 'has-error' : '' }} form-group">
+					{{ $errors->first('email', '<div class="alert alert-danger">:message</div>') }}
+					{{ Form::label('email', 'Email') }}
+					{{ Form::email('email', Input::old('email'), ['class' => 'form-control', 'placeholder'=>'Email']) }}
+				</div>
+				<div class="{{ ($errors->has('password')) ? 'has-error' : '' }} form-group">
+					{{ $errors->first('password', '<div class="alert alert-danger">:message</div>') }}
+					{{ Form::label('password', 'Password') }}
+					{{ Form::password('password', ['class' => 'form-control', 'placeholder'=>'Password']) }}
+				</div>
+				<button type="submit" class="btn btn-default">Submit</button>
+			{{ Form::close() }}
+		</div>
 	</div>
+
+@stop
+
+@section('bottom-script')
+
 @stop

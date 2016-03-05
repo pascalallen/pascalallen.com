@@ -5,7 +5,7 @@ use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableTrait;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
-class User extends BaseModel implements UserInterface, RemindableInterface {
+class User extends Eloquent implements UserInterface, RemindableInterface {
 
 	use UserTrait, RemindableTrait;
 
@@ -21,21 +21,26 @@ class User extends BaseModel implements UserInterface, RemindableInterface {
 	 *
 	 * @var array
 	 */
-	protected $hidden = array('password', 'remember_token');
 
 	public static $rules = array(
-	    'username'      => 'required|min:2|max:100',
-	    'password'       => 'required|min:2|max:100',
-	    'email' => 'required|min:5|max:100'
-	);
+		    'username'  => 'required|max:100',
+		    'email'     => 'required|max:100',
+		    //look at https://github.com/esensi/model#validating-model-trait
+		    'password'	=> 'required|max:100|min:6',
+		    'image' 	=> 'image',
+		    'location'	=> 'max:100|min:6'
+		);
+
+	protected $hidden = array('password', 'remember_token');
 
 	public function setPasswordAttribute($value)
+    {
+    	$this->attributes['password'] = Hash::make($value);
+    }
+
+    public function post()
 	{
-	    $this->attributes['password'] = Hash::make($value);
+	    return $this->hasMany('Post');
 	}
 
-	public function posts()
-	{
-		return $this->hasMany('Post');
-	}
 }
