@@ -19,7 +19,7 @@
 	<div class="row">
 		<div class="col-md-8 col-md-offset-2">
 			@if(Auth::user() == $post->user)
-				{{ Form::submit('Edit', ['class' => 'btn btn-warning']) }}
+				<a href="{{{ action('PostsController@edit', $post->id) }}}">{{ Form::submit('Edit', ['class' => 'btn btn-warning']) }}</a>
 				{{ Form::open(array('action' => array('PostsController@destroy', $post->id, 'files' => true), 'method' => 'DELETE')) }}
 					{{ Form::submit('Delete', ['class' => 'btn btn-danger']) }}
 				{{ Form::close() }}
