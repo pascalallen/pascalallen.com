@@ -7,7 +7,7 @@ class Post extends \Eloquent {
 	// Add your validation rules here
 	public static $rules = array(
 	    'title'    => 'required|min:2|max:100',
-	    'body'     => 'required|min:2|max:255',
+	    'body'     => 'required|min:2',
 	    'location' => 'required|min:2|max:255',
 	    'image'	   => 'image'
 	);
