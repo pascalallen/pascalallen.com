@@ -51,7 +51,7 @@
 				<img src="{{{ $post->image }}}" class="post-image">
 			@endif
 			<blockquote>
-				<footer>Created by {{{ $post->user->username }}}, {{{$post->created_at->diffForHumans() }}}</footer>
+				<footer>Created by <a href="{{{ action('UsersController@show', $post->user->id)}}}">{{{ $post->user->username }}}</a>, {{{$post->created_at->diffForHumans() }}}</footer>
 			</blockquote>
 		</div>
 	</div>
