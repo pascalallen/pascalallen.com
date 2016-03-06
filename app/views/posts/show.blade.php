@@ -10,6 +10,26 @@
 		.post-image {
 			height: 300px;
 		}
+
+		a:link {
+		    text-decoration: none;
+		    color: #777;
+		}
+
+		a:visited {
+		    text-decoration: none;
+		    color: #777;
+		}
+
+		a:hover {
+		    text-decoration: underline;
+		    color: #777;
+		}
+
+		a:active {
+		    text-decoration: underline;
+		    color: #777;
+		}
 	</style>
 
 @stop
