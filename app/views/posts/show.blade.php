@@ -6,6 +6,10 @@
 		.row {
 			text-align: center;
 		}
+
+		.post-image {
+			height: 300px;
+		}
 	</style>
 
 @stop
@@ -24,7 +28,7 @@
 			<h5 class="location">{{{ ($post->location) }}}</h3>
 			<p class="body">{{{ ($post->body) }}}</p>
 			@if (isset($post->image))
-				<img src="{{{ $post->image }}}">
+				<img src="{{{ $post->image }}}" class="post-image">
 			@endif
 			<blockquote>
 				<footer>Created by {{{ $post->user->username }}}, {{{$post->created_at->diffForHumans() }}}</footer>
