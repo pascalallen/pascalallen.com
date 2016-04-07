@@ -39,6 +39,28 @@
 			height:375px;
 		}
 
+		.arrow-right {
+			width: 0; 
+			height: 0; 
+			border-top: 10px solid transparent;
+			border-bottom: 10px solid transparent;
+			border-left: 10px solid black;
+			left: 880px;
+    		top: 405px;
+			position: absolute;
+		}
+
+		.arrow-left {
+			width: 0; 
+			height: 0; 
+			border-top: 10px solid transparent;
+			border-bottom: 10px solid transparent; 
+			border-right:10px solid black;
+			left: 845px;
+			top: 405px;
+			position: absolute;
+		}
+
 	</style>
 
 @stop
@@ -47,9 +69,12 @@
 
     <img class="static" src="img/static.gif">
     <span class="contra"></span>
+    <span class="slideOne"></span>
     <img class="tv" src="img/tv.png">
     <h1 class="title">You made it.</h1>
     <audio id="contra" src="/data/contra.wav" type="audio/wav"></audio>
+	<div class="arrow-left"></div>
+	<div class="arrow-right"></div>
 
 @stop
 
@@ -58,11 +83,21 @@
 <script type="text/javascript">
 
 	"use strict";
-	
+
 	$(document).ready(setTimeout(function(event){
     	$('.contra').css('background-image', 'url(/img/contra.gif)').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
     	$('#contra').get(0).play();
 	}, 2000));
+
+	$(document).keydown(function(e) {
+		if(e.keyCode == 37){
+			console.log("left");
+    		$('.slideOne').css('background-image', 'url(http://placehold.it/350x150)').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
+		}
+		if(e.keyCode == 39) {
+			console.log("right");
+		}
+    });
 
 </script>
 
