@@ -48,6 +48,7 @@
 			left: 880px;
     		top: 405px;
 			position: absolute;
+			transition: all 0.2s ease;
 		}
 
 		.arrow-left {
@@ -59,6 +60,7 @@
 			left: 845px;
 			top: 405px;
 			position: absolute;
+			transition: all 0.2s ease;
 		}
 
 	</style>
@@ -69,13 +71,12 @@
 
     <img class="static" src="img/static.gif">
     <span class="contra"></span>
-    <span class="slideOne"></span>
+    <span class="slide"></span>
     <img class="tv" src="img/tv.png">
     <h1 class="title">You made it.</h1>
     <audio id="contra" src="/data/contra.wav" type="audio/wav"></audio>
-	<div class="arrow-left"></div>
-	<div class="arrow-right"></div>
-
+	<span class="arrow-left"></span>
+	<span class="arrow-right"></span>
 @stop
 
 @section('bottom-script')
@@ -84,18 +85,25 @@
 
 	"use strict";
 
-	$(document).ready(setTimeout(function(event){
-    	$('.contra').css('background-image', 'url(/img/contra.gif)').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
-    	$('#contra').get(0).play();
-	}, 2000));
+	// $(document).ready(setTimeout(function(event){
+    	// $('.contra').css('background-image', 'url(/img/contra.gif)').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
+    	// $('#contra').get(0).play();
+	// }, 2000));
 
+	var array = ["/img/pic1.jpg", "/img/pic2.jpg", "/img/pic3.jpg", "/img/pic4.jpg", "/img/pic5.jpg"];
+	var count = -1;
 	$(document).keydown(function(e) {
-		if(e.keyCode == 37){
+		if(e.keyCode == 37 && count != 0){
 			console.log("left");
-    		$('.slideOne').css('background-image', 'url(http://placehold.it/350x150)').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
+    		count--;
+    		$('.slide').css('background-image', 'url(' + array[count] + ')').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
+    		array.length % Math.abs(count);
 		}
-		if(e.keyCode == 39) {
+		if(e.keyCode == 39 && count != 4){
 			console.log("right");
+    		count++;
+    		$('.slide').css('background-image', 'url(' + array[count] + ')').css('background-size', '100%').css('top', '175px').css('left', '320px').css('width', '450px').css('height', '375px').css('position', 'absolute');
+    		array.length % Math.abs(count);
 		}
     });
 
