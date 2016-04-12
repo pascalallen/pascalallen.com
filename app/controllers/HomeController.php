@@ -98,4 +98,10 @@ class HomeController extends BaseController {
 		return View::make('timeline')->with('user', $user);
 
 	}
+
+	public function randomStudent(){
+
+		return View::make('random-student');
+
+	}
 }

@@ -23,6 +23,8 @@ Route::get('/search', 'HomeController@search');
 
 Route::get('search-show/{id}', 'HomeController@searchShow');
 
+Route::get('random-student', 'HomeController@randomStudent');
+
 Route::resource('posts', 'PostsController');
 
 Route::resource('users', 'UsersController');
