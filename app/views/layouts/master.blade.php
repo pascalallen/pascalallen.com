@@ -6,6 +6,8 @@
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 	    <title>Pascal Allen</title>
 
+	    {{-- TITLE ICON --}}
+		<link rel="shortcut icon" type="image/x-icon" href="img/apple.ico" />
 		{{-- BOOTSTRAP CSS --}}
 		<link href="/css/bootstrap.min.css" rel="stylesheet">
 
@@ -22,18 +24,24 @@
 	</head>
 	<body>
 		{{-- @include('partials.navbar') --}}
+		<div class="container">
+      		<div class="row">
+        		<div class="span12">
+        
+					@if (Session::has('successMessage'))
+					    <div class="alert alert-success">{{{ Session::get('successMessage') }}}</div>
+					@endif
+					
+					@if (Session::has('errorMessage'))
+					    <div class="alert alert-danger">{{{ Session::get('errorMessage') }}}</div>
+					@endif
+					
+					@yield('content')
 
-		@yield('content')
-
-		@if (Session::has('successMessage'))
-		    <div class="alert alert-success">{{{ Session::get('successMessage') }}}</div>
-		@endif
-		
-		@if (Session::has('errorMessage'))
-		    <div class="alert alert-danger">{{{ Session::get('errorMessage') }}}</div>
-		@endif
-
-		@include('partials.footer')
+				</div>
+			</div>
+		</div>
+		{{-- @include('partials.footer') --}}
 
 		<!-- JQUERY -->
 		<script src="/js/jquery-2.1.4.min.js"></script>
