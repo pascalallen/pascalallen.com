@@ -23,24 +23,19 @@
 		@yield('top-script')
 	</head>
 	<body>
-		{{-- @include('partials.navbar') --}}
-		<div class="container">
-      		<div class="row">
-        		<div class="span12">
-        
-					@if (Session::has('successMessage'))
-					    <div class="alert alert-success">{{{ Session::get('successMessage') }}}</div>
-					@endif
-					
-					@if (Session::has('errorMessage'))
-					    <div class="alert alert-danger">{{{ Session::get('errorMessage') }}}</div>
-					@endif
-					
-					@yield('content')
 
-				</div>
-			</div>
-		</div>
+		{{-- @include('partials.navbar') --}}
+        
+		@if (Session::has('successMessage'))
+		    <div class="alert alert-success">{{{ Session::get('successMessage') }}}</div>
+		@endif
+		
+		@if (Session::has('errorMessage'))
+		    <div class="alert alert-danger">{{{ Session::get('errorMessage') }}}</div>
+		@endif
+
+		@yield('content')
+
 		{{-- @include('partials.footer') --}}
 
 		<!-- JQUERY -->
