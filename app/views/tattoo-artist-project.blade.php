@@ -44,9 +44,10 @@
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
                     <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand page-scroll" href="{{ action('HomeController@showWelcome') }}">
+                <a class="navbar-brand page-scroll" href="{{ action('HomeController@tattooArtistProject') }}">
                     <i class="fa fa-anchor"></i>  <span class="light">Drew</span> Tattoo
                 </a>
+                
             </div>
 
             @if(Request::url() === 'http://blog.dev/tattoo-artist-project') <!-- Change to 'http://pascalallen.com/tattoo-artist-project' -->
@@ -61,7 +62,7 @@
                             <a class="page-scroll" href="#about">About</a>
                         </li>
                         <li>
-                            <a class="page-scroll" href="{{ action('HomeController@showPortfolio') }}">Portfolio</a>
+                            <a class="page-scroll" href="{{ action('HomeController@showTattooArtistPortfolio') }}">Portfolio</a>
                         </li>
                         <li>
                             <a class="page-scroll" href="#contact">Contact</a>
@@ -114,7 +115,7 @@
                 <div class="col-lg-8 col-lg-offset-2">
                     <h2>Portfolio</h2>
                     <p>Check out some of my work and let's get you in for an appointment.</p>
-                    <a href="{{ action('HomeController@showPortfolio') }}" class="btn btn-default btn-lg">Visit Portfolio Page</a>
+                    <a href="{{ action('HomeController@showTattooArtistPortfolio') }}" class="btn btn-default btn-lg">Visit Portfolio Page</a>
                 </div>
             </div>
         </div>
