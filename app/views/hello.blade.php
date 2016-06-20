@@ -13,8 +13,8 @@
 		    top: 10%;
 		    right: 18%;
 		    width: 5%;
-		    z-index: -1;
 		}
+
 
 	</style>
 
@@ -26,7 +26,7 @@
   		<div class="row">
     		<div class="span12">
 				<img src="img/transparent-macbook.png" class="macbook">
-				<img src="img/folder.png" class="folder">
+				<a href="{{ action('HomeController@tattooArtistProject') }}"><img src="img/folder.png" class="folder"></a>
 			</div>
 		</div>
 	</div>

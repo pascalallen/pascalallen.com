@@ -104,4 +104,8 @@ class HomeController extends BaseController {
 		return View::make('random-student');
 
 	}
+
+	public function tattooArtistProject(){
+		return View::make('tattoo-artist-project');
+	}
 }
