@@ -108,4 +108,8 @@ class HomeController extends BaseController {
 	public function tattooArtistProject(){
 		return View::make('tattoo-artist-project');
 	}
+
+	public function showTattooArtistPortfolio(){
+		return View::make('tattoo-artist-portfolio');
+	}
 }

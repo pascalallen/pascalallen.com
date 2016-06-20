@@ -27,6 +27,8 @@ Route::get('random-student', 'HomeController@randomStudent');
 
 Route::get('tattoo-artist-project', 'HomeController@tattooArtistProject');
 
+Route::get('tattoo-artist-portfolio', 'HomeController@showTattooArtistPortfolio');
+
 Route::resource('posts', 'PostsController');
 
 Route::resource('users', 'UsersController');
