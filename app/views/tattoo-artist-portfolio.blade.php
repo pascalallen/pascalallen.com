@@ -1,22 +1,3 @@
-<?php
-    //store directory to variable
-    $dir = "img/*.JPG";
-
-    //returns array matching $dir
-    $images = glob($dir);
-
-    //store how many images to show per page to variable
-    $perPage = 8;
-
-    //sets current page
-    $currentPage = Input::has('page') ? Input::get('page') - 1 : 1;
-
-    //returns the sequence of elements from the array as specified by the offset and length parameters
-    $pagedData = array_slice($images, $currentPage * $perPage, $perPage);
-
-    //create a pagination instance, pass an array of items($pagedData), total number of items(count($images)), and how many per page to display($perPage)
-    $images = Paginator::make($pagedData, count($images), $perPage);
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -89,7 +70,7 @@
                             <a class="page-scroll" href="#about">About</a>
                         </li>
                         <li>
-                            <a class="page-scroll" href="{{ action('HomeController@showPortfolio') }}">Portfolio</a>
+                            <a class="page-scroll" href="{{ action('TattooImagesController@index') }}">Portfolio</a>
                         </li>
                         <li>
                             <a class="page-scroll" href="#contact">Contact</a>
@@ -105,10 +86,13 @@
     <div class="portfolio-container">
             <div class="row">
 
-                @foreach($images as $image)
-                    <div class="col-sm-6 col-md-3">
+                @foreach($tattooimages as $tattooimage)
+                    <div class="col-sm-6 col-sm-3">
                         <div class="thumbnail">
-                            {{ "<img src='" . $image . "' class='image'>" }}
+                            <?php 
+                                $image = str_replace('public', '', $tattooimage->image);
+                            ?>
+                            <img src="{{{ $image }}}">
                         </div>
                     </div>
                 @endforeach
@@ -116,7 +100,7 @@
             </div>
         </div>
 
-    {{ $images->links() }}
+    {{ $tattooimages->links() }}
     
     <!-- Footer -->
     <footer>

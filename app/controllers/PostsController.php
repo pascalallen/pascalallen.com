@@ -147,4 +147,12 @@ class PostsController extends \BaseController {
 			}
 		}
 	}
+
+	public function showTattooProjectImages(){
+
+		$posts = Post::all()->orderBy('created_at', 'desc')->paginate(10);
+
+		return View::make('tattoo-artist-portfolio')->with(['posts' => $posts]);
+
+	}
 }

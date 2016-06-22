@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "cce6015a015d1aaf6f2cae97680d79b9",
-    "content-hash": "ed50304d3da28369b7a64da5c63c12ae",
+    "hash": "89ac63e88123ae53d1cfa993d2d719dc",
+    "content-hash": "28f1d038ec3577d54caba88d3dd2562b",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -147,6 +147,54 @@
                 "zf2"
             ],
             "time": "2015-06-29 05:42:04"
+        },
+        {
+            "name": "fzaninotto/faker",
+            "version": "v1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fzaninotto/Faker.git",
+                "reference": "44f9a286a04b80c76a4e5fb7aad8bb539b920123"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/44f9a286a04b80c76a4e5fb7aad8bb539b920123",
+                "reference": "44f9a286a04b80c76a4e5fb7aad8bb539b920123",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3.3|^7.0"
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "~1.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": []
+            },
+            "autoload": {
+                "psr-4": {
+                    "Faker\\": "src/Faker/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "François Zaninotto"
+                }
+            ],
+            "description": "Faker is a PHP library that generates fake data for you.",
+            "keywords": [
+                "data",
+                "faker",
+                "fixtures"
+            ],
+            "time": "2016-04-29 12:21:54"
         },
         {
             "name": "ircmaxell/password-compat",
@@ -355,16 +403,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "1.18.0",
+            "version": "1.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "e19b764b5c855580e8ffa7e615f72c10fd2f99cc"
+                "reference": "5f56ed5212dc509c8dc8caeba2715732abb32dbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/e19b764b5c855580e8ffa7e615f72c10fd2f99cc",
-                "reference": "e19b764b5c855580e8ffa7e615f72c10fd2f99cc",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/5f56ed5212dc509c8dc8caeba2715732abb32dbf",
+                "reference": "5f56ed5212dc509c8dc8caeba2715732abb32dbf",
                 "shasum": ""
             },
             "require": {
@@ -379,13 +427,13 @@
                 "doctrine/couchdb": "~1.0@dev",
                 "graylog2/gelf-php": "~1.0",
                 "jakub-onderka/php-parallel-lint": "0.9",
+                "php-amqplib/php-amqplib": "~2.4",
                 "php-console/php-console": "^3.1.3",
                 "phpunit/phpunit": "~4.5",
                 "phpunit/phpunit-mock-objects": "2.3.0",
                 "raven/raven": "^0.13",
                 "ruflin/elastica": ">=0.90 <3.0",
-                "swiftmailer/swiftmailer": "~5.3",
-                "videlalvaro/php-amqplib": "~2.4"
+                "swiftmailer/swiftmailer": "~5.3"
             },
             "suggest": {
                 "aws/aws-sdk-php": "Allow sending log messages to AWS services like DynamoDB",
@@ -394,11 +442,11 @@
                 "ext-mongo": "Allow sending log messages to a MongoDB server",
                 "graylog2/gelf-php": "Allow sending log messages to a GrayLog2 server",
                 "mongodb/mongodb": "Allow sending log messages to a MongoDB server via PHP Driver",
+                "php-amqplib/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib",
                 "php-console/php-console": "Allow sending log messages to Google Chrome",
                 "raven/raven": "Allow sending log messages to a Sentry server",
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
-                "ruflin/elastica": "Allow sending log messages to an Elastic Search server",
-                "videlalvaro/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib"
+                "ruflin/elastica": "Allow sending log messages to an Elastic Search server"
             },
             "type": "library",
             "extra": {
@@ -429,7 +477,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-03-01 18:00:40"
+            "time": "2016-04-12 18:29:35"
         },
         {
             "name": "nesbot/carbon",
@@ -524,16 +572,16 @@
         },
         {
             "name": "patchwork/utf8",
-            "version": "v1.3.0",
+            "version": "v1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tchwork/utf8.git",
-                "reference": "3bd61bc162ed5c5f4a11e40a0106acc255b451d9"
+                "reference": "30ec6451aec7d2536f0af8fe535f70c764f2c47a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tchwork/utf8/zipball/3bd61bc162ed5c5f4a11e40a0106acc255b451d9",
-                "reference": "3bd61bc162ed5c5f4a11e40a0106acc255b451d9",
+                "url": "https://api.github.com/repos/tchwork/utf8/zipball/30ec6451aec7d2536f0af8fe535f70c764f2c47a",
+                "reference": "30ec6451aec7d2536f0af8fe535f70c764f2c47a",
                 "shasum": ""
             },
             "require": {
@@ -579,7 +627,7 @@
                 "utf-8",
                 "utf8"
             ],
-            "time": "2015-12-15 15:34:15"
+            "time": "2016-05-18 13:57:10"
         },
         {
             "name": "phpseclib/phpseclib",
@@ -769,22 +817,22 @@
         },
         {
             "name": "stack/builder",
-            "version": "v1.0.3",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stackphp/builder.git",
-                "reference": "c1f8a4693b55c563405024f708a76ef576c3b276"
+                "reference": "59fcc9b448a8ce5e338a04c4e2e4aca893e83425"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stackphp/builder/zipball/c1f8a4693b55c563405024f708a76ef576c3b276",
-                "reference": "c1f8a4693b55c563405024f708a76ef576c3b276",
+                "url": "https://api.github.com/repos/stackphp/builder/zipball/59fcc9b448a8ce5e338a04c4e2e4aca893e83425",
+                "reference": "59fcc9b448a8ce5e338a04c4e2e4aca893e83425",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0",
-                "symfony/http-foundation": "~2.1",
-                "symfony/http-kernel": "~2.1"
+                "symfony/http-foundation": "~2.1|~3.0",
+                "symfony/http-kernel": "~2.1|~3.0"
             },
             "require-dev": {
                 "silex/silex": "~1.0"
@@ -814,20 +862,20 @@
             "keywords": [
                 "stack"
             ],
-            "time": "2014-11-23 20:37:11"
+            "time": "2016-06-02 06:58:42"
         },
         {
             "name": "swiftmailer/swiftmailer",
-            "version": "v5.4.1",
+            "version": "v5.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swiftmailer/swiftmailer.git",
-                "reference": "0697e6aa65c83edf97bb0f23d8763f94e3f11421"
+                "reference": "d8db871a54619458a805229a057ea2af33c753e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/0697e6aa65c83edf97bb0f23d8763f94e3f11421",
-                "reference": "0697e6aa65c83edf97bb0f23d8763f94e3f11421",
+                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/d8db871a54619458a805229a057ea2af33c753e8",
+                "reference": "d8db871a54619458a805229a057ea2af33c753e8",
                 "shasum": ""
             },
             "require": {
@@ -867,7 +915,7 @@
                 "mail",
                 "mailer"
             ],
-            "time": "2015-06-06 14:19:39"
+            "time": "2016-05-01 08:45:47"
         },
         {
             "name": "symfony/browser-kit",
@@ -1144,16 +1192,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.3",
+            "version": "v2.8.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "78c468665c9568c3faaa9c416a7134308f2d85c3"
+                "reference": "2a6b8713f8bdb582058cfda463527f195b066110"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/78c468665c9568c3faaa9c416a7134308f2d85c3",
-                "reference": "78c468665c9568c3faaa9c416a7134308f2d85c3",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/2a6b8713f8bdb582058cfda463527f195b066110",
+                "reference": "2a6b8713f8bdb582058cfda463527f195b066110",
                 "shasum": ""
             },
             "require": {
@@ -1200,20 +1248,20 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-01-27 05:14:19"
+            "time": "2016-06-06 11:11:27"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.8.3",
+            "version": "v2.8.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "65cb36b6539b1d446527d60457248f30d045464d"
+                "reference": "dee379131dceed90a429e951546b33edfe7dccbb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/65cb36b6539b1d446527d60457248f30d045464d",
-                "reference": "65cb36b6539b1d446527d60457248f30d045464d",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/dee379131dceed90a429e951546b33edfe7dccbb",
+                "reference": "dee379131dceed90a429e951546b33edfe7dccbb",
                 "shasum": ""
             },
             "require": {
@@ -1249,7 +1297,7 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "time": "2016-02-22 15:02:30"
+            "time": "2016-04-12 18:01:21"
         },
         {
             "name": "symfony/finder",
@@ -1660,7 +1708,56 @@
             "time": "2015-01-03 15:23:51"
         }
     ],
-    "packages-dev": [],
+    "packages-dev": [
+        {
+            "name": "way/generators",
+            "version": "2.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JeffreyWay/Laravel-4-Generators.git",
+                "reference": "484d379c6bc1d38c75e4f52f74efcbcd11f7dd2c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JeffreyWay/Laravel-4-Generators/zipball/484d379c6bc1d38c75e4f52f74efcbcd11f7dd2c",
+                "reference": "484d379c6bc1d38c75e4f52f74efcbcd11f7dd2c",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "~4.0",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "behat/behat": "~2.5.1",
+                "behat/mink": "~1.5.0",
+                "behat/mink-extension": "~1.2.0",
+                "behat/mink-goutte-driver": "~1.0.9",
+                "behat/mink-selenium2-driver": "~1.1.1",
+                "phpspec/phpspec": "~2.0",
+                "phpunit/phpunit": "~3.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Way\\Generators": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jeffrey Way",
+                    "email": "jeffrey@jeffrey-way.com",
+                    "homepage": "http://jeffrye-way.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Rapidly generate resources, migrations, models, and much more.",
+            "time": "2014-05-27 14:21:26"
+        }
+    ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],

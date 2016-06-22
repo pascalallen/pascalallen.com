@@ -62,7 +62,7 @@
                             <a class="page-scroll" href="#about">About</a>
                         </li>
                         <li>
-                            <a class="page-scroll" href="{{ action('HomeController@showTattooArtistPortfolio') }}">Portfolio</a>
+                            <a class="page-scroll" href="{{ action('TattooImagesController@index') }}">Portfolio</a>
                         </li>
                         <li>
                             <a class="page-scroll" href="#contact">Contact</a>
@@ -115,7 +115,7 @@
                 <div class="col-lg-8 col-lg-offset-2">
                     <h2>Portfolio</h2>
                     <p>Check out some of my work and let's get you in for an appointment.</p>
-                    <a href="{{ action('HomeController@showTattooArtistPortfolio') }}" class="btn btn-default btn-lg">Visit Portfolio Page</a>
+                    <a href="{{ action('TattooImagesController@index') }}" class="btn btn-default btn-lg">Visit Portfolio Page</a>
                 </div>
             </div>
         </div>
