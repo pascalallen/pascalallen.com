@@ -58,7 +58,7 @@
                 </a>
             </div>
 
-            @if(Request::url() === 'http://blog.dev/tattoo-artist-project') <!-- Change to 'http://pascalallen.com/tattoo-artist-project' -->
+            @if(Request::url() === 'http://pascalallen.com/tattoo-artist-project') <!-- Change to 'http://pascalallen.com/tattoo-artist-project' -->
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
                     <ul class="nav navbar-nav">
