@@ -10,11 +10,31 @@
 
 		.folder{
 			position: absolute;
-		    top: 10%;
-		    right: 18%;
-		    width: 5%;
 		}
 
+		#one{
+		    width: 5%;
+		    margin-left: 73%;
+		    top: 8%;
+		}
+
+		#two{
+		    width: 5%;
+		    margin-left: 73%;
+		    top: 18%;
+		}
+
+		#three{
+		    width: 5%;
+		    margin-left: 61%;
+		    top: 8%;
+		}
+
+		#four{
+		    width: 5%;
+		    margin-left: 61%;
+		    top: 18%;
+		}
 
 	</style>
 
@@ -26,7 +46,10 @@
   		<div class="row">
     		<div class="span12">
 				<img src="img/transparent-macbook.png" class="macbook">
-				<a href="{{ action('HomeController@tattooArtistProject') }}"><img src="img/folder.png" class="folder"></a>
+				<a href="{{ action('HomeController@tattooArtistProject') }}"><img src="img/folder.png" class="folder" id="one"></a>
+				<a href="national_parks.php"><img src="img/folder.png" class="folder" id="two"></a>
+				<a href=""><img src="img/folder.png" class="folder" id="three"></a>
+				<a href=""><img src="img/folder.png" class="folder" id="four"></a>
 			</div>
 		</div>
 	</div>
