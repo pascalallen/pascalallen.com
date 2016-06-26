@@ -48,7 +48,7 @@
 				<img src="img/transparent-macbook.png" class="macbook">
 				<a href="{{ action('HomeController@tattooArtistProject') }}"><img src="img/folder.png" class="folder" id="one"></a>
 				<a href="national_parks.php"><img src="img/folder.png" class="folder" id="two"></a>
-				<a href=""><img src="img/folder.png" class="folder" id="three"></a>
+				<a href="{{ action('HomeController@coleman') }}"><img src="img/folder.png" class="folder" id="three"></a>
 				<a href=""><img src="img/folder.png" class="folder" id="four"></a>
 			</div>
 		</div>

@@ -29,6 +29,8 @@ Route::get('tattoo-artist-project', 'HomeController@tattooArtistProject');
 
 Route::get('tattoo-artist-portfolio', 'TattooImagesController@index');
 
+Route::get('coleman', 'HomeController@coleman');
+
 Route::resource('tattoo_images', 'TattooImagesController');
 
 Route::resource('posts', 'PostsController');
