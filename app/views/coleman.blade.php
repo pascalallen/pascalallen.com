@@ -15,7 +15,7 @@
 	<div class="container">
   		<div class="row">
     		<div class="col-xs-8 col-xs-offset-2">
-				<h2 class="w3-center">Automatic Slideshow</h2>
+				<h2 class="w3-center rotating">Summer fun :)</h2>
 
 				<div class="w3-content w3-section">
 					<img class="mySlides" src="img/IMG_0261.jpg">
