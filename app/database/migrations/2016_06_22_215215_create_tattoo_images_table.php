@@ -23,6 +23,7 @@ class CreateTattooImagesTable extends Migration {
 	}
 
 
+
 	/**
 	 * Reverse the migrations.
 	 *

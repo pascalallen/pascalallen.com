@@ -3,6 +3,7 @@
 class TattooImage extends \Eloquent {
 
 	protected $table = 'tattoo_images';
+	
 
 	// Add your validation rules here
 	public static $rules = [

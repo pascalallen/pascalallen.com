@@ -14,6 +14,7 @@ class TattooImagesController extends \BaseController {
 		return View::make('tattoo-artist-portfolio')->with(['tattooimages' => $tattooimages]);
 	}
 
+
 	/**
 	 * Show the form for creating a new tattooimage
 	 *
