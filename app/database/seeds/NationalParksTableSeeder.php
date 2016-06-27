@@ -7,7 +7,7 @@ class NationalParksTableSeeder extends Seeder {
 
 	public function run()
 	{
-		$faker = Faker::create();
+		// $faker = Faker::create();
 
 	    NationalPark::create(['name' => 'Acadia',           'location' => '44.35°N 68.21°W',  'date_established' => '1919-02-26', 'area_in_acres' => 47389.67, 'description'  => 'Covering most of Mount Desert Island and other coastal islands, Acadia features the tallest mountain on the Atlantic coast of the United States, granite peaks, ocean shoreline, woodlands, and lakes. There are freshwater, estuary, forest, and intertidal habitats.']);
 	    NationalPark::create(['name' => 'American Samoa',   'location' => '14.25°S 170.68°W', 'date_established' => '1988-10-31', 'area_in_acres' => 9000.00, 'description'   => 'The southernmost national park is on three Samoan islands and protects coral reefs, rainforests, volcanic mountains, and white beaches. The area is also home to flying foxes, brown boobies, sea turtles, and 900 species of fish.']);
