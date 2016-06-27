@@ -43,7 +43,7 @@
 								<label for="sms_message">Message</label>
 								<textarea type="text" name="sms_message" id="sms_message" class="form-control" placeholder="Your message"></textarea>
 							</div>
-							<button name="button" type="button" class="btn btn-success" id="send-btn">Send</button>
+							<button name="button" class="btn btn-success" id="send-btn">Send</button>
 						</div>
 					</div>
 				</div>
