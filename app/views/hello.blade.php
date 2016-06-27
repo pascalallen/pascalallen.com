@@ -36,6 +36,30 @@
 		    top: 18%;
 		}
 
+		#five{
+		    width: 5%;
+		    left: 62%;
+		    top: 8%;
+		}
+
+		#six{
+		    width: 5%;
+		    left: 62%;
+		    top: 18%;
+		}
+
+		#seven{
+		    width: 5%;
+		    left: 54%;
+		    top: 8%;
+		}
+
+		#eight{
+		    width: 5%;
+		    left: 54%;
+		    top: 18%;
+		}
+
 	</style>
 
 @stop
@@ -50,6 +74,10 @@
 				<a href="{{ action('NationalParksController@index') }}"><img src="img/folder.png" class="folder" id="two"></a>
 				<a href="{{ action('HomeController@coleman') }}"><img src="img/folder.png" class="folder" id="three"></a>
 				<a href="{{ action('HomeController@showResume') }}"><img src="img/folder.png" class="folder" id="four"></a>
+				<a href=""><img src="img/folder.png" class="folder" id="five"></a>
+				<a href=""><img src="img/folder.png" class="folder" id="six"></a>
+				<a href=""><img src="img/folder.png" class="folder" id="seven"></a>
+				<a href=""><img src="img/folder.png" class="folder" id="eight"></a>
 			</div>
 		</div>
 	</div>
