@@ -35,7 +35,7 @@ $(function() {
     }
   
     // event handler for send message button
-    $('#send-btn').on('click', function() {
+    $('.btn').on('click', function() {
         var sender = $('#sms_from').val();
         var receiver = $('#sms_to').val();
         var message = $('#sms_message').val();
