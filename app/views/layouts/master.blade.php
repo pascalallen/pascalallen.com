@@ -27,11 +27,11 @@
 		{{-- @include('partials.navbar') --}}
         
 		@if (Session::has('successMessage'))
-		    <div class="alert alert-success">{{{ Session::get('successMessage') }}}</div>
+		    <div class="alert alert-success col-xs-4 col-xs-offset-4">{{{ Session::get('successMessage') }}}</div>
 		@endif
 		
 		@if (Session::has('errorMessage'))
-		    <div class="alert alert-danger">{{{ Session::get('errorMessage') }}}</div>
+		    <div class="alert alert-danger col-xs-4 col-xs-offset-4">{{{ Session::get('errorMessage') }}}</div>
 		@endif
 
 		@yield('content')

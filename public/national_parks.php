@@ -216,8 +216,9 @@
 			</div>
 		</div>
 	</div>
-		<!-- JQUERY -->
-		<script src="js/jquery-2.1.4.min.js"></script>
+	
+	<!-- JQUERY -->
+	<script src="js/jquery-2.1.4.min.js"></script>
 	<!-- CUSTOM JAVASCRIPT -->
 	<script src="js/national_parks.js"></script>
 </body>

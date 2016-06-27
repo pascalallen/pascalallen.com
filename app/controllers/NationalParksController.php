@@ -9,9 +9,9 @@ class NationalParksController extends \BaseController {
 	 */
 	public function index()
 	{
-		$nationalparks = Nationalpark::all();
+		$national_parks = NationalPark::paginate(2);
 
-		return View::make('nationalparks.index', compact('nationalparks'));
+		return View::make('national_parks.index')->with(['national_parks' => $national_parks]);
 	}
 
 	/**
@@ -21,7 +21,7 @@ class NationalParksController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('nationalparks.create');
+		return View::make('national_parks.create');
 	}
 
 	/**
@@ -31,16 +31,34 @@ class NationalParksController extends \BaseController {
 	 */
 	public function store()
 	{
-		$validator = Validator::make($data = Input::all(), Nationalpark::$rules);
+		$national_park = new NationalPark();
+		return $this->validateAndSave($national_park);
+	}
 
-		if ($validator->fails())
-		{
-			return Redirect::back()->withErrors($validator)->withInput();
+	protected function validateAndSave($national_park)
+	{
+		$validator = Validator::make(Input::all(), NationalPark::$rules);
+
+		if ($validator->fails()) {
+	        // validation failed, redirect to the tutorial create page with validation errors and old inputs
+	        return Redirect::back()->withInput()->withErrors($validator);
+	    } else {
+	    	
+			$national_park->name = Input::get('name');
+			$national_park->location = Input::get('location');
+			$national_park->date_established = Input::get('date_established');
+			$national_park->area_in_acres = Input::get('area_in_acres');
+			$national_park->description = Input::get('description');
+
+			$result = $national_park->save();
+
+			if($result) {
+				Session::flash('successMessage', 'Your National Park has been saved.');
+				return Redirect::action('NationalParksController@index');
+			} else {
+				return Redirect::back()->withInput();
+			}
 		}
-
-		Nationalpark::create($data);
-
-		return Redirect::route('nationalparks.index');
 	}
 
 	/**
@@ -51,9 +69,9 @@ class NationalParksController extends \BaseController {
 	 */
 	public function show($id)
 	{
-		$nationalpark = Nationalpark::findOrFail($id);
+		$national_park = NationalPark::findOrFail($id);
 
-		return View::make('nationalparks.show', compact('nationalpark'));
+		return View::make('national_parks.show', compact('national_park'));
 	}
 
 	/**
@@ -64,9 +82,9 @@ class NationalParksController extends \BaseController {
 	 */
 	public function edit($id)
 	{
-		$nationalpark = Nationalpark::find($id);
+		$national_park = NationalPark::find($id);
 
-		return View::make('nationalparks.edit', compact('nationalpark'));
+		return View::make('national_parks.edit', compact('national_park'));
 	}
 
 	/**
@@ -77,18 +95,18 @@ class NationalParksController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		$nationalpark = Nationalpark::findOrFail($id);
+		$national_park = NationalPark::findOrFail($id);
 
-		$validator = Validator::make($data = Input::all(), Nationalpark::$rules);
+		$validator = Validator::make($data = Input::all(), NationalPark::$rules);
 
 		if ($validator->fails())
 		{
 			return Redirect::back()->withErrors($validator)->withInput();
 		}
 
-		$nationalpark->update($data);
+		$national_park->update($data);
 
-		return Redirect::route('nationalparks.index');
+		return Redirect::route('national_parks.index');
 	}
 
 	/**
@@ -99,9 +117,9 @@ class NationalParksController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
-		Nationalpark::destroy($id);
+		NationalPark::destroy($id);
 
-		return Redirect::route('nationalparks.index');
+		return Redirect::route('national_parks.index');
 	}
 
 }
