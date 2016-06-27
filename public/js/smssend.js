@@ -36,13 +36,13 @@ $(function() {
   
     // event handler for send message button
     $('#send-btn').on('click', function() {
-        var sender = $('#sms_from').val();
+        // var sender = $('#sms_from').val();
         var receiver = $('#sms_to').val();
         var message = $('#sms_message').val();
 
         kandy.messaging.sendSMS(
+            // sender,
             receiver,
-            sender,
             message,
             function() {
                 alert('sms sent');
