@@ -37,7 +37,7 @@
 						<div id="sms-input">
 							<div class="form-group">
 								<label for="sms_to">Receiver</label>
-								<input type="text" name="sms_to" id="sms_to" class="form-control" placeholder="Friends cell #">
+								<input type="text" name="sms_to" id="sms_to" class="form-control" placeholder="Friends cell # (ex. 15555555555)">
 							</div>
 							<div class="form-group">
 								<label for="sms_message">Message</label>
