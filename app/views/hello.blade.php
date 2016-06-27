@@ -75,8 +75,8 @@
 				<a href="{{ action('HomeController@coleman') }}"><img src="img/folder.png" class="folder" id="three"></a>
 				<a href="{{ action('HomeController@showResume') }}"><img src="img/folder.png" class="folder" id="four"></a>
 				<a href="{{ action('HomeController@showCalculator') }}"><img src="img/folder.png" class="folder" id="five"></a>
-				<a href=""><img src="img/folder.png" class="folder" id="six"></a>
-				<a href=""><img src="img/folder.png" class="folder" id="seven"></a>
+				<a href="http://greasemonkey.rocks/"><img src="img/folder.png" class="folder" id="six"></a>
+				<a href="{{ action('HomeController@showTexter') }}"><img src="img/folder.png" class="folder" id="seven"></a>
 				<a href=""><img src="img/folder.png" class="folder" id="eight"></a>
 			</div>
 		</div>

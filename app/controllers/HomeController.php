@@ -40,6 +40,11 @@ class HomeController extends BaseController {
 		return View::make('my_calculator');
 	}
 
+	public function showTexter()
+	{
+		return View::make('texter');
+	}
+
 	public function postLogin()
 	{
 		$email = Input::get('email');

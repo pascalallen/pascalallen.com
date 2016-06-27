@@ -37,6 +37,8 @@ Route::get('/portfolio', 'HomeController@showPortfolio');
 
 Route::get('/my_calculator', 'HomeController@showCalculator');
 
+Route::get('/texter', 'HomeController@showTexter');
+
 Route::resource('national_parks', 'NationalParksController');
 
 Route::resource('tattoo_images', 'TattooImagesController');
