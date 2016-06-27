@@ -23,12 +23,12 @@
 					<table class="table">
 						<thead>
 							<tr>
-							<th>Name</th>
-							<th>Location</th>
-							<th>Established</th>
-							<th>Acres</th>
-							<th>Description</th>
-							<th></th>
+								<th>Name</th>
+								<th>Location</th>
+								<th>Established</th>
+								<th>Acres</th>
+								<th>Description</th>
+								<th></th>
 							</tr>
 					    </thead>
 						<?php foreach ($national_parks as $park) : ?>
@@ -54,8 +54,8 @@
 
 
 			<div class="row">
-				<h3 class="col-xs-4 col-xs-offset-4">Submit a park:</h3>
-				<div class="col-xs-4 col-xs-offset-4">
+				<h3 class="col-xs-8 col-xs-offset-2">Submit a park:</h3>
+				<div class="col-xs-8 col-xs-offset-2">
 					{{ Form::open(array('method' => 'post', 'action' => 'NationalParksController@store')) }}
 
 						<div class="form-group {{ ($errors->has('name')) ? 'has-error' : '' }}">

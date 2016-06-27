@@ -49,7 +49,7 @@
 				<a href="{{ action('HomeController@tattooArtistProject') }}"><img src="img/folder.png" class="folder" id="one"></a>
 				<a href="{{ action('NationalParksController@index') }}"><img src="img/folder.png" class="folder" id="two"></a>
 				<a href="{{ action('HomeController@coleman') }}"><img src="img/folder.png" class="folder" id="three"></a>
-				<a href=""><img src="img/folder.png" class="folder" id="four"></a>
+				<a href="{{ action('HomeController@showResume') }}"><img src="img/folder.png" class="folder" id="four"></a>
 			</div>
 		</div>
 	</div>

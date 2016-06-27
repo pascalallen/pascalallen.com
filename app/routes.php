@@ -31,6 +31,10 @@ Route::get('tattoo-artist-portfolio', 'TattooImagesController@index');
 
 Route::get('coleman', 'HomeController@coleman');
 
+Route::get('/resume', 	 'HomeController@showResume');
+
+Route::get('/portfolio', 'HomeController@showPortfolio');
+
 Route::resource('national_parks', 'NationalParksController');
 
 Route::resource('tattoo_images', 'TattooImagesController');
@@ -38,3 +42,7 @@ Route::resource('tattoo_images', 'TattooImagesController');
 Route::resource('posts', 'PostsController');
 
 Route::resource('users', 'UsersController');
+
+
+
+

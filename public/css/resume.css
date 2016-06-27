@@ -1,0 +1,117 @@
+.container {
+	height: 100%;
+	width: 100%;
+    margin-top: 3%;
+	/*background-image: url('../img/header.jpg');
+	background-position: center;
+	background-size: cover;
+    overflow: auto;*/
+}
+
+hr {
+    animation-duration: 1s;
+    animation-name: slidein;
+}
+
+.img-container {
+    padding: 2% 2% 2% 0%;
+    float: left;
+}
+
+.image-circle {
+    border-radius: 50%;
+    box-shadow: 5px 5px 20px black;
+}
+
+.header {
+    font-size: 60px;
+    text-align: left;
+    padding: 5% 0% 0% 0%;
+    color: #43ABC9; 
+    text-shadow: 2px 2px 8px #000;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+.subheader {
+    font-size: 30px;
+    text-align: left;
+    padding: 0% 0% 0% 0%;
+    color: #1277A8;
+    text-shadow: 2px 2px 8px #000;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+.nav {
+    float: left;
+}
+
+.portfolio {
+    border-radius: 50%;
+    border-color: #4cae4c;
+    border-width: 2px;
+    border-style: solid;
+    background-color: #5cb85c;
+    width: 80px;
+    height: 80px;
+    float: right;
+    padding: 0% 0% 0% 0%;
+    margin-top: 2%;
+    margin-right: 2%;
+    font-family: 'Ubuntu', sans-serif;
+    color: #333;
+    text-align: center;
+    animation-duration: 2s;
+    animation-name: dropdown;
+}
+
+.port-text {
+    margin: 15% 0% 0% 0%; 
+}
+
+.resume-pdf {
+    width: 80%;
+    height: 80%;
+    margin-left: 10%;
+    padding: 0%;
+}
+
+.footer-icon {
+    text-align: center;
+}
+
+.fa { 
+    -webkit-transition: width 2s, height 2s, -webkit-transform 2s; /* Safari */
+    transition: width 2s, height 2s, transform 2s;
+    color: #333;
+}
+
+.fa:hover { 
+    -webkit-transform: rotate(360deg); /* Safari */
+    transform: rotate(360deg);
+}
+
+footer {
+    text-align: center;
+}
+
+/*HR ANIMATE*/
+@keyframes slidein {
+  from {
+    margin-right: 100%;
+  }
+
+  to {
+    margin-right: 0%;
+  }
+}
+
+/*PORTFOLIO ANIMATE*/
+@keyframes dropdown {
+   from {
+    margin-top: -10%;
+  }
+
+  to {
+    margin-top: 2%;
+  } 
+}
