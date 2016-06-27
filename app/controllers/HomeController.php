@@ -35,9 +35,9 @@ class HomeController extends BaseController {
 		return View::make('portfolio');
 	}
 	
-	public function showProfile()
+	public function showCalculator()
 	{
-		return View::make('profile');
+		return View::make('my_calculator');
 	}
 
 	public function postLogin()
