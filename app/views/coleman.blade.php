@@ -12,6 +12,7 @@
 @stop
 
 @section('content')
+	<audio id="contra" src="/img/contra.wav" type="audio/wav"></audio>
 	<div class="container">
   		<div class="row">
     		<div class="col-xs-8 col-xs-offset-2">
@@ -34,6 +35,6 @@
 
 @section('bottom-script')
 
-	
+	<script src="/js/coleman.js"></script>
 
 @stop
