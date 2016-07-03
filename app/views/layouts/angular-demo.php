@@ -1,42 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html data-ng-app="sampleApp">
 	<head>
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 	    <title>Pascal Allen</title>
 
-	    {{-- TITLE ICON --}}
+	    <!-- TITLE ICON -->
 		<link rel="shortcut icon" type="image/x-icon" href="img/apple.ico" />
-		{{-- BOOTSTRAP CSS --}}
+
+		<!-- BOOTSTRAP CSS -->
 		<link href="/css/bootstrap.min.css" rel="stylesheet">
 
-		{{-- CUSTOM CSS --}}
+		<!-- CUSTOM CSS -->
 		<link rel="stylesheet" type="text/css" href="/css/main.css">
 
-		{{-- CUSTOM FONT --}}
+		<!-- CUSTOM FONT -->
 		<link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
 
-		{{-- FONT AWESOME --}}
+		<!-- FONT AWESOME -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 		
-		@yield('top-script')
 	</head>
 	<body>
-
-		{{-- @include('partials.navbar') --}}
-        
-		@if (Session::has('successMessage'))
-		    <div class="alert alert-success col-xs-4 col-xs-offset-4">{{{ Session::get('successMessage') }}}</div>
-		@endif
-		
-		@if (Session::has('errorMessage'))
-		    <div class="alert alert-danger col-xs-4 col-xs-offset-4">{{{ Session::get('errorMessage') }}}</div>
-		@endif
-
-		@yield('content')
-
-		{{-- @include('partials.footer') --}}
+		<!-- Placeholder for AngularJS view -->
+		<div data-ng-view=""></div>
 
 		<!-- ANGULARJS -->
 		<script src="/js/angular.min.js"></script>
@@ -50,6 +38,8 @@
 		<!-- CUSTOM JS BELOW -->
 		<script src="/js/main.js"></script>
 
-		@yield('bottom-script')
-
 	</body>
+</html>
+
+
+

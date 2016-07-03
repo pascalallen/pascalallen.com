@@ -39,6 +39,12 @@ Route::get('/my_calculator', 'HomeController@showCalculator');
 
 Route::get('/texter', 'HomeController@showTexter');
 
+Route::get('/angular-demo', 'HomeController@showAngularDemo');
+
+// Route::get('/view1', 'HomeController@showView1');
+
+// Route::get('/view2', 'HomeController@showView2');
+
 Route::resource('national_parks', 'NationalParksController');
 
 Route::resource('tattoo_images', 'TattooImagesController');

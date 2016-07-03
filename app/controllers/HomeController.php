@@ -45,6 +45,21 @@ class HomeController extends BaseController {
 		return View::make('texter');
 	}
 
+	public function showAngularDemo()
+	{
+		return View::make('layouts.angular-demo');
+	}
+
+	public function showView1()
+	{
+		return View::make('partials.view1');
+	}
+
+	public function showView2()
+	{
+		return View::make('partials.view2');
+	}
+
 	public function postLogin()
 	{
 		$email = Input::get('email');
