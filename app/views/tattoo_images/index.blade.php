@@ -1,1 +1,0 @@
-/vagrant/sites/blog.dev/app/views/tattoo_images/index.blade.php

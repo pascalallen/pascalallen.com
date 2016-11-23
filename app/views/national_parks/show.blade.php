@@ -1,1 +1,0 @@
-/vagrant/sites/blog.dev/app/views/national_parks/show.blade.php
