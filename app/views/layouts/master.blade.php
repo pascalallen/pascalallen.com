@@ -8,6 +8,7 @@
 
 	    {{-- TITLE ICON --}}
 		<link rel="shortcut icon" type="image/x-icon" href="img/apple.ico" />
+		
 		{{-- BOOTSTRAP CSS --}}
 		<link href="/css/bootstrap.min.css" rel="stylesheet">
 

@@ -29,6 +29,9 @@
 		<!-- ANGULARJS -->
 		<script src="/js/angular.min.js"></script>
 
+		<!-- ANGULARJS DEPENDENCY FOR ROUTING -->
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-route.js"></script>
+
 		<!-- JQUERY -->
 		<script src="/js/jquery-2.1.4.min.js"></script>
 
