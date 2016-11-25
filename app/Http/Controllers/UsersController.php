@@ -74,7 +74,7 @@ class UsersController extends Controller
 	{
 		$user = User::find($id);
 		
-		return view('users/show', compact('user'));
+		return view('users.show', compact('user'));
 	}
 	/**
 	 * Show the form for editing the specified resource.
