@@ -75,4 +75,9 @@ class HomeController extends BaseController {
 	    return View::make('search')->with(['resultsPost' => $resultsPost, 'resultsUser' => $resultsUser]);
 	    */
 	}
+
+	public function whatAboutMe()
+	{
+		return view('whataboutme');
+	}
 }

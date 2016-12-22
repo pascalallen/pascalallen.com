@@ -25,4 +25,6 @@ Route::get('logout', 'HomeController@getLogout');
 
 Route::get('search', 'HomeController@search');
 
+Route::get('whataboutme', 'HomeController@whatAboutMe');
+
 Route::resource('users', 'UsersController');
