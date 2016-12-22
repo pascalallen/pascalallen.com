@@ -27,4 +27,6 @@ Route::get('search', 'HomeController@search');
 
 Route::get('whataboutme', 'HomeController@whatAboutMe');
 
+Route::get('youlookpissed', 'HomeController@youLookPissed');
+
 Route::resource('users', 'UsersController');

@@ -80,4 +80,9 @@ class HomeController extends BaseController {
 	{
 		return view('whataboutme');
 	}
+
+	public function youLookPissed()
+	{
+		return view('youlookpissed');
+	}
 }
