@@ -17,7 +17,7 @@
 
 @section('content')
 
-    <h1>I love you!</h1>
+    <h1></h1>
 
 @stop
 
