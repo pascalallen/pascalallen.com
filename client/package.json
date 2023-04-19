@@ -1,0 +1,14 @@
+{
+  "name": "pascalallen.com",
+  "version": "1.0.0",
+  "description": "Application for pascalallen.com.",
+  "main": "src/app.ts",
+  "repository": "https://github.com/pascalallen/pascalallen.com",
+  "author": "Pascal Allen",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.2",
+    "typescript": "^5.0.4"
+  }
+}
