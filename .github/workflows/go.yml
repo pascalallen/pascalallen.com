@@ -23,8 +23,8 @@ jobs:
         env:
           GOPATH: $HOME
 
-      - name: Install dependencies
-        run: go get .
+#      - name: Install dependencies
+#        run: go get .
 
       - name: Build
         run: go build -v ./...
