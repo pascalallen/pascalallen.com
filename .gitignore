@@ -1,2 +1,9 @@
+# client
+/client/node_modules/
+/public/assets/
+
+# misc
 *.exe
 main
+.idea
+.env
