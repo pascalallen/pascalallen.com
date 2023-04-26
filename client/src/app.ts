@@ -10,6 +10,10 @@ container.innerHTML += '<h2>Publications</h2>' +
     '<p>' +
     '<a href="https://medium.com/@pascal.allen88/scrum-simplified-880113ed0db" target="_blank">Scrum Simplified</a><br>' +
     'A simple Scrum infrastructure, with insights.' +
+    '</p>' +
+    '<p>' +
+    '<a href="https://www.bizjournals.com/sanantonio/news/2016/11/23/divergent-career-paths-how-tech-talent-is-leaking.html" target="_blank">Divergent Career Paths</a><br>' +
+    'San Antonio Business Journal: How tech talent is leaking out of San Antonio.' +
     '</p>';
 
 container.innerHTML += '<h2>Go</h2>' +
