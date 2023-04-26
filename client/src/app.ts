@@ -6,6 +6,24 @@ if (container === null) {
 container.innerHTML = '<h1>Hello, World!</h1>' +
     '<p>My name is <strong>Pascal Allen</strong>, and I develop software.</p>';
 
+container.innerHTML += '<h2>Publications</h2>' +
+    '<p>' +
+    '<a href="https://medium.com/@pascal.allen88/scrum-simplified-880113ed0db" target="_blank">Scrum Simplified</a><br>' +
+    'A simple Scrum infrastructure, with insights.' +
+    '</p>';
+
+container.innerHTML += '<h2>Go</h2>' +
+    '<p>' +
+    '<a href="https://pkg.go.dev/github.com/pascalallen/pubsub" target="_blank">pubsub</a>' +
+    ' v1.0.0<br>' +
+    '<code>pubsub is a Go module that offers a concurrent pub/sub service leveraging goroutines and channels.</code>' +
+    '</p>' +
+    '<p>' +
+    '<a href="https://pkg.go.dev/github.com/pascalallen/hmac" target="_blank">hmac</a>' +
+    ' v1.0.1<br>' +
+    '<code>hmac is a Go module that offers services for HTTP HMAC authentication.</code>' +
+    '</p>';
+
 const repoUrl = "https://api.github.com/users/pascalallen/repos?per_page=10&sort=updated_at&direction=desc";
 fetch(repoUrl)
     .then(data => {
@@ -37,21 +55,3 @@ fetch(registryUrl)
             container.innerHTML += '</p>';
         }
     });
-
-container.innerHTML += '<h2>Go</h2>' +
-    '<p>' +
-    '<a href="https://pkg.go.dev/github.com/pascalallen/pubsub" target="_blank">pubsub</a>' +
-    ' v1.0.0<br>' +
-    '<code>pubsub is a Go module that offers a concurrent pub/sub service leveraging goroutines and channels.</code>' +
-    '</p>' +
-    '<p>' +
-    '<a href="https://pkg.go.dev/github.com/pascalallen/hmac" target="_blank">hmac</a>' +
-    ' v1.0.1<br>' +
-    '<code>hmac is a Go module that offers services for HTTP HMAC authentication.</code>' +
-    '</p>';
-
-container.innerHTML += '<h2>Publications</h2>' +
-    '<p>' +
-    '<a href="https://medium.com/@pascal.allen88/scrum-simplified-880113ed0db" target="_blank">Scrum Simplified</a><br>' +
-    'A simple Scrum infrastructure, with insights.' +
-    '</p>';
