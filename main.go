@@ -18,7 +18,7 @@ func main() {
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
-	router.Static("/public/assets", "./public/assets")
+	router.Static("/public", "./public")
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"environment": base64.StdEncoding.EncodeToString(envBytes),
