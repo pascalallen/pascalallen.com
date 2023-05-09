@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# change to the project root
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit
+
+function shutdown() {
+  echo "################################################################################"
+  echo "# Shutting down                                                                #"
+  echo "################################################################################"
+
+  "$DIR"/down
+}
+
+trap "shutdown" SIGINT
+
+docker container run \
+  --rm -it \
+  -v "$(pwd)":/app \
+  -w /app/client \
+  node:lts yarn install --frozen-lockfile
+
+docker-compose build && docker-compose up -d "$@" && docker-compose logs -f

@@ -1,0 +1,64 @@
+{
+  "permissions": [
+    {
+      "id": "01FY7XRMMKB4FA7G0Q0D9S8CDN",
+      "name": "CREATE_ROLES",
+      "description": "Allows the user to create roles"
+    },
+    {
+      "id": "01FY7XRW3JSY2Y4Q8XRVDYSCZK",
+      "name": "CREATE_USERS",
+      "description": "Allows the user to create users"
+    },
+    {
+      "id": "01FY7XVSJQHAC040RMMA37ZTNR",
+      "name": "DELETE_ROLES",
+      "description": "Allows the user to delete roles"
+    },
+    {
+      "id": "01FY7XW2NRY5FKSKTQ748TAY0D",
+      "name": "DELETE_USERS",
+      "description": "Allows the user to delete users"
+    },
+    {
+      "id": "01FY7XXQMW888MCBXH67HADFY4",
+      "name": "MANAGE_ROLE_PERMISSIONS",
+      "description": "Allows the user to manage role permissions"
+    },
+    {
+      "id": "01FY7XYK0ZEDJ9Z4RBXZQD5FW4",
+      "name": "MANAGE_USER_ROLES",
+      "description": "Allows the user to manage user roles"
+    },
+    {
+      "id": "01FY7XQ0F9XK4B74QR4BGTXNFD",
+      "name": "READ_PERMISSIONS",
+      "description": "Allows the user to have read access to permissions"
+    },
+    {
+      "id": "01FY7XP5V2EPJZFG361WRHJDVK",
+      "name": "READ_ROLES",
+      "description": "Allows the user to have read access to roles"
+    },
+    {
+      "id": "01FY7XMMX83NKP6Y0BSDEJ1HQP",
+      "name": "READ_USERS",
+      "description": "Allows the user to have read access to users"
+    },
+    {
+      "id": "01FY7XT3SRMCD2RNB9X8WR7VYJ",
+      "name": "UPDATE_PERMISSIONS",
+      "description": "Allows the user to update permissions"
+    },
+    {
+      "id": "01FY7XTB323SXWWJ757AY5QJ7H",
+      "name": "UPDATE_ROLES",
+      "description": "Allows the user to update roles"
+    },
+    {
+      "id": "01FY7XTMCG9EWGWW0K2DBF4BJJ",
+      "name": "UPDATE_USERS",
+      "description": "Allows the user to update users"
+    }
+  ]
+}

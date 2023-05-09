@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# change to the project root
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit
+
+case "$1" in
+    "serve")
+    docker container run \
+        -p 127.0.0.1:8181:8181/tcp \
+        --rm -it \
+        -v "$(pwd)":/app \
+        -w /app/client \
+        node:lts yarn "$@"
+    ;;
+    *)
+    docker container run \
+        --rm -it \
+        -v "$(pwd)":/app \
+        -w /app/client \
+        node:lts yarn "$@"
+    ;;
+esac

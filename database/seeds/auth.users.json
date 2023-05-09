@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": "01FY88Q9M56NF49CA7R0ERZ1JW",
+      "first_name": "System",
+      "last_name": "User",
+      "email_address": "system@pascalallen.com",
+      "roles": [
+        "ROLE_USER",
+        "ROLE_SUPER_ADMIN"
+      ]
+    },
+    {
+      "id": "01FY890564WVT72KHGNYSAZ1SP",
+      "first_name": "Pascal",
+      "last_name": "Allen",
+      "email_address": "pascal.allen88@gmail.com",
+      "roles": [
+        "ROLE_USER",
+        "ROLE_SUPER_ADMIN"
+      ]
+    }
+  ]
+}
