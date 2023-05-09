@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/pascalallen/pascalallen.com/database"
 	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
 	"github.com/pascalallen/pascalallen.com/domain/auth/role"
@@ -16,16 +15,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 var env = map[string]string{
 	"APP_BASE_URL": os.Getenv("APP_BASE_URL"),
-}
-
-type MyCustomClaims struct {
-	Foo string `json:"foo"`
-	jwt.StandardClaims
 }
 
 func main() {
@@ -66,7 +59,9 @@ func main() {
 			a.POST("/register", func(c *gin.Context) {
 				auth.HandleRegisterUser(c, userRepository)
 			})
-			//a.POST("/session", handleLoginUser)
+			a.POST("/session", func(c *gin.Context) {
+				auth.HandleLoginUser(c, userRepository)
+			})
 			//a.DELETE("/session", handleLogoutUser)
 			//a.PATCH("/session", handleRefreshUserSession)
 			//a.POST("/reset", handleRequestPasswordReset)
@@ -96,34 +91,14 @@ func seed(unitOfWork *gorm.DB, permissionRepository permission.PermissionReposit
 	}
 }
 
-func createToken() string {
-	mySigningKey := []byte(os.Getenv("TOKEN_SECRET"))
-
-	// Create the Claims
-	claims := MyCustomClaims{
-		"bar",
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(mySigningKey)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	return ss
-}
-
-func validateToken(tokenString string) {
-	parsedToken, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("TOKEN_SECRET")), nil
-	})
-
-	if claims, ok := parsedToken.Claims.(*MyCustomClaims); ok && parsedToken.Valid {
-		fmt.Printf("%v %v", claims.Foo, claims.StandardClaims.ExpiresAt)
-	} else {
-		fmt.Println(err)
-	}
-}
+//func validateToken(tokenString string) {
+//	parsedToken, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+//		return []byte(os.Getenv("TOKEN_SECRET")), nil
+//	})
+//
+//	if claims, ok := parsedToken.Claims.(*Claims); ok && parsedToken.Valid {
+//		fmt.Printf("%v %v", claims.Foo, claims.StandardClaims.ExpiresAt)
+//	} else {
+//		fmt.Println(err)
+//	}
+//}

@@ -47,6 +47,18 @@ func UnprocessableEntityResponse(c *gin.Context, error error) {
 	return
 }
 
+func UnauthorizedResponse(c *gin.Context, error error) {
+	c.JSON(
+		http.StatusUnauthorized,
+		JSendFailResponse[string]{
+			Status: "fail",
+			Data:   error.Error(),
+		},
+	)
+
+	return
+}
+
 func BadRequestResponse(c *gin.Context, error error) {
 	c.JSON(
 		http.StatusBadRequest,
