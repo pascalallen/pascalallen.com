@@ -8,21 +8,13 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/pascalallen/pascalallen.com/domain/auth/user"
 	"github.com/pascalallen/pascalallen.com/http"
-	"log"
-	"os"
+	"github.com/pascalallen/pascalallen.com/service"
 	"time"
 )
 
 type LoginUserRules struct {
 	EmailAddress string `form:"email_address" json:"email_address" binding:"required,max=100,email"`
 	Password     string `form:"password" json:"password" binding:"required"`
-}
-
-type Claims struct {
-	Id    string `json:"id"`
-	First string `json:"first"`
-	Last  string `json:"last"`
-	jwt.StandardClaims
 }
 
 type UserData struct {
@@ -36,10 +28,11 @@ type UserData struct {
 }
 
 type ResponseData struct {
-	Token       string   `json:"token"`
-	User        UserData `json:"user"`
-	Roles       []string `json:"roles"`
-	Permissions []string `json:"permissions"`
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	User         UserData `json:"user"`
+	Roles        []string `json:"roles"`
+	Permissions  []string `json:"permissions"`
 }
 
 func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
@@ -67,7 +60,7 @@ func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
 		return
 	}
 
-	claims := Claims{
+	userClaims := service.UserClaims{
 		Id:    ulid.ULID(u.Id).String(),
 		First: u.FirstName,
 		Last:  u.LastName,
@@ -77,10 +70,12 @@ func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
+	signedAccessToken, err := service.NewAccessToken(userClaims)
 	if err != nil {
-		log.Fatalln(err)
+		errorMessage := "error creating access token"
+		http.InternalServerErrorResponse(c, errors.New(errorMessage))
+
+		return
 	}
 
 	var roles []string
@@ -100,14 +95,30 @@ func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
 		EmailAddress: u.EmailAddress,
 		CreatedAt:    u.CreatedAt.String(),
 		ModifiedAt:   u.ModifiedAt.String(),
-		DeletedAt:    u.DeletedAt.String(),
+	}
+	if !u.DeletedAt.IsZero() {
+		userData.DeletedAt = u.DeletedAt.String()
+	}
+
+	refreshClaims := jwt.StandardClaims{
+		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
+	}
+
+	signedRefreshToken, err := service.NewRefreshToken(refreshClaims)
+	if err != nil {
+		errorMessage := "error creating refresh token"
+		http.InternalServerErrorResponse(c, errors.New(errorMessage))
+
+		return
 	}
 
 	responseData := &ResponseData{
-		Token:       signedToken,
-		User:        userData,
-		Roles:       roles,
-		Permissions: permissions,
+		AccessToken:  signedAccessToken,
+		RefreshToken: signedRefreshToken,
+		User:         userData,
+		Roles:        roles,
+		Permissions:  permissions,
 	}
 
 	http.CreatedResponse(c, responseData)

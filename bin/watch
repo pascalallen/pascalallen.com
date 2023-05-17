@@ -15,4 +15,5 @@ docker container run \
     -p 9990:9990 \
     --name pascalallen-air \
     --net pascalallen \
+    --env-file .env \
     cosmtrek/air

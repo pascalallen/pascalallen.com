@@ -59,13 +59,14 @@ func main() {
 			a.POST("/register", func(c *gin.Context) {
 				auth.HandleRegisterUser(c, userRepository)
 			})
-			a.POST("/session", func(c *gin.Context) {
+			a.POST("/login", func(c *gin.Context) {
 				auth.HandleLoginUser(c, userRepository)
 			})
-			//a.DELETE("/session", handleLogoutUser)
-			//a.PATCH("/session", handleRefreshUserSession)
-			//a.POST("/reset", handleRequestPasswordReset)
-			//a.POST("/password", handleResetPassword)
+			a.POST("/refresh", func(c *gin.Context) {
+				auth.HandleRefreshTokens(c, userRepository)
+			})
+			//a.POST("/request-reset", handleRequestPasswordReset)
+			//a.POST("/reset-password", handleResetPassword)
 		}
 	}
 
@@ -90,15 +91,3 @@ func seed(unitOfWork *gorm.DB, permissionRepository permission.PermissionReposit
 		log.Fatal(err)
 	}
 }
-
-//func validateToken(tokenString string) {
-//	parsedToken, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-//		return []byte(os.Getenv("TOKEN_SECRET")), nil
-//	})
-//
-//	if claims, ok := parsedToken.Claims.(*Claims); ok && parsedToken.Valid {
-//		fmt.Printf("%v %v", claims.Foo, claims.StandardClaims.ExpiresAt)
-//	} else {
-//		fmt.Println(err)
-//	}
-//}
