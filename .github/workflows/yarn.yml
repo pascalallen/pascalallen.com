@@ -20,3 +20,7 @@ jobs:
       - name: Test that JavaScript dependencies can be installed with Yarn
         working-directory: ./client
         run: yarn install --frozen-lockfile
+
+      - name: Transpile TypeScript
+        working-directory: ./client
+        run: yarn tsc
