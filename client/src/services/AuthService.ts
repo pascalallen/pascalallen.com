@@ -1,10 +1,10 @@
-import {User} from "../types/User";
-import request from "../utilities/request";
-import HttpMethod from "../constants/HttpMethod";
-import AuthStore from "../stores/AuthStore";
 import jwtDecode from "jwt-decode";
-import {listToMap} from "../utilities/collections";
 import moment from "moment";
+import {User} from "@domain/types/User";
+import AuthStore from "@stores/AuthStore";
+import request from "@utilities/request";
+import HttpMethod from "@domain/constants/HttpMethod";
+import {listToMap} from "@utilities/collections";
 
 // TODO: Extract to login component
 type LoginFormValues = {

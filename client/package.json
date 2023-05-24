@@ -6,10 +6,19 @@
   "repository": "https://github.com/pascalallen/pascalallen.com",
   "author": "Pascal Allen",
   "license": "MIT",
-  "private": false,
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode production",
+    "ci": "yarn install --frozen-lockfile",
+    "dev": "webpack --config webpack.config.js --mode development",
+    "watch": "webpack --config webpack.config.js --mode development --watch"
+  },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.2",
-    "typescript": "^5.0.4"
+    "ts-loader": "^9.4.3",
+    "typescript": "^5.0.4",
+    "webpack": "^5.83.1",
+    "webpack-cli": "^5.1.1"
   },
   "dependencies": {
     "@types/lodash": "^4.14.194",

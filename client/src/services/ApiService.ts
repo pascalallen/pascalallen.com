@@ -2,10 +2,10 @@ import axios, {AxiosError, AxiosInstance, AxiosRequestConfig} from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import jwtDecode from 'jwt-decode';
 import moment from 'moment';
-import AuthStore from "../stores/AuthStore";
-import {AuthenticatedResponsePayload} from "./AuthService";
-import {listToMap} from "../utilities/collections";
-import {Json} from "../types/Json";
+import {listToMap} from "@utilities/collections";
+import {Json} from "@domain/types/Json";
+import AuthStore from "@stores/AuthStore";
+import {AuthenticatedResponsePayload} from "@services/AuthService";
 
 export type SuccessResponseBody<T> = {
     status: 'success';

@@ -44,19 +44,19 @@ You will find the site running at [http://localhost:9990/](http://localhost:9990
 ### Install JavaScript Dependencies
 
 ```bash
-bin/yarn install --frozen-lockfile
+bin/yarn ci
 ```
 
 ### Compile TypeScript
 
 ```bash
-bin/yarn tsc
+bin/yarn build
 ```
 
 ### Watch For Frontend Changes
 
 ```bash
-bin/yarn tsc -w
+bin/yarn watch
 ```
 
 ### Take Down Environment

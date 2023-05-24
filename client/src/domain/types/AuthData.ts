@@ -1,5 +1,5 @@
-import {AccessTokenClaims} from "./AccessTokenClaims";
-import {RefreshTokenClaims} from "./RefreshTokenClaims";
+import {AccessTokenClaims} from "@domain/types/AccessTokenClaims";
+import {RefreshTokenClaims} from "@domain/types/RefreshTokenClaims";
 
 export type AuthData = {
     access_token: string;

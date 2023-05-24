@@ -1,7 +1,32 @@
 {
     "extends": "@tsconfig/recommended/tsconfig.json",
     "compilerOptions": {
-        "outDir": "../public/assets/"
+        "outDir": "../public/assets/",
+        "moduleResolution": "node",
+        "jsx": "react",
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        "isolatedModules": true,
+        "noImplicitAny": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "baseUrl": "./src/",
+        "paths": {
+            "@domain/*": [
+                "domain/*"
+            ],
+            "@services/*": [
+                "services/*"
+            ],
+            "@stores/*": [
+                "stores/*"
+            ],
+            "@utilities/*": [
+                "utilities/*"
+            ]
+        }
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "**/*.spec.ts"]
