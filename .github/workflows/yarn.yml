@@ -21,6 +21,6 @@ jobs:
         working-directory: ./client
         run: yarn install --frozen-lockfile
 
-      - name: Transpile TypeScript
+      - name: Test that TypeScript can be compiled with Webpack
         working-directory: ./client
-        run: yarn tsc
+        run: yarn webpack --config webpack.config.js --mode development
