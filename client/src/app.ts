@@ -1,5 +1,6 @@
 import Path from "@domain/constants/Path";
 import Index from "@pages/Index";
+import Login from "@pages/Login";
 
 const container: HTMLElement | null = document.getElementById('root');
 if (container === null) {
@@ -9,4 +10,8 @@ if (container === null) {
 switch (location.pathname) {
     case Path.INDEX:
         Index().then(content => container.innerHTML = content);
+        break;
+    case Path.LOGIN:
+        Login().then(content => container.innerHTML = content);
+        break;
 }
