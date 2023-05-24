@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -72,13 +71,11 @@ func BadRequestResponse(c *gin.Context, error error) {
 }
 
 func CreatedResponse[T interface{}](c *gin.Context, i *T) {
-	bytes, _ := json.Marshal(i)
-
 	c.JSON(
 		http.StatusCreated,
-		JSendSuccessResponse[string]{
+		JSendSuccessResponse[T]{
 			Status: "success",
-			Data:   string(bytes),
+			Data:   *i,
 		},
 	)
 

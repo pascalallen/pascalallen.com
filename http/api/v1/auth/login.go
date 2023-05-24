@@ -31,8 +31,8 @@ type ResponseData struct {
 	AccessToken  string   `json:"access_token"`
 	RefreshToken string   `json:"refresh_token"`
 	User         UserData `json:"user"`
-	Roles        []string `json:"roles"`
-	Permissions  []string `json:"permissions"`
+	Roles        []string `json:"roles,omitempty"`
+	Permissions  []string `json:"permissions,omitempty"`
 }
 
 func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {

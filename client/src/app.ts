@@ -1,15 +1,7 @@
-import AuthStore from "@stores/AuthStore";
-import AuthService from "@services/AuthService";
-
 const container = document.getElementById('root');
 if (container === null) {
     throw new Error('No matching element found with ID: root');
 }
-
-const authStore = new AuthStore();
-const authService = new AuthService(authStore);
-
-authService.login({ email_address: 'foo@bar.com', password: '$3cr3t'}).then(r => console.log(r));
 
 container.innerHTML = '<h1>Hello, World!</h1>' +
     '<p>My name is <strong>Pascal Allen</strong>, and I develop software.</p>';

@@ -23,8 +23,8 @@ export type AuthenticatedResponsePayload = {
     access_token: string;
     refresh_token: string;
     user: User;
-    roles: string[];
-    permissions: string[];
+    roles?: string[];
+    permissions?: string[];
 };
 
 class AuthService {
