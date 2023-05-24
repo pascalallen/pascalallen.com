@@ -47,7 +47,7 @@ You will find the site running at [http://localhost:9990/](http://localhost:9990
 bin/yarn ci
 ```
 
-### Compile TypeScript
+### Compile TypeScript with Webpack
 
 ```bash
 bin/yarn build
