@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/app.ts',
+    entry: './src/app.tsx',
     devtool: 'inline-source-map',
     module: {
         rules: [
@@ -16,7 +16,9 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js'],
         alias: {
             '@domain': path.resolve(__dirname, 'src/domain'),
+            '@hooks': path.resolve(__dirname, 'src/hooks'),
             '@pages': path.resolve(__dirname, 'src/pages'),
+            '@routes': path.resolve(__dirname, 'src/routes'),
             '@services': path.resolve(__dirname, 'src/services'),
             '@stores': path.resolve(__dirname, 'src/stores'),
             '@types': path.resolve(__dirname, 'src/domain/types'),

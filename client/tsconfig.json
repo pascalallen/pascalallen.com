@@ -3,7 +3,7 @@
     "compilerOptions": {
         "outDir": "../public/assets/",
         "moduleResolution": "node",
-        "jsx": "react",
+        "jsx": "react-jsx",
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
         "alwaysStrict": true,
@@ -17,8 +17,14 @@
             "@domain/*": [
                 "domain/*"
             ],
+            "@hooks/*": [
+                "hooks/*"
+            ],
             "@pages/*": [
                 "pages/*"
+            ],
+            "@routes/*": [
+                "routes/*"
             ],
             "@services/*": [
                 "services/*"
