@@ -51,14 +51,12 @@ const IndexPage = (): ReactElement => {
             <section className="go-section">
                 <h2>Go</h2>
                 <p>
-                    <a href="https://pkg.go.dev/github.com/pascalallen/pubsub" target="_blank">pubsub</a>
-                    v1.0.0
+                    <a href="https://pkg.go.dev/github.com/pascalallen/pubsub" target="_blank">pubsub</a>{' '}v1.0.0
                     <br/>
                     <code>pubsub is a Go module that offers a concurrent pub/sub service leveraging goroutines and channels.</code>
                 </p>
                 <p>
-                    <a href="https://pkg.go.dev/github.com/pascalallen/hmac" target="_blank">hmac</a>
-                    v1.0.1
+                    <a href="https://pkg.go.dev/github.com/pascalallen/hmac" target="_blank">hmac</a>{' '}v1.0.1
                     <br/>
                     <code>hmac is a Go module that offers services for HTTP HMAC authentication.</code>
                 </p>

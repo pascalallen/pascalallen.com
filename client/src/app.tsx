@@ -2,7 +2,7 @@ import React, {ReactElement} from "react";
 import {createRoot} from "react-dom/client";
 import {storesInstance, StoresProvider} from "@stores/Stores";
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import routes from "./routes/routes";
+import routes from "@routes/routes";
 
 const container: HTMLElement | null = document.getElementById('root');
 if (container === null) {
