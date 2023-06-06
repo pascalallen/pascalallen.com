@@ -56,15 +56,15 @@ func main() {
 	{
 		a := v1.Group("/auth")
 		{
-			a.POST("/register", func(c *gin.Context) {
-				auth.HandleRegisterUser(c, userRepository)
-			})
+			//a.POST("/register", func(c *gin.Context) {
+			//	auth.HandleRegisterUser(c, userRepository)
+			//})
 			a.POST("/login", func(c *gin.Context) {
 				auth.HandleLoginUser(c, userRepository)
 			})
-			a.PATCH("/refresh", func(c *gin.Context) {
-				auth.HandleRefreshTokens(c, userRepository)
-			})
+			//a.PATCH("/refresh", func(c *gin.Context) {
+			//	auth.HandleRefreshTokens(c, userRepository)
+			//})
 			//a.POST("/request-reset", handleRequestPasswordReset)
 			//a.POST("/reset-password", handleResetPassword)
 		}

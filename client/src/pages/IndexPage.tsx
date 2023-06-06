@@ -38,6 +38,11 @@ const IndexPage = (): ReactElement => {
             <section className="publications-section">
                 <h2>Publications</h2>
                 <p>
+                    <a href="https://medium.com/@pascal.allen88/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8" target="_blank">Releasing Packages to GitHub and the npm Registry</a>
+                    <br/>
+                    This publication describes a simple process I follow to tag and release a new package version to GitHub and the npm Registry.
+                </p>
+                <p>
                     <a href="https://medium.com/@pascal.allen88/scrum-simplified-880113ed0db" target="_blank">Scrum Simplified</a>
                     <br/>
                     A simple Scrum infrastructure, with insights.
