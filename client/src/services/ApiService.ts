@@ -159,7 +159,10 @@ export class ApiService {
     private async refreshToken(): Promise<void> {
         try {
             if (this.authStore) {
-                const response = await this.patch<AuthenticatedResponsePayload>('/api/v1/auth/refresh');
+                const response = await this.patch<AuthenticatedResponsePayload>('/api/v1/auth/refresh', {
+                    access_token: this.authStore.getData()?.access_token ?? '',
+                    refresh_token: this.authStore.getData()?.refresh_token ?? '',
+                });
 
                 this.authStore.setData({
                     access_token: response.body.data?.access_token ?? '',

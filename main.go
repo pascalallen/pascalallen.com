@@ -62,7 +62,7 @@ func main() {
 			a.POST("/login", func(c *gin.Context) {
 				auth.HandleLoginUser(c, userRepository)
 			})
-			a.POST("/refresh", func(c *gin.Context) {
+			a.PATCH("/refresh", func(c *gin.Context) {
 				auth.HandleRefreshTokens(c, userRepository)
 			})
 			//a.POST("/request-reset", handleRequestPasswordReset)

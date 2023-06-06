@@ -5,12 +5,7 @@ import AuthStore from "@stores/AuthStore";
 import request from "@utilities/request";
 import HttpMethod from "@domain/constants/HttpMethod";
 import {listToMap} from "@utilities/collections";
-
-// TODO: Extract to login component
-type LoginFormValues = {
-    email_address: string;
-    password: string
-};
+import {LoginFormValues} from "@pages/LoginPage";
 
 // TODO: Extract to reset password component
 export type ResetPasswordFormValues = {
@@ -60,6 +55,10 @@ class AuthService {
         const response = await request.send<AuthenticatedResponsePayload>({
             method: HttpMethod.PATCH,
             uri: '/api/v1/auth/refresh',
+            body: {
+                access_token: this.authStore.getData()?.access_token ?? '',
+                refresh_token: this.authStore.getData()?.refresh_token ?? '',
+            },
             options: { auth: false }
         });
         this.authStore.setData({
