@@ -4,7 +4,11 @@
 #
 # Only runs if you start the container with a data directory that is empty.
 
-#set -e
+set -e
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+  CREATE USER postgres SUPERUSER;
+EOSQL
 
 #psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 #  ALTER USER $POSTGRES_USER PASSWORD '$POSTGRES_PASSWORD';
