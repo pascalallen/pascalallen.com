@@ -1,0 +1,26 @@
+{
+  "roles": [
+    {
+      "id": "01FY87HWCDFCC3D525G552ZEN5",
+      "name": "ROLE_USER"
+    },
+    {
+      "id": "01FY87J3TQJKS6EN8J1CJ75BVR",
+      "name": "ROLE_SUPER_ADMIN",
+      "permissions": [
+        "CREATE_ROLES",
+        "CREATE_USERS",
+        "DELETE_ROLES",
+        "DELETE_USERS",
+        "MANAGE_ROLE_PERMISSIONS",
+        "MANAGE_USER_ROLES",
+        "READ_PERMISSIONS",
+        "READ_ROLES",
+        "READ_USERS",
+        "UPDATE_PERMISSIONS",
+        "UPDATE_ROLES",
+        "UPDATE_USERS"
+      ]
+    }
+  ]
+}

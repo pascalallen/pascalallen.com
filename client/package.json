@@ -2,13 +2,37 @@
   "name": "pascalallen.com",
   "version": "1.0.0",
   "description": "Application for pascalallen.com.",
-  "main": "src/app.ts",
+  "main": "src/app.tsx",
   "repository": "https://github.com/pascalallen/pascalallen.com",
   "author": "Pascal Allen",
   "license": "MIT",
-  "private": false,
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode production",
+    "ci": "yarn install --frozen-lockfile",
+    "dev": "webpack --config webpack.config.js --mode development",
+    "watch": "webpack --config webpack.config.js --mode development --watch"
+  },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.2",
-    "typescript": "^5.0.4"
+    "@types/react": "^18.2.7",
+    "@types/react-dom": "^18.2.4",
+    "ts-loader": "^9.4.3",
+    "typescript": "^5.0.4",
+    "webpack": "^5.83.1",
+    "webpack-cli": "^5.1.1"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.194",
+    "axios": "^1.4.0",
+    "http-status-codes": "^2.2.0",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
+    "mobx": "^6.9.0",
+    "mobx-react-lite": "^3.4.3",
+    "moment": "^2.29.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.11.2"
   }
 }

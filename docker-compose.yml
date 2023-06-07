@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  pascalallen-postgres:
+    build:
+      context: ./etc/postgres
+    container_name: pascalallen-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks:
+      - pascalallen
+
+  pascalallen-go:
+    env_file:
+      - .env
+    build:
+      context: .
+    container_name: pascalallen-go
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_PORT: ${DB_PORT}
+    ports:
+      - "9990:9990"
+    volumes:
+      - .:/app:rw,cached
+    depends_on:
+      - pascalallen-postgres
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      - pascalallen
+
+  pascalallen-adminer:
+    image: adminer:4-standalone
+    container_name: pascalallen-adminer
+    restart: always
+    ports:
+      - "8888:8080"
+    networks:
+      - pascalallen
+
+networks:
+  pascalallen:
+    name: pascalallen
+
+volumes:
+  dbdata:
+    driver: local

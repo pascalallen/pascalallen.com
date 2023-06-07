@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# change to the project root
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit
+
+docker-compose up -d pascalallen-postgres
+
+docker-compose up -d pascalallen-adminer
+
+docker container run \
+    --rm -it \
+    -v "$(pwd)":/app \
+    -w /app \
+    -p 9990:9990 \
+    --name pascalallen-air \
+    --net pascalallen \
+    --env-file .env \
+    cosmtrek/air

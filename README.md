@@ -10,8 +10,8 @@ My personal website.
 
 ## Prerequisites
 
-- [Go](https://go.dev/doc/install)
-- [Yarn](https://classic.yarnpkg.com/en/docs/install)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
 ## Development Environment Setup
 
@@ -27,22 +27,40 @@ cd <projects-parent-directory> && git clone https://github.com/pascalallen/pasca
 cp .env.example .env
 ```
 
-### Compile & Run Main Go Package
+### Bring Up Environment
 
 ```bash
-go run main.go
+bin/up
 ``` 
+
+or (to watch for backend changes)
+
+```bash
+bin/watch
+```
+
+You will find the site running at [http://localhost:9990/](http://localhost:9990/)
 
 ### Install JavaScript Dependencies
 
 ```bash
-cd client && yarn install --frozen-lockfile
+bin/yarn ci
 ```
 
-### Compile TypeScript
+### Compile TypeScript with Webpack
 
 ```bash
-cd client && yarn tsc
+bin/yarn build
 ```
 
-You will find the site running at [http://localhost:9990/](http://localhost:9990/)
+### Watch For Frontend Changes
+
+```bash
+bin/yarn watch
+```
+
+### Take Down Environment
+
+```bash
+bin/down
+```
