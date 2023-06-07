@@ -1,11 +1,11 @@
-import AuthStore from "@stores/AuthStore";
+import AuthStore from '@stores/AuthStore';
 
 class RootStore {
-    public authStore: AuthStore;
+  public authStore: AuthStore;
 
-    constructor() {
-        this.authStore = new AuthStore();
-    }
+  constructor() {
+    this.authStore = new AuthStore();
+  }
 }
 
 export default RootStore;

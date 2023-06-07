@@ -1,4 +1,4 @@
 export type RefreshTokenClaims = {
-    iat: number;
-    exp: number;
+  iat: number;
+  exp: number;
 };

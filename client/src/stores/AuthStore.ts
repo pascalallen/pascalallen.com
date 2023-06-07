@@ -1,35 +1,35 @@
-import {makeAutoObservable} from "mobx";
-import {AuthData} from "@domain/types/AuthData";
+import { makeAutoObservable } from 'mobx';
+import { AuthData } from '@domain/types/AuthData';
 
 class AuthStore {
-    private data?: AuthData;
+  private data?: AuthData;
 
-    constructor() {
-        const serializedData = localStorage.getItem('auth_data');
-        if (serializedData !== null) {
-            this.data = { ...JSON.parse(serializedData) };
-        }
-
-        makeAutoObservable(this);
+  constructor() {
+    const serializedData = localStorage.getItem('auth_data');
+    if (serializedData !== null) {
+      this.data = { ...JSON.parse(serializedData) };
     }
 
-    public setData(data: AuthData): void {
-        this.data = Object.freeze(data);
-        localStorage.setItem('auth_data', JSON.stringify(this.data));
-    }
+    makeAutoObservable(this);
+  }
 
-    public clearData(): void {
-        delete this.data;
-        localStorage.removeItem('auth_data');
-    }
+  public setData(data: AuthData): void {
+    this.data = Object.freeze(data);
+    localStorage.setItem('auth_data', JSON.stringify(this.data));
+  }
 
-    public hasData(): boolean {
-        return this.data !== undefined;
-    }
+  public clearData(): void {
+    delete this.data;
+    localStorage.removeItem('auth_data');
+  }
 
-    public getData(): AuthData | undefined {
-        return this.data;
-    }
+  public hasData(): boolean {
+    return this.data !== undefined;
+  }
+
+  public getData(): AuthData | undefined {
+    return this.data;
+  }
 }
 
 export default AuthStore;
