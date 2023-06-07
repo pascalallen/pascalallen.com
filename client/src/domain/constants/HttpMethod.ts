@@ -5,9 +5,9 @@ export const DELETE = 'DELETE';
 export const PUT = 'PUT';
 
 export default Object.freeze({
-    GET,
-    POST,
-    PATCH,
-    DELETE,
-    PUT
+  GET,
+  POST,
+  PATCH,
+  DELETE,
+  PUT
 });

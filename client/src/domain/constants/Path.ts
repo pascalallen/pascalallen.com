@@ -1,9 +1,9 @@
-const INDEX: string = '/';
-const LOGIN: string = '/login';
-const FORBIDDEN: string = '/forbidden';
+const INDEX = '/';
+const LOGIN = '/login';
+const FORBIDDEN = '/forbidden';
 
 export default Object.freeze({
-    INDEX,
-    LOGIN,
-    FORBIDDEN
+  INDEX,
+  LOGIN,
+  FORBIDDEN
 });
