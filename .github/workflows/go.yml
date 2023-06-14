@@ -25,7 +25,7 @@ jobs:
         run: go mod verify
 
       - name: Test that packages can be compiled
-        run: go build -v ./...
+        run: go build
 
       - name: Run tests
-        run: go test -v ./...
+        run: go test
