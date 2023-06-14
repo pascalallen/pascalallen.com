@@ -18,8 +18,14 @@ jobs:
         with:
           go-version: 1.x
 
-      - name: Build
-        run: go build -v ./...
+      - name: Test that module dependencies can be installed
+        run: go mod download
 
-      - name: Test
-        run: go test -v ./...
+      - name: Test that dependencies have not been modified since being downloaded
+        run: go mod verify
+
+      - name: Test that packages can be compiled
+        run: go build
+
+      - name: Run tests
+        run: go test

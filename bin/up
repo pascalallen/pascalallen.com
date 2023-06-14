@@ -4,16 +4,6 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"/.. || exit
 
-function shutdown() {
-  echo "################################################################################"
-  echo "# Shutting down                                                                #"
-  echo "################################################################################"
-
-  "$DIR"/down
-}
-
-trap "shutdown" SIGINT
-
 docker container run \
   --rm -it \
   -v "$(pwd)":/app \

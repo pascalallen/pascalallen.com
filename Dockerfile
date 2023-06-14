@@ -4,15 +4,14 @@ LABEL org.opencontainers.image.source=https://github.com/pascalallen/pascalallen
 LABEL org.opencontainers.image.description="Container image for pascalallen.com"
 LABEL org.opencontainers.image.licenses=MIT
 
+RUN mkdir /app
+
+ADD . /app
+
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download && go mod verify
-
-COPY . ./
-
 COPY wait-for-it.sh /usr/bin/wait-for-it.sh
+
 RUN chmod +x /usr/bin/wait-for-it.sh
 
 RUN go build -o /pascalallen
