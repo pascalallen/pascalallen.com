@@ -41,6 +41,17 @@ const IndexPage = (): ReactElement => {
         <h2>Publications</h2>
         <p>
           <a
+            href="https://medium.com/@pascal.allen88/how-to-build-a-containerized-web-app-in-go-73f42619a193"
+            target="_blank"
+            rel="noreferrer">
+            How To: Build a Containerized Web App In Go
+          </a>
+          <br />
+          This publication is meant to serve as a very basic set of instructions for spinning up a simple Go web
+          application with Docker.
+        </p>
+        <p>
+          <a
             href="https://medium.com/@pascal.allen88/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
             target="_blank"
             rel="noreferrer">
