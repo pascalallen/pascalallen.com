@@ -10,3 +10,5 @@ spec:
       targetPort: 9990
   selector:
     name: go
+
+# 8. kubectl apply -f service.yml
