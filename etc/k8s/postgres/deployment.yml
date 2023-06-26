@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: postgres
+  template:
+    metadata:
+      labels:
+        name: postgres
+    spec:
+      containers:
+        - name: pascalallen-postgres
+          image: pascalallen/pascalallen-postgres # TODO: Verify generated image name
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: dbdata
+      volumes:
+        - name: dbdata
+          persistentVolumeClaim:
+            claimName: postgres
+
+# 4. kubectl apply -f deployment.yml

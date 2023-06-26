@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      name: go
+  template:
+    metadata:
+      labels:
+        name: go
+    spec:
+      containers:
+        - name: pascalallen-go
+          image: pascalallen/pascalallen-go # TODO: Verify generated image name
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9990
