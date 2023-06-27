@@ -7,5 +7,3 @@ metadata:
 data:
   POSTGRES_HOST: 'pascalallen-postgres'
   POSTGRES_PORT: '5432'
-
-# 6. kubectl apply -f configmap.yml

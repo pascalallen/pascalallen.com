@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: pascalallen-postgres
-          image: pascalallen/pascalallen-postgres # TODO: Verify generated image name
+          image: pascalallen/pascalallen-postgres
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
@@ -28,5 +28,3 @@ spec:
         - name: dbdata
           persistentVolumeClaim:
             claimName: postgres
-
-# 4. kubectl apply -f deployment.yml

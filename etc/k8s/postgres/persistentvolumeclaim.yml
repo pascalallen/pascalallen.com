@@ -11,5 +11,3 @@ spec:
   resources:
     requests:
       storage: 5Gi
-
-# 3. kubectl apply -f persistentvolumeclaim.yml

@@ -13,5 +13,3 @@ spec:
     - ReadWriteMany
   hostPath:
     path: "/var/lib/postgresql/data"
-
-# 2. kubectl apply -f persistentvolume.yml

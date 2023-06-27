@@ -6,9 +6,7 @@ spec:
   type: LoadBalancer
   ports:
     - name: http
-      port: 80
+      port: 9990
       targetPort: 9990
   selector:
     name: go
-
-# 8. kubectl apply -f service.yml

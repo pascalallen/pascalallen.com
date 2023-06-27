@@ -8,5 +8,3 @@ data:
   POSTGRES_DB: 'pascalallen'
   POSTGRES_USER: 'pascalallen'
   POSTGRES_PASSWORD: 'pa$$w0rd'
-
-# 1. kubectl apply -f configmap.yml

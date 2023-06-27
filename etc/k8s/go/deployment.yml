@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
         - name: pascalallen-go
-          image: pascalallen/pascalallen-go # TODO: Verify generated image name
+          image: pascalallen/pascalallen-go
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9990
           envFrom:
             - configMapRef:
                 name: go
-
-# 7. kubectl apply -f service.yml
+            - secretRef:
+                name: go
