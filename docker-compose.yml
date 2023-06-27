@@ -2,13 +2,11 @@ version: '3.9'
 
 services:
   pascalallen-postgres:
+    env_file:
+      - .env
     build:
       context: ./etc/postgres
     container_name: pascalallen-postgres
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -22,9 +20,6 @@ services:
     build:
       context: .
     container_name: pascalallen-go
-    environment:
-      POSTGRES_HOST: ${DB_HOST}
-      POSTGRES_PORT: ${DB_PORT}
     ports:
       - "9990:9990"
     volumes:

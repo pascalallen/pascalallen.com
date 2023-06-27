@@ -38,7 +38,7 @@ docker push pascalallen/pascalallen-postgres && docker push pascalallen/pascalal
 ### Create Kubernetes Secret from `.env` file
 
 ```bash
-kubectl create secret generic go --from-env-file=.env
+kubectl create secret generic env-vars --from-env-file=.env
 ```
 
 ### Apply Services to Kubernetes Cluster

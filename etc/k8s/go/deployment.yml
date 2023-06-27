@@ -19,7 +19,5 @@ spec:
           ports:
             - containerPort: 9990
           envFrom:
-            - configMapRef:
-                name: go
             - secretRef:
-                name: go
+                name: env-vars

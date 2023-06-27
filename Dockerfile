@@ -18,4 +18,4 @@ RUN go build -o /pascalallen
 
 EXPOSE 9990
 
-ENTRYPOINT /bin/bash /usr/bin/wait-for-it.sh -t 60 $POSTGRES_HOST:$POSTGRES_PORT -s -- /pascalallen
+ENTRYPOINT /bin/bash /usr/bin/wait-for-it.sh -t 60 $DB_HOST:$DB_PORT -s -- /pascalallen
