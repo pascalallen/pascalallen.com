@@ -41,6 +41,17 @@ const IndexPage = (): ReactElement => {
         <h2>Publications</h2>
         <p>
           <a
+            href="https://medium.com/@pascal.allen88/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
+            target="_blank"
+            rel="noreferrer">
+            How To: Compile a WebAssembly Module From Go
+          </a>
+          <br />
+          This publication is meant to serve as a very basic set of instructions for compiling a WebAssembly module from
+          Go.
+        </p>
+        <p>
+          <a
             href="https://medium.com/@pascal.allen88/how-to-deploy-to-kubernetes-76c42e5ea28c"
             target="_blank"
             rel="noreferrer">
