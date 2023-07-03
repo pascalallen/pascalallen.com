@@ -47,8 +47,7 @@ const IndexPage = (): ReactElement => {
             How To: Compile a WebAssembly Module From Go
           </a>
           <br />
-          This publication is meant to serve as a very basic set of instructions for compiling a WebAssembly module from
-          Go.
+          Learn how to compile a WebAssembly module from Go.
         </p>
         <p>
           <a
@@ -58,7 +57,7 @@ const IndexPage = (): ReactElement => {
             How To: Deploy to Kubernetes
           </a>
           <br />
-          This publication is meant to serve as a very basic set of instructions for deploying to a Kubernetes cluster.
+          Learn how to deploy to Kubernetes.
         </p>
         <p>
           <a
@@ -68,8 +67,7 @@ const IndexPage = (): ReactElement => {
             How To: Build a Containerized Web App In Go
           </a>
           <br />
-          This publication is meant to serve as a very basic set of instructions for spinning up a simple Go web
-          application with Docker.
+          Learn how to build a containerized web app with Docker and Go.
         </p>
         <p>
           <a
