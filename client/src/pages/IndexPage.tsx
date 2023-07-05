@@ -41,6 +41,17 @@ const IndexPage = (): ReactElement => {
         <h2>Publications</h2>
         <p>
           <a
+            href="https://medium.com/@pascal.allen88/jwt-authentication-with-go-242215a9b4f8"
+            target="_blank"
+            rel="noreferrer">
+            JWT Authentication With Go
+          </a>
+          <br />
+          This publication is a walk-through of creating, validating, and refreshing JSON Web Tokens using the HMAC
+          signing method with Go.
+        </p>
+        <p>
+          <a
             href="https://medium.com/@pascal.allen88/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
             target="_blank"
             rel="noreferrer">
