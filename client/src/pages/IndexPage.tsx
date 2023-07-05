@@ -46,9 +46,8 @@ const IndexPage = (): ReactElement => {
             rel="noreferrer">
             JWT Authentication With Go
           </a>
-          <br />
-          This publication is a walk-through of creating, validating, and refreshing JSON Web Tokens using the HMAC
-          signing method with Go.
+          <br />A walk-through of creating, validating, and refreshing JSON Web Tokens using the HMAC signing method
+          with Go.
         </p>
         <p>
           <a
