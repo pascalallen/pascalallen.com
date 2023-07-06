@@ -41,7 +41,7 @@ const IndexPage = (): ReactElement => {
         <h2>Publications</h2>
         <p>
           <a
-            href="https://medium.com/@pascal.allen88/jwt-authentication-with-go-242215a9b4f8"
+            href="https://pascalallen.medium.com/jwt-authentication-with-go-242215a9b4f8"
             target="_blank"
             rel="noreferrer">
             JWT Authentication With Go
@@ -51,7 +51,7 @@ const IndexPage = (): ReactElement => {
         </p>
         <p>
           <a
-            href="https://medium.com/@pascal.allen88/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
+            href="https://pascalallen.medium.com/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
             target="_blank"
             rel="noreferrer">
             How To: Compile a WebAssembly Module From Go
@@ -61,7 +61,7 @@ const IndexPage = (): ReactElement => {
         </p>
         <p>
           <a
-            href="https://medium.com/@pascal.allen88/how-to-deploy-to-kubernetes-76c42e5ea28c"
+            href="https://pascalallen.medium.com/how-to-deploy-to-kubernetes-76c42e5ea28c"
             target="_blank"
             rel="noreferrer">
             How To: Deploy to Kubernetes
@@ -71,7 +71,7 @@ const IndexPage = (): ReactElement => {
         </p>
         <p>
           <a
-            href="https://medium.com/@pascal.allen88/how-to-build-a-containerized-web-app-in-go-73f42619a193"
+            href="https://pascalallen.medium.com/how-to-build-a-containerized-web-app-in-go-73f42619a193"
             target="_blank"
             rel="noreferrer">
             How To: Build a Containerized Web App In Go
@@ -81,7 +81,7 @@ const IndexPage = (): ReactElement => {
         </p>
         <p>
           <a
-            href="https://medium.com/@pascal.allen88/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
+            href="https://pascalallen.medium.com/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
             target="_blank"
             rel="noreferrer">
             Releasing Packages to GitHub and the npm Registry
@@ -91,7 +91,7 @@ const IndexPage = (): ReactElement => {
           the npm Registry.
         </p>
         <p>
-          <a href="https://medium.com/@pascal.allen88/scrum-simplified-880113ed0db" target="_blank" rel="noreferrer">
+          <a href="https://pascalallen.medium.com/scrum-simplified-880113ed0db" target="_blank" rel="noreferrer">
             Scrum Simplified
           </a>
           <br />A simple Scrum infrastructure, with insights.
