@@ -1,5 +1,6 @@
 # client
 /client/node_modules/
+/client/yarn-error.log
 /public/assets/
 
 # misc

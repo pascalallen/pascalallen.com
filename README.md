@@ -30,7 +30,7 @@ cp .env.example .env
 ### Bring Up Environment
 
 ```bash
-bin/up
+bin/up <prod>
 ``` 
 
 or (to watch for backend changes)

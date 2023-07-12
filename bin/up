@@ -10,4 +10,14 @@ docker container run \
   -w /app/client \
   node:lts yarn install --frozen-lockfile
 
-docker-compose build && docker-compose up -d "$@" && docker-compose logs -f
+if [ "$1" == "prod" ]
+then
+    # if prod, only deploy services in docker-compose.yml file
+    docker compose -f docker-compose.yml build \
+      && docker compose -f docker-compose.yml up -d "$@" \
+      && docker compose -f docker-compose.yml logs -f
+else
+    docker compose build \
+      && docker compose up -d "$@" \
+      && docker compose logs -f
+fi

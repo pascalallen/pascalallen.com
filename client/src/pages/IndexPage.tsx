@@ -1,4 +1,10 @@
 import React, { ReactElement, useEffect, useState } from 'react';
+import DockerLogo from '@assets/images/docker-logo.png';
+import GoLogo from '@assets/images/go-logo.png';
+import K8sLogo from '@assets/images/k8s-logo.png';
+import ReactLogo from '@assets/images/react-logo.png';
+import TsLogo from '@assets/images/ts-logo.png';
+import WebpackLogo from '@assets/images/webpack-logo.png';
 
 const gitHubUrl = 'https://api.github.com/users/pascalallen/repos?per_page=10&sort=updated_at&direction=desc';
 const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';
@@ -34,7 +40,26 @@ const IndexPage = (): ReactElement => {
       <header className="header">
         <h1>Hello, World!</h1>
         <p>
-          My name is <strong>Pascal Allen</strong>, and I develop software.
+          My name is <strong>Pascal Allen</strong>. I design, develop, and deploy software.
+        </p>
+        <p>
+          This website is:
+          <ul className="website-tech-list">
+            <li>
+              Deployed to <img src={K8sLogo} alt="Kubernetes logo" title="Kubernetes" width={20} />
+            </li>
+            <li>
+              Containerized with <img src={DockerLogo} alt="Docker logo" title="Docker" width={20} />
+            </li>
+            <li>
+              Coded in <img src={GoLogo} alt="Go logo" title="Go" width={20} />,{' '}
+              <img src={ReactLogo} alt="React logo" title="React" width={20} />, and{' '}
+              <img src={TsLogo} alt="TypeScript logo" title="TypeScript" width={20} />
+            </li>
+            <li>
+              And compiled with <img src={WebpackLogo} alt="Webpack logo" title="Webpack" width={20} />
+            </li>
+          </ul>
         </p>
       </header>
       <section className="publications-section">
