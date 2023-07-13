@@ -1,14 +1,11 @@
 .index-page {
-  .header {
-    .website-tech-list {
-      li {
-        align-items: center;
-        display: flex;
-        font-style: oblique;
+  .site-tech-section {
+    .site-tech-list {
+      align-items: center;
+      display: flex;
 
-        img {
-          margin-left: 8px;
-        }
+      .tech-image {
+        margin-right: 1rem;
       }
     }
   }

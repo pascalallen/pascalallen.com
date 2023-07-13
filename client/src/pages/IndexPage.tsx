@@ -42,26 +42,18 @@ const IndexPage = (): ReactElement => {
         <p>
           My name is <strong>Pascal Allen</strong>. I design, develop, and deploy software.
         </p>
-        <p>
-          This website is:
-          <ul className="website-tech-list">
-            <li>
-              Deployed to <img src={K8sLogo} alt="Kubernetes logo" title="Kubernetes" width={20} />
-            </li>
-            <li>
-              Containerized with <img src={DockerLogo} alt="Docker logo" title="Docker" width={20} />
-            </li>
-            <li>
-              Coded in <img src={GoLogo} alt="Go logo" title="Go" width={20} />,{' '}
-              <img src={ReactLogo} alt="React logo" title="React" width={20} />, and{' '}
-              <img src={TsLogo} alt="TypeScript logo" title="TypeScript" width={20} />
-            </li>
-            <li>
-              And compiled with <img src={WebpackLogo} alt="Webpack logo" title="Webpack" width={20} />
-            </li>
-          </ul>
-        </p>
       </header>
+      <section className="site-tech-section">
+        <h2>This Site Runs On</h2>
+        <div className="site-tech-list">
+          <img className="tech-image" src={K8sLogo} alt="Kubernetes logo" title="Kubernetes" width={60} />
+          <img className="tech-image" src={DockerLogo} alt="Docker logo" title="Docker" width={60} />
+          <img className="tech-image" src={GoLogo} alt="Go logo" title="Go" width={60} />
+          <img className="tech-image" src={ReactLogo} alt="React logo" title="React" width={60} />
+          <img className="tech-image" src={TsLogo} alt="TypeScript logo" title="TypeScript" width={60} />
+          <img className="tech-image" src={WebpackLogo} alt="Webpack logo" title="Webpack" width={60} />
+        </div>
+      </section>
       <section className="publications-section">
         <h2>Publications</h2>
         <p>
@@ -154,7 +146,7 @@ const IndexPage = (): ReactElement => {
         </p>
       </section>
       {repos.length > 0 && (
-        <section>
+        <section className="github-section">
           <h2>GitHub</h2>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {repos.map((repo: any, index: number) => (
@@ -170,7 +162,7 @@ const IndexPage = (): ReactElement => {
         </section>
       )}
       {packages.length > 0 && (
-        <section>
+        <section className="npm-section">
           <h2>NPM</h2>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {packages.map((pkg: any, index: number) => (
