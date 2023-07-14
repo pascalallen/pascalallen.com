@@ -3,6 +3,7 @@ import DockerLogo from '@assets/images/docker-logo.png';
 import GoLogo from '@assets/images/go-logo.png';
 import K8sLogo from '@assets/images/k8s-logo.png';
 import ReactLogo from '@assets/images/react-logo.png';
+import SassLogo from '@assets/images/sass-logo.png';
 import TsLogo from '@assets/images/ts-logo.png';
 import WebpackLogo from '@assets/images/webpack-logo.png';
 
@@ -51,6 +52,7 @@ const IndexPage = (): ReactElement => {
           <img className="tech-image" src={GoLogo} alt="Go logo" title="Go" width={60} />
           <img className="tech-image" src={ReactLogo} alt="React logo" title="React" width={60} />
           <img className="tech-image" src={TsLogo} alt="TypeScript logo" title="TypeScript" width={60} />
+          <img className="tech-image" src={SassLogo} alt="Sass logo" title="Sass" width={60} />
           <img className="tech-image" src={WebpackLogo} alt="Webpack logo" title="Webpack" width={60} />
         </div>
       </section>

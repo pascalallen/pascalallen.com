@@ -3,10 +3,8 @@
     .site-tech-list {
       align-items: center;
       display: flex;
-
-      .tech-image {
-        margin-right: 1rem;
-      }
+      flex-wrap: wrap;
+      gap: 10px 20px;
     }
   }
 }
