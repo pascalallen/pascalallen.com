@@ -1,11 +1,14 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import DockerLogo from '@assets/images/docker-logo.png';
-import GoLogo from '@assets/images/go-logo.png';
-import K8sLogo from '@assets/images/k8s-logo.png';
-import ReactLogo from '@assets/images/react-logo.png';
-import SassLogo from '@assets/images/sass-logo.png';
-import TsLogo from '@assets/images/ts-logo.png';
-import WebpackLogo from '@assets/images/webpack-logo.png';
+import DockerLogo from '@assets/images/docker-logo.svg';
+import GoLogo from '@assets/images/go-logo.svg';
+import K8sLogo from '@assets/images/k8s-logo.svg';
+import NginxLogo from '@assets/images/nginx-logo.svg';
+import PostgresLogo from '@assets/images/postgres-logo.svg';
+import ReactLogo from '@assets/images/react-logo.svg';
+import SassLogo from '@assets/images/sass-logo.svg';
+import TsLogo from '@assets/images/ts-logo.svg';
+import UbuntuLogo from '@assets/images/ubuntu-logo.svg';
+import WebpackLogo from '@assets/images/webpack-logo.svg';
 
 const gitHubUrl = 'https://api.github.com/users/pascalallen/repos?per_page=10&sort=updated_at&direction=desc';
 const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';
@@ -47,8 +50,11 @@ const IndexPage = (): ReactElement => {
       <section className="site-tech-section">
         <h2>This Site Runs On</h2>
         <div className="site-tech-list">
+          <img className="tech-image" src={UbuntuLogo} alt="Ubuntu logo" title="Ubuntu" width={60} />
+          <img className="tech-image" src={NginxLogo} alt="Nginx logo" title="Nginx" width={60} />
           <img className="tech-image" src={K8sLogo} alt="Kubernetes logo" title="Kubernetes" width={60} />
           <img className="tech-image" src={DockerLogo} alt="Docker logo" title="Docker" width={60} />
+          <img className="tech-image" src={PostgresLogo} alt="Postgres logo" title="Postgres" width={60} />
           <img className="tech-image" src={GoLogo} alt="Go logo" title="Go" width={60} />
           <img className="tech-image" src={ReactLogo} alt="React logo" title="React" width={60} />
           <img className="tech-image" src={TsLogo} alt="TypeScript logo" title="TypeScript" width={60} />
