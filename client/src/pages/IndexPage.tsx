@@ -66,6 +66,15 @@ const IndexPage = (): ReactElement => {
         <h2>Publications</h2>
         <p>
           <a
+            href="https://pascalallen.medium.com/dispatching-events-with-react-and-typescript-89f80f07635f"
+            target="_blank"
+            rel="noreferrer">
+            Dispatching Events With React and TypeScript
+          </a>
+          <br />A demonstration on how to dispatch and listen to events with React and TypeScript.
+        </p>
+        <p>
+          <a
             href="https://pascalallen.medium.com/jwt-authentication-with-go-242215a9b4f8"
             target="_blank"
             rel="noreferrer">
