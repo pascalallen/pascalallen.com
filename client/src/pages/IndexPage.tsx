@@ -66,6 +66,16 @@ const IndexPage = (): ReactElement => {
         <h2>Publications</h2>
         <p>
           <a
+            href="https://pascalallen.medium.com/streaming-server-sent-events-with-go-8cc1f615d561"
+            target="_blank"
+            rel="noreferrer">
+            Streaming Server-Sent Events With Go
+          </a>
+          <br />
+          This publication demonstrates how to stream server-sent events over HTTP with Go.
+        </p>
+        <p>
+          <a
             href="https://pascalallen.medium.com/dispatching-events-with-react-and-typescript-89f80f07635f"
             target="_blank"
             rel="noreferrer">
