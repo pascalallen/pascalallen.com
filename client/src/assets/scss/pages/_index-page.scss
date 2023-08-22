@@ -1,8 +1,112 @@
 .index-page {
-  .site-tech-section {
-    .site-tech-list {
+  .navbar-container {
+    @media (max-width: $sm) {
+      display: flex;
+      justify-content: space-between;
+      left: 8px;
+      position: fixed;
+      right: 8px;
+      top: 8px;
+    }
+
+    .navbar {
       align-items: center;
       display: flex;
+      justify-content: space-between;
+
+      &.navbar-mobile-open {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 25px;
+      }
+
+      .section-links, .social-links {
+        display: flex;
+        gap: 25px;
+
+        @media (max-width: $sm) {
+          display: none;
+          flex-direction: column;
+        }
+
+        &.d-flex {
+          display: flex;
+        }
+
+        i {
+          font-size: 22px;
+        }
+      }
+    }
+
+    .hamburger {
+      display: none;
+
+      i {
+        font-size: 22px;
+      }
+
+      @media (max-width: $sm) {
+        display: block;
+      }
+    }
+  }
+
+  header, section {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: center;
+
+    &.header {
+      background: url("@assets/images/framed-nature.svg") no-repeat left;
+      background-size: 125%;
+
+      @media (max-width: $sm) {
+        background-position: center;
+        background-size: 60rem;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        margin-top: 0;
+      }
+
+      p {
+        font-size: x-large;
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+    }
+
+    &.npm-section {
+      background: url("@assets/images/mountains.svg") no-repeat right;
+
+      @media (max-width: $sm) {
+        background-position: center;
+        background-size: 50rem;
+      }
+    }
+
+    h2 {
+      a {
+        display: none;
+      }
+
+      &:hover {
+        a {
+          display: inline-flex;
+        }
+      }
+    }
+
+    .technology-list {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
       flex-wrap: wrap;
       gap: 10px 20px;
     }

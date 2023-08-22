@@ -1,1 +1,21 @@
+@import 'settings/variables';
+
+body {
+  background-color: $malachite;
+  color: $alabaster;
+  font-family: Helvetica, serif;
+  text-transform: uppercase;
+
+  a {
+    color: $navy;
+    font-weight: bold;
+    text-decoration: none;
+
+    &:hover {
+      color: $alabaster;
+    }
+  }
+}
+
+@import 'components/footer';
 @import 'pages/index-page';

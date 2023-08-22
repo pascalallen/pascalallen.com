@@ -1,0 +1,32 @@
+.footer {
+  align-items: center;
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+
+  p, a {
+    display: none;
+  }
+
+  @media (min-width: $xs) {
+    .copyright-mobile {
+      display: flex;
+    }
+  }
+
+  @media (min-width: $sm) {
+    a {
+      display: flex;
+    }
+  }
+
+  @media (min-width: $md) {
+    .copyright-mobile {
+      display: none;
+    }
+
+    .copyright-desktop {
+      display: flex;
+    }
+  }
+}

@@ -20,7 +20,7 @@ module.exports = {
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource'
+        type: 'asset/inline'
       },
       {
         test: /\.s[ac]ss$/i,
@@ -39,7 +39,7 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.scss'],
     alias: {
       '@assets': path.resolve(__dirname, 'src/assets'),
       '@domain': path.resolve(__dirname, 'src/domain'),
