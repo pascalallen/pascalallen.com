@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from '@routes/routes';
 import { storesInstance, StoresProvider } from '@stores/Stores';
 import '@assets/scss/app.scss';
@@ -19,7 +19,7 @@ const App = (): ReactElement => {
           <Helmet>
             <title>Pascal Allen</title>
             <meta name="robots" content="index, follow" />
-            <link rel="canonical" href="https://pascallen.com/" />
+            <link rel="canonical" href="https://pascalallen.com/" />
           </Helmet>
           <RouterProvider router={createBrowserRouter(routes)} />
         </HelmetProvider>
