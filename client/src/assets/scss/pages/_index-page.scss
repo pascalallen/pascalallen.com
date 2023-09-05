@@ -1,4 +1,7 @@
 .index-page {
+  display: flex;
+  flex-direction: column;
+
   .navbar-container {
     @media (max-width: $sm) {
       display: flex;
@@ -55,7 +58,6 @@
   header, section {
     align-items: center;
     display: flex;
-    flex-direction: column;
     height: 100vh;
     justify-content: center;
 
@@ -82,33 +84,35 @@
       }
     }
 
-    &.npm-section {
-      background: url("@assets/images/mountains.svg") no-repeat right;
+    &:not(.header) {
+      margin: auto;
+      max-width: 50em;
 
-      @media (max-width: $sm) {
-        background-position: center;
-        background-size: 50rem;
-      }
-    }
-
-    h2 {
-      a {
-        display: none;
-      }
-
-      &:hover {
+      h2 {
         a {
-          display: inline-flex;
+          display: none;
+        }
+
+        &:hover {
+          a {
+            display: inline-flex;
+          }
         }
       }
-    }
 
-    .technology-list {
-      align-items: center;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 10px 20px;
+      &.technology-section {
+        .technology-list {
+          align-items: center;
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 10px 20px;
+        }
+      }
+
+      &.npm-section {
+        background: url("@assets/images/mountains.svg") no-repeat center;
+      }
     }
   }
 }

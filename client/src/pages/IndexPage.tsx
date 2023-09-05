@@ -144,7 +144,7 @@ const IndexPage = (): ReactElement => {
           <p>Software Developer</p>
         </div>
       </header>
-      <section id="technology" className="site-tech-section">
+      <section id="technology" className="technology-section">
         <div>
           <h2>
             This Site Runs On{' '}
