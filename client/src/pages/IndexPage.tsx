@@ -11,7 +11,7 @@ import SassLogo from '@assets/images/sass-logo.svg';
 import TsLogo from '@assets/images/ts-logo.svg';
 import UbuntuLogo from '@assets/images/ubuntu-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
-import Footer from '../components/Footer';
+import Footer from '@components/Footer';
 
 const gitHubUrl = 'https://api.github.com/users/pascalallen/repos?per_page=10&sort=updated_at&direction=desc';
 const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';

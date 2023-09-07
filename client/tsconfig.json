@@ -17,6 +17,9 @@
             "@assets/*": [
                 "assets/*"
             ],
+            "@components/*": [
+                "components/*"
+            ],
             "@domain/*": [
                 "domain/*"
             ],
