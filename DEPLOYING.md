@@ -41,6 +41,33 @@ docker push pascalallen/pascalallen-postgres && docker push pascalallen/pascalal
 kubectl create secret generic env-vars --from-env-file=.env
 ```
 
+TLS work in progress
+https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets
+
+### Generate CA private key using OpenSSl
+
+```bash
+openssl genrsa -out ca.key 2048
+```
+
+### Generate a self-signed certificate from the private key using OpenSSL
+
+```bash
+openssl req -x509 \
+  -new -nodes  \
+  -days 365 \
+  -key ca.key \
+  -out ca.crt \
+  -subj "/CN=localhost"
+```
+
+### Create Kubernetes Secret for TLS (uses DER key and cert)
+
+```bash
+kubectl create secret tls go-tls --key=ca.key --cert=ca.crt
+```
+
 ### Apply Services to Kubernetes Cluster
 
 ```bash

@@ -23,7 +23,7 @@ services:
     ports:
       - "9990:9990"
     volumes:
-      - .:/app:rw,cached
+      - .:/app:rw
     depends_on:
       - pascalallen-postgres
     deploy:

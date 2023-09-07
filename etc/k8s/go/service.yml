@@ -5,8 +5,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - name: http
-      port: 9990
+    - port: 80
       targetPort: 9990
   selector:
     name: go
