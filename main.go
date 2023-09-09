@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	"github.com/pascalallen/pascalallen.com/database"
 	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
@@ -71,12 +70,7 @@ func main() {
 		}
 	}
 
-	if os.Getenv("APP_ENV") == "production" {
-		log.Fatalf("error running HTTP server: %s\n", autotls.Run(router, "pascalallen.com"))
-		return
-	}
-
-	log.Fatalf("error running HTTP server: %s\n", router.Run(":80"))
+	log.Fatalf("error running HTTP server: %s\n", router.Run(":9990"))
 }
 
 func migrate(unitOfWork *gorm.DB) {

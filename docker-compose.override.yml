@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  pascalallen-adminer:
+    image: adminer:4-standalone
+    container_name: pascalallen-adminer
+    restart: always
+    ports:
+      - "8888:8080"
+    networks:
+      - pascalallen

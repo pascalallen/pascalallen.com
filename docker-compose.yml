@@ -19,10 +19,9 @@ services:
       - .env
     build:
       context: .
-      dockerfile: Dockerfile
     container_name: pascalallen-go
     ports:
-      - "80:80"
+      - "9990:9990"
     volumes:
       - .:/app:rw
     depends_on:
@@ -30,17 +29,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    networks:
-      pascalallen:
-        aliases:
-          - local.pascalallen.com
-
-  pascalallen-adminer:
-    image: adminer:4-standalone
-    container_name: pascalallen-adminer
-    restart: always
-    ports:
-      - "8888:8080"
     networks:
       - pascalallen
 

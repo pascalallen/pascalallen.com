@@ -6,11 +6,12 @@ cd "$DIR"/.. || exit
 
 if [ "$1" == "prod" ]
 then
-    docker compose -f docker-compose.production.yml build \
-      && docker compose -f docker-compose.production.yml up -d \
-      && docker compose -f docker-compose.production.yml logs -f
-else
+    # if prod, only deploy services in docker-compose.yml file
     docker compose -f docker-compose.yml build \
       && docker compose -f docker-compose.yml up -d \
       && docker compose -f docker-compose.yml logs -f
+else
+    docker compose -f build \
+      && docker compose -f up -d \
+      && docker compose -f logs -f
 fi

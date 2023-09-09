@@ -21,14 +21,6 @@ My personal website.
 cd <projects-parent-directory> && git clone https://github.com/pascalallen/pascalallen.com.git
 ```
 
-### Edit Hosts File
-
-Add the following entry to your `/etc/hosts` file:
-
-```bash
-127.0.0.1       local.pascalallen.com
-```
-
 ### Copy & Modify `.env` File
 
 ```bash
@@ -47,7 +39,7 @@ or (to watch for backend changes)
 bin/watch
 ```
 
-You will find the site running at [http://local.pascalallen.com/](http://local.pascalallen.com/)
+You will find the site running at [http://localhost:9990/](http://localhost:9990/)
 
 ### Install JavaScript Dependencies
 
