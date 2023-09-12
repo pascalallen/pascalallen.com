@@ -16,4 +16,5 @@ docker container run \
     --name pascalallen-air \
     --net pascalallen \
     --env-file .env \
-    cosmtrek/air
+    cosmtrek/air \
+    -build.exclude_dir "client" "tmp"

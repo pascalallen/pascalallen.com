@@ -110,8 +110,71 @@
         }
       }
 
+      &.publications-section {
+        .background-circles {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          opacity: 40%;
+          z-index: -1;
+
+          $bgCircleColors:
+            1 $navy 20rem,
+            2 $emerald 18rem,
+            3 $malachite 16rem,
+            4 $teal 14rem,
+            5 $alabaster 12rem,
+            6 $teal 10rem,
+            7 $malachite 8rem,
+            8 $emerald 6rem,
+            9 $navy 4rem;
+
+          @each $index, $color, $size in $bgCircleColors {
+            div:nth-child(9n + #{$index}) {
+              background-color: transparent;
+              border: 1rem $color solid;
+              border-radius: 50%;
+              height: $size;
+              position: absolute;
+              width: $size;
+            }
+          }
+        }
+      }
+
       &.npm-section {
         background: url("@assets/images/mountains.svg") no-repeat center;
+      }
+
+      &.github-section {
+        .background-rectangles {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          opacity: 40%;
+          z-index: -1;
+
+          $bgTriangleColors:
+            1 $navy 20rem 25rem,
+            2 $emerald 18rem 23rem,
+            3 $malachite 16rem 21rem,
+            4 $teal 14rem 19rem,
+            5 $alabaster 12rem 17rem,
+            6 $teal 10rem 15rem,
+            7 $malachite 8rem 13rem,
+            8 $emerald 6rem 11rem,
+            9 $navy 4rem 9rem;
+
+          @each $index, $color, $height, $width in $bgTriangleColors {
+            div:nth-child(9n + #{$index}) {
+              background-color: transparent;
+              border: 1rem $color solid;
+              height: $height;
+              position: absolute;
+              width: $width;
+            }
+          }
+        }
       }
     }
   }

@@ -11,7 +11,7 @@ then
       && docker compose -f docker-compose.yml up -d \
       && docker compose -f docker-compose.yml logs -f
 else
-    docker compose -f build \
-      && docker compose -f up -d \
-      && docker compose -f logs -f
+    docker compose build \
+      && docker compose up -d \
+      && docker compose logs -f
 fi

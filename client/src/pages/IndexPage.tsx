@@ -1,6 +1,7 @@
 import React, { MouseEvent, ReactElement, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router';
+import env, { EnvKey } from '@utilities/env';
 import DockerLogo from '@assets/images/docker-logo.svg';
 import GoLogo from '@assets/images/go-logo.svg';
 import K8sLogo from '@assets/images/k8s-logo.svg';
@@ -39,7 +40,7 @@ const IndexPage = (): ReactElement => {
   const socialLinks: HTMLElement | null = document.getElementById('social-links');
 
   useEffect(() => {
-    fetch(gitHubUrl)
+    fetch(gitHubUrl, { headers: { Authorization: `token ${env(EnvKey.GITHUB_TOKEN)}` } })
       .then(response => response.json())
       .then(data => setRepos(data));
   }, []);
@@ -167,6 +168,17 @@ const IndexPage = (): ReactElement => {
         </div>
       </section>
       <section id="publications" className="publications-section">
+        <div id="background-circles" className="background-circles">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
         <div>
           <h2>
             Publications{' '}
@@ -292,6 +304,17 @@ const IndexPage = (): ReactElement => {
       </section>
       {repos.length > 0 && (
         <section id="github" className="github-section">
+          <div id="background-rectangles" className="background-rectangles">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
           <div>
             <h2>
               GitHub{' '}
