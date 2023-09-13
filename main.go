@@ -44,7 +44,11 @@ func main() {
 
 	envBytes, _ := json.Marshal(env)
 
+	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
+	if err := router.SetTrustedProxies(nil); err != nil {
+		log.Fatal(err)
+	}
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/public", "./public")
 	router.NoRoute(func(c *gin.Context) {
