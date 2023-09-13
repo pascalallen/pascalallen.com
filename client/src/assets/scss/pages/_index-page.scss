@@ -132,7 +132,7 @@
           @each $index, $color, $size in $bgCircleColors {
             div:nth-child(9n + #{$index}) {
               background-color: transparent;
-              border: 1rem $color solid;
+              border: 3px $color solid;
               border-radius: 50%;
               height: $size;
               position: absolute;
@@ -168,7 +168,7 @@
           @each $index, $color, $height, $width in $bgTriangleColors {
             div:nth-child(9n + #{$index}) {
               background-color: transparent;
-              border: 1rem $color solid;
+              border: 3px $color solid;
               height: $height;
               position: absolute;
               width: $width;

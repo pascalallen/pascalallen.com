@@ -169,15 +169,15 @@ const IndexPage = (): ReactElement => {
       </section>
       <section id="publications" className="publications-section">
         <div id="background-circles" className="background-circles">
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
         </div>
         <div>
           <h2>
@@ -186,6 +186,16 @@ const IndexPage = (): ReactElement => {
               #
             </a>
           </h2>
+          <p>
+            <a
+              href="https://pascalallen.medium.com/developing-a-framework-for-any-project-9cf7dac82ffe"
+              target="_blank"
+              rel="noreferrer">
+              Developing a Framework for Any Project
+            </a>
+            <br />A resource for designing and developing a product that can be easily maintained and extended by future
+            software developers and domain experts.
+          </p>
           <p>
             <a
               href="https://pascalallen.medium.com/streaming-server-sent-events-with-go-8cc1f615d561"
@@ -305,15 +315,15 @@ const IndexPage = (): ReactElement => {
       {repos.length > 0 && (
         <section id="github" className="github-section">
           <div id="background-rectangles" className="background-rectangles">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
           </div>
           <div>
             <h2>
