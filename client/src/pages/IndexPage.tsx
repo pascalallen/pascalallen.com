@@ -104,6 +104,7 @@ const IndexPage = (): ReactElement => {
     <div className="index-page">
       <Helmet>
         <title>Pascal Allen - Home</title>
+        <meta name="description" content="Welcome to the home page for pascalallen.com" />
       </Helmet>
       <div className="navbar-container">
         <div id="navbar" className="navbar">

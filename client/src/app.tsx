@@ -18,6 +18,7 @@ const App = (): ReactElement => {
         <HelmetProvider>
           <Helmet>
             <title>Pascal Allen</title>
+            <meta name="description" content="Software Developer" />
             <meta name="robots" content="index, follow" />
             <link rel="canonical" href="https://pascalallen.com/" />
           </Helmet>
