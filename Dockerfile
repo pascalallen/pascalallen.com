@@ -4,17 +4,17 @@ LABEL org.opencontainers.image.source=https://github.com/pascalallen/pascalallen
 LABEL org.opencontainers.image.description="Container image for pascalallen.com"
 LABEL org.opencontainers.image.licenses=MIT
 
-RUN mkdir /app
+WORKDIR /app
 
 ADD . /app
-
-WORKDIR /app
 
 COPY wait-for-it.sh /usr/bin/wait-for-it.sh
 
 RUN chmod +x /usr/bin/wait-for-it.sh
 
-RUN go build -o /pascalallen
+ENV GOCACHE=/root/.cache/go-build
+
+RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux go build -o /pascalallen
 
 EXPOSE 9990
 
