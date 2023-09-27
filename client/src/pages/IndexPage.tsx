@@ -189,6 +189,16 @@ const IndexPage = (): ReactElement => {
           </h2>
           <p>
             <a
+              href="https://pascalallen.medium.com/how-to-build-a-grpc-server-in-go-943f337c4e05"
+              target="_blank"
+              rel="noreferrer">
+              How To: Build a gRPC Server In Go
+            </a>
+            <br />
+            Learn how to build a gRPC server and client in Go.
+          </p>
+          <p>
+            <a
               href="https://pascalallen.medium.com/developing-a-framework-for-any-project-9cf7dac82ffe"
               target="_blank"
               rel="noreferrer">
