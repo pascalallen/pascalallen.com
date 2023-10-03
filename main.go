@@ -20,6 +20,7 @@ import (
 var env = map[string]string{
 	"APP_BASE_URL": os.Getenv("APP_BASE_URL"),
 	"GITHUB_TOKEN": os.Getenv("GITHUB_TOKEN"),
+	"SLACK_DM_URL": os.Getenv("SLACK_DM_URL"),
 }
 
 func main() {

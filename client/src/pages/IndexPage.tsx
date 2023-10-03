@@ -1,4 +1,5 @@
 import React, { MouseEvent, ReactElement, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router';
 import env, { EnvKey } from '@utilities/env';
@@ -43,12 +44,16 @@ const IndexPage = (): ReactElement => {
     fetch(gitHubUrl, { headers: { Authorization: `token ${env(EnvKey.GITHUB_TOKEN)}` } })
       .then(response => response.json())
       .then(data => setRepos(data));
-  }, []);
 
-  useEffect(() => {
     fetch(npmUrl)
       .then(response => response.json())
       .then(data => setPackages(data.objects));
+
+    const user = {
+      language: window.navigator.language,
+      user_agent: window.navigator.userAgent
+    };
+    axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
   }, []);
 
   const scrollToLocation = (event?: MouseEvent) => {
