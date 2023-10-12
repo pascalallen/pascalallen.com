@@ -15,7 +15,7 @@ spec:
       containers:
         - name: pascalallen-go
           image: pascalallen/pascalallen-go
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 9990
           envFrom:
