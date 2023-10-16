@@ -49,11 +49,13 @@ const IndexPage = (): ReactElement => {
       .then(response => response.json())
       .then(data => setPackages(data.objects));
 
-    const user = {
-      language: window.navigator.language,
-      user_agent: window.navigator.userAgent
-    };
-    axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
+    if (`${env(EnvKey.APP_ENV)}` === 'prod' || `${env(EnvKey.APP_ENV)}` === 'production') {
+      const user = {
+        language: window.navigator.language,
+        user_agent: window.navigator.userAgent
+      };
+      axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
+    }
   }, []);
 
   const scrollToLocation = (event?: MouseEvent) => {
@@ -148,7 +150,7 @@ const IndexPage = (): ReactElement => {
       <header className="header">
         <div>
           <h1>Pascal Allen</h1>
-          <p>Software Developer</p>
+          <p className="glitch">Software Developer</p>
         </div>
       </header>
       <section id="technology" className="technology-section">

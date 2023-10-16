@@ -19,6 +19,7 @@ import (
 
 var env = map[string]string{
 	"APP_BASE_URL": os.Getenv("APP_BASE_URL"),
+	"APP_ENV":      os.Getenv("APP_ENV"),
 	"GITHUB_TOKEN": os.Getenv("GITHUB_TOKEN"),
 	"SLACK_DM_URL": os.Getenv("SLACK_DM_URL"),
 }
