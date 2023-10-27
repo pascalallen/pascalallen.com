@@ -25,7 +25,7 @@ fi
 
 # check docker status
 DOCKER_STATUS="$(docker compose ps --status running --format "{{.Name}}")"
-if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]] && [[ "$DOCKER_STATUS" != *"pascalallen-postgres"* ]]
+if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]] || [[ "$DOCKER_STATUS" != *"pascalallen-postgres"* ]]
 then
   curl -H "Content-type: application/json" \
     --data '{"channel":"D01HKH4B145","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"Deploy *_failed_*."}}]}' \
