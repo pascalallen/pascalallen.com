@@ -4,6 +4,7 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"/.. || exit
 
+# create bash environment variables from .env file
 export "$(grep -v '^#' .env | xargs -d '\n')"
 
 # change to main branch, if needed
@@ -13,7 +14,7 @@ then
   git checkout main -q
 fi
 
-# check git status
+# bring up environment, if changes have been made
 GIT_STATUS="$(git status -s)"
 if [ -n "$GIT_STATUS" ]
 then
@@ -26,7 +27,7 @@ then
     && bin/yarn build
 fi
 
-# check docker status
+# send notification, if services are not running
 DOCKER_STATUS="$(docker compose ps --status running --format "{{.Name}}")"
 if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]] || [[ "$DOCKER_STATUS" != *"pascalallen-postgres"* ]]
 then
