@@ -29,5 +29,5 @@ if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]] || [[ "$DOCKER_STATUS" != *"pasc
 then
   curl -H "Content-type: application/json" \
     --data '{"channel":"D01HKH4B145","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"Deploy *_failed_*."}}]}' \
-    -X POST https://hooks.slack.com/services/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
+    -X POST https://hooks.slack.com/services/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
 fi
