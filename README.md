@@ -62,5 +62,5 @@ bin/yarn watch
 ### Take Down Environment
 
 ```bash
-bin/down
+bin/down <prod>
 ```

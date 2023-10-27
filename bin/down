@@ -4,4 +4,9 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"/.. || exit
 
-docker compose down
+if [ "$1" == "prod" ]
+then
+  docker compose --progress quiet down
+else
+  docker compose down
+fi

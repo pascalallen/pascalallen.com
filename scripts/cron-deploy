@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# change to the project root
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit
+
+BRANCH="$(git branch --show-current)"
+if [ "$BRANCH" != "main" ]
+then
+  git checkout main -q
+fi
+
+STATUS="$(git status -s)"
+if [ "$STATUS" -ne 0 ]
+then
+  git pull \
+    && bin/down prod \
+    && bin/up prod \
+    && bin/yarn ci \
+    && bin/yarn build
+fi
