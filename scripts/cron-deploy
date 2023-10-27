@@ -4,12 +4,14 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"/.. || exit
 
+# change to main branch, if needed
 BRANCH="$(git branch --show-current)"
 if [ "$BRANCH" != "main" ]
 then
   git checkout main -q
 fi
 
+# check git status
 GIT_STATUS="$(git status -s)"
 if [ "$GIT_STATUS" -ne 0 ]
 then
@@ -21,6 +23,7 @@ then
     && bin/yarn build
 fi
 
+# check docker status
 DOCKER_STATUS="$(docker compose ps --status running --format "{{.Name}}")"
 if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]] && [[ "$DOCKER_STATUS" != *"pascalallen-postgres"* ]]
 then
