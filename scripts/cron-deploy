@@ -15,6 +15,7 @@ if [ "$GIT_STATUS" -ne 0 ]
 then
   git pull \
     && bin/down prod \
+    && docker builder prune -a \
     && bin/up prod \
     && bin/yarn ci \
     && bin/yarn build
