@@ -4,6 +4,8 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"/.. || exit
 
+export "$(grep -v '^#' .env | xargs -d '\n')"
+
 # change to main branch, if needed
 BRANCH="$(git branch --show-current)"
 if [ "$BRANCH" != "main" ]
@@ -30,5 +32,5 @@ if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]] || [[ "$DOCKER_STATUS" != *"pasc
 then
   curl -H "Content-type: application/json" \
     --data '{"channel":"D01HKH4B145","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"Deploy *_failed_*."}}]}' \
-    -X POST https://hooks.slack.com/services/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
+    -X POST "$SLACK_DM_URL"
 fi
