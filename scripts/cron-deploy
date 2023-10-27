@@ -13,7 +13,7 @@ fi
 
 # check git status
 GIT_STATUS="$(git status -s)"
-if [ "$GIT_STATUS" -ne 0 ]
+if [ -z "$GIT_STATUS" ]
 then
   git pull \
     && bin/down prod \
