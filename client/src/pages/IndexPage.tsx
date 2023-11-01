@@ -196,6 +196,15 @@ const IndexPage = (): ReactElement => {
           </h2>
           <p>
             <a
+              href="https://pascalallen.medium.com/automate-your-deployments-with-cron-7174ecb9f52f"
+              target="_blank"
+              rel="noreferrer">
+              Automate Your Deployments With Cron
+            </a>
+            <br />A basic set of instructions to automatically deploy your app with cron.
+          </p>
+          <p>
+            <a
               href="https://pascalallen.medium.com/how-to-build-a-grpc-server-in-go-943f337c4e05"
               target="_blank"
               rel="noreferrer">
