@@ -8,7 +8,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/pascalallen/pascalallen.com/domain/auth/user"
 	"github.com/pascalallen/pascalallen.com/http"
-	"github.com/pascalallen/pascalallen.com/service"
+	"github.com/pascalallen/pascalallen.com/service/tokenservice"
 	"time"
 )
 
@@ -60,7 +60,7 @@ func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
 		return
 	}
 
-	userClaims := service.UserClaims{
+	userClaims := tokenservice.UserClaims{
 		Id:    ulid.ULID(u.Id).String(),
 		First: u.FirstName,
 		Last:  u.LastName,
@@ -70,7 +70,7 @@ func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
 		},
 	}
 
-	signedAccessToken, err := service.NewAccessToken(userClaims)
+	signedAccessToken, err := tokenservice.NewAccessToken(userClaims)
 	if err != nil {
 		errorMessage := "error creating access token"
 		http.InternalServerErrorResponse(c, errors.New(errorMessage))
@@ -105,7 +105,7 @@ func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
 		ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 	}
 
-	signedRefreshToken, err := service.NewRefreshToken(refreshClaims)
+	signedRefreshToken, err := tokenservice.NewRefreshToken(refreshClaims)
 	if err != nil {
 		errorMessage := "error creating refresh token"
 		http.InternalServerErrorResponse(c, errors.New(errorMessage))

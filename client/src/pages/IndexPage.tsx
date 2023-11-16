@@ -12,6 +12,7 @@ import ReactLogo from '@assets/images/react-logo.svg';
 import SassLogo from '@assets/images/sass-logo.svg';
 import TsLogo from '@assets/images/ts-logo.svg';
 import UbuntuLogo from '@assets/images/ubuntu-logo.svg';
+import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
 import Footer from '@components/Footer';
 
@@ -108,7 +109,7 @@ const IndexPage = (): ReactElement => {
   };
 
   return (
-    <div className="index-page">
+    <div id="index-page" className="index-page">
       <Helmet>
         <title>Pascal Allen - Home</title>
         <meta name="description" content="Welcome to the home page for pascalallen.com" />
@@ -150,7 +151,9 @@ const IndexPage = (): ReactElement => {
       <header className="header">
         <div>
           <h1>Pascal Allen</h1>
-          <p className="glitch">Software Developer</p>
+          <p id="profession" className="profession">
+            Software Developer
+          </p>
         </div>
       </header>
       <section id="technology" className="technology-section">
@@ -168,6 +171,7 @@ const IndexPage = (): ReactElement => {
             <img className="tech-image" src={DockerLogo} alt="Docker logo" title="Docker" width={60} />
             <img className="tech-image" src={PostgresLogo} alt="Postgres logo" title="Postgres" width={60} />
             <img className="tech-image" src={GoLogo} alt="Go logo" title="Go" width={60} />
+            <img className="tech-image" src={WebAssemblyLogo} alt="WebAssembly logo" title="WebAssembly" width={60} />
             <img className="tech-image" src={ReactLogo} alt="React logo" title="React" width={60} />
             <img className="tech-image" src={TsLogo} alt="TypeScript logo" title="TypeScript" width={60} />
             <img className="tech-image" src={SassLogo} alt="Sass logo" title="Sass" width={60} />

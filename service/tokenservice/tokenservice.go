@@ -1,4 +1,4 @@
-package service
+package tokenservice
 
 import (
 	"github.com/golang-jwt/jwt"

@@ -7,7 +7,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/pascalallen/pascalallen.com/domain/auth/user"
 	"github.com/pascalallen/pascalallen.com/http"
-	"github.com/pascalallen/pascalallen.com/service"
+	"github.com/pascalallen/pascalallen.com/service/tokenservice"
 )
 
 type RefreshTokensRules struct {
@@ -25,8 +25,8 @@ func HandleRefreshTokens(c *gin.Context, userRepository user.UserRepository) {
 		return
 	}
 
-	userClaims := service.ParseAccessToken(request.AccessToken)
-	refreshClaims := service.ParseRefreshToken(request.RefreshToken)
+	userClaims := tokenservice.ParseAccessToken(request.AccessToken)
+	refreshClaims := tokenservice.ParseRefreshToken(request.RefreshToken)
 
 	u, err := userRepository.GetById(ulid.MustParse(userClaims.Id))
 	if u == nil || err != nil {
@@ -38,7 +38,7 @@ func HandleRefreshTokens(c *gin.Context, userRepository user.UserRepository) {
 
 	// refresh token is expired
 	if refreshClaims.Valid() != nil {
-		request.RefreshToken, err = service.NewRefreshToken(*refreshClaims)
+		request.RefreshToken, err = tokenservice.NewRefreshToken(*refreshClaims)
 		if err != nil {
 			errorMessage := "error creating refresh token"
 			http.InternalServerErrorResponse(c, errors.New(errorMessage))
@@ -49,7 +49,7 @@ func HandleRefreshTokens(c *gin.Context, userRepository user.UserRepository) {
 
 	// access token is expired
 	if userClaims.StandardClaims.Valid() != nil && refreshClaims.Valid() == nil {
-		request.AccessToken, err = service.NewAccessToken(*userClaims)
+		request.AccessToken, err = tokenservice.NewAccessToken(*userClaims)
 		if err != nil {
 			errorMessage := "error creating access token"
 			http.InternalServerErrorResponse(c, errors.New(errorMessage))

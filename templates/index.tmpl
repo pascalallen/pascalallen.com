@@ -15,5 +15,13 @@
     <div id="root"></div>
     <input id="script_config" type="hidden" value="{{ .environment }}" />
     <script type="text/javascript" src="../public/assets/app.js"></script>
+    <script src="../public/assets/wasm.js"></script>
+    <script>
+        const go = new Go();
+        WebAssembly.instantiateStreaming(fetch("../public/assets/wasm.wasm"), go.importObject).then((result) => {
+            go.run(result.instance);
+            echo("Hello, World!");
+        });
+    </script>
 </body>
 </html>
