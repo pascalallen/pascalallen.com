@@ -1,6 +1,8 @@
-import React, { FormEvent, ReactElement } from 'react';
+import React, { FormEvent, ReactElement, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router';
 import { useNavigate } from 'react-router-dom';
+import Path from '@domain/constants/Path';
 import useAuth from '@hooks/useAuth';
 
 export type LoginFormValues = {
@@ -12,9 +14,16 @@ type LocationState = { from?: Location };
 
 const LoginPage = (): ReactElement => {
   const authService = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authService.isLoggedIn()) {
+      navigate(Path.TEMP, { replace: true });
+    }
+  }, [authService, navigate]);
+
   const location = useLocation();
   const state: LocationState = location.state as LocationState;
-  const navigate = useNavigate();
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -22,12 +31,15 @@ const LoginPage = (): ReactElement => {
     const emailAddress = formData.get('email_address')?.toString() ?? '';
     const password = formData.get('password')?.toString() ?? '';
     await authService.login({ email_address: emailAddress, password });
-    const from = state?.from?.pathname || '/temp';
+    const from = state?.from?.pathname || Path.TEMP;
     navigate(from, { replace: true });
   };
 
   return (
     <div className="login-page">
+      <Helmet>
+        <title>Pascal Allen - Login</title>
+      </Helmet>
       <header className="header">
         <h1>Login</h1>
       </header>

@@ -28,7 +28,23 @@ body {
   .blink {
     animation: blink 1s step-end infinite;
   }
+
+  form {
+    .form-group {
+      display: flex;
+      flex-direction: column;
+
+      label {
+        font-size: x-small;
+      }
+
+      input {
+        margin-bottom: 1rem;
+      }
+    }
+  }
 }
 
 @import 'components/footer';
 @import 'pages/index-page';
+@import 'pages/login-page';

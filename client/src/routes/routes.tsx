@@ -17,7 +17,7 @@ const routes: RouteObject[] = [
     element: <LoginPage />
   },
   {
-    path: '/temp',
+    path: Path.TEMP,
     element: (
       <RouteElementWrapper>
         <RequiresAuthentication>
