@@ -18,36 +18,38 @@ type RegisterUserRules struct {
 	ConfirmPassword string `form:"confirm_password" json:"confirm_password" binding:"required,eqfield=Password"`
 }
 
-func HandleRegisterUser(c *gin.Context, userRepository user.UserRepository) {
-	var request RegisterUserRules
+func HandleRegisterUser(userRepository user.UserRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var request RegisterUserRules
 
-	if err := c.ShouldBind(&request); err != nil {
-		errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
-		http.BadRequestResponse(c, errors.New(errorMessage))
+		if err := c.ShouldBind(&request); err != nil {
+			errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
+			http.BadRequestResponse(c, errors.New(errorMessage))
+
+			return
+		}
+
+		if u, err := userRepository.GetByEmailAddress(request.EmailAddress); u != nil || err != nil {
+			errorMessage := fmt.Sprint("Something went wrong. If you already have an account, please log in.")
+			http.UnprocessableEntityResponse(c, errors.New(errorMessage))
+
+			return
+		}
+
+		id := ulid.Make()
+		u := user.Register(id, request.FirstName, request.LastName, request.EmailAddress)
+		passwordHash := passwordhash.Create(request.Password)
+		u.SetPasswordHash(passwordHash)
+
+		if err := userRepository.Add(u); err != nil {
+			errorMessage := fmt.Sprintf("Error persisting user: %s", err.Error())
+			http.InternalServerErrorResponse(c, errors.New(errorMessage))
+
+			return
+		}
+
+		http.CreatedResponse(c, u)
 
 		return
 	}
-
-	if u, err := userRepository.GetByEmailAddress(request.EmailAddress); u != nil || err != nil {
-		errorMessage := fmt.Sprint("Something went wrong. If you already have an account, please log in.")
-		http.UnprocessableEntityResponse(c, errors.New(errorMessage))
-
-		return
-	}
-
-	id := ulid.Make()
-	u := user.Register(id, request.FirstName, request.LastName, request.EmailAddress)
-	passwordHash := passwordhash.Create(request.Password)
-	u.SetPasswordHash(passwordHash)
-
-	if err := userRepository.Add(u); err != nil {
-		errorMessage := fmt.Sprintf("Error persisting user: %s", err.Error())
-		http.InternalServerErrorResponse(c, errors.New(errorMessage))
-
-		return
-	}
-
-	http.CreatedResponse(c, u)
-
-	return
 }

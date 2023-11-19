@@ -35,93 +35,95 @@ type ResponseData struct {
 	Permissions  []string `json:"permissions,omitempty"`
 }
 
-func HandleLoginUser(c *gin.Context, userRepository user.UserRepository) {
-	var request LoginUserRules
+func HandleLoginUser(userRepository user.UserRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var request LoginUserRules
 
-	if err := c.ShouldBind(&request); err != nil {
-		errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
-		http.BadRequestResponse(c, errors.New(errorMessage))
+		if err := c.ShouldBind(&request); err != nil {
+			errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
+			http.BadRequestResponse(c, errors.New(errorMessage))
 
-		return
-	}
+			return
+		}
 
-	u, err := userRepository.GetByEmailAddress(request.EmailAddress)
-	if u == nil || err != nil {
-		errorMessage := "invalid credentials"
-		http.UnauthorizedResponse(c, errors.New(errorMessage))
+		u, err := userRepository.GetByEmailAddress(request.EmailAddress)
+		if u == nil || err != nil {
+			errorMessage := "invalid credentials"
+			http.UnauthorizedResponse(c, errors.New(errorMessage))
 
-		return
-	}
+			return
+		}
 
-	if u.PasswordHash.Compare(request.Password) == false {
-		errorMessage := "invalid credentials"
-		http.UnauthorizedResponse(c, errors.New(errorMessage))
+		if u.PasswordHash.Compare(request.Password) == false {
+			errorMessage := "invalid credentials"
+			http.UnauthorizedResponse(c, errors.New(errorMessage))
 
-		return
-	}
+			return
+		}
 
-	userClaims := tokenservice.UserClaims{
-		Id:    ulid.ULID(u.Id).String(),
-		First: u.FirstName,
-		Last:  u.LastName,
-		StandardClaims: jwt.StandardClaims{
+		userClaims := tokenservice.UserClaims{
+			Id:    ulid.ULID(u.Id).String(),
+			First: u.FirstName,
+			Last:  u.LastName,
+			StandardClaims: jwt.StandardClaims{
+				IssuedAt:  time.Now().Unix(),
+				ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
+			},
+		}
+
+		signedAccessToken, err := tokenservice.NewAccessToken(userClaims)
+		if err != nil {
+			errorMessage := "error creating access token"
+			http.InternalServerErrorResponse(c, errors.New(errorMessage))
+
+			return
+		}
+
+		var roles []string
+		for _, r := range u.Roles {
+			roles = append(roles, r.Name)
+		}
+
+		var permissions []string
+		for _, p := range u.Permissions() {
+			permissions = append(permissions, p.Name)
+		}
+
+		userData := UserData{
+			Id:           ulid.ULID(u.Id).String(),
+			FirstName:    u.FirstName,
+			LastName:     u.LastName,
+			EmailAddress: u.EmailAddress,
+			CreatedAt:    u.CreatedAt.String(),
+			ModifiedAt:   u.ModifiedAt.String(),
+		}
+		if !u.DeletedAt.IsZero() {
+			userData.DeletedAt = u.DeletedAt.String()
+		}
+
+		refreshClaims := jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
-		},
-	}
+			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
+		}
 
-	signedAccessToken, err := tokenservice.NewAccessToken(userClaims)
-	if err != nil {
-		errorMessage := "error creating access token"
-		http.InternalServerErrorResponse(c, errors.New(errorMessage))
+		signedRefreshToken, err := tokenservice.NewRefreshToken(refreshClaims)
+		if err != nil {
+			errorMessage := "error creating refresh token"
+			http.InternalServerErrorResponse(c, errors.New(errorMessage))
 
-		return
-	}
+			return
+		}
 
-	var roles []string
-	for _, r := range u.Roles {
-		roles = append(roles, r.Name)
-	}
+		responseData := &ResponseData{
+			AccessToken:  signedAccessToken,
+			RefreshToken: signedRefreshToken,
+			User:         userData,
+			Roles:        roles,
+			Permissions:  permissions,
+		}
 
-	var permissions []string
-	for _, p := range u.Permissions() {
-		permissions = append(permissions, p.Name)
-	}
-
-	userData := UserData{
-		Id:           ulid.ULID(u.Id).String(),
-		FirstName:    u.FirstName,
-		LastName:     u.LastName,
-		EmailAddress: u.EmailAddress,
-		CreatedAt:    u.CreatedAt.String(),
-		ModifiedAt:   u.ModifiedAt.String(),
-	}
-	if !u.DeletedAt.IsZero() {
-		userData.DeletedAt = u.DeletedAt.String()
-	}
-
-	refreshClaims := jwt.StandardClaims{
-		IssuedAt:  time.Now().Unix(),
-		ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
-	}
-
-	signedRefreshToken, err := tokenservice.NewRefreshToken(refreshClaims)
-	if err != nil {
-		errorMessage := "error creating refresh token"
-		http.InternalServerErrorResponse(c, errors.New(errorMessage))
+		http.CreatedResponse(c, responseData)
 
 		return
 	}
-
-	responseData := &ResponseData{
-		AccessToken:  signedAccessToken,
-		RefreshToken: signedRefreshToken,
-		User:         userData,
-		Roles:        roles,
-		Permissions:  permissions,
-	}
-
-	http.CreatedResponse(c, responseData)
-
-	return
 }
