@@ -9,7 +9,9 @@ import (
 	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
 	"github.com/pascalallen/pascalallen.com/domain/auth/role"
 	"github.com/pascalallen/pascalallen.com/domain/auth/user"
+	http2 "github.com/pascalallen/pascalallen.com/http"
 	"github.com/pascalallen/pascalallen.com/http/api/v1/auth"
+	"github.com/pascalallen/pascalallen.com/http/middleware"
 	"github.com/pascalallen/pascalallen.com/repository"
 	"gorm.io/gorm"
 	"log"
@@ -69,12 +71,28 @@ func main() {
 			a.POST("/login", func(c *gin.Context) {
 				auth.HandleLoginUser(c, userRepository)
 			})
-			//a.PATCH("/refresh", func(c *gin.Context) {
-			//	auth.HandleRefreshTokens(c, userRepository)
-			//})
+			a.PATCH("/refresh", func(c *gin.Context) {
+				auth.HandleRefreshTokens(c, userRepository)
+			})
 			//a.POST("/request-reset", handleRequestPasswordReset)
 			//a.POST("/reset-password", handleResetPassword)
 		}
+
+		v1.GET(
+			"/temp",
+			middleware.AuthRequired(userRepository),
+			func(c *gin.Context) {
+				c.JSON(
+					http.StatusOK,
+					http2.JSendSuccessResponse[string]{
+						Status: "success",
+						Data:   "Ok",
+					},
+				)
+
+				return
+			},
+		)
 	}
 
 	log.Fatalf("error running HTTP server: %s\n", router.Run(":9990"))

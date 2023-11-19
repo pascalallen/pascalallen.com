@@ -168,7 +168,6 @@ export class ApiService {
           access_token: response.body.data?.access_token ?? '',
           refresh_token: response.body.data?.refresh_token ?? '',
           access_token_claims: jwtDecode(response.body.data?.access_token ?? ''),
-          refresh_token_claims: jwtDecode(response.body.data?.refresh_token ?? ''),
           client_iat: moment().unix(),
           roles: listToMap(response.body.data?.roles ?? []),
           permissions: listToMap(response.body.data?.permissions ?? [])

@@ -22,7 +22,7 @@ const LoginPage = (): ReactElement => {
     const emailAddress = formData.get('email_address')?.toString() ?? '';
     const password = formData.get('password')?.toString() ?? '';
     await authService.login({ email_address: emailAddress, password });
-    const from = state?.from?.pathname || '/auth';
+    const from = state?.from?.pathname || '/temp';
     navigate(from, { replace: true });
   };
 
