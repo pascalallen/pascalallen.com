@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pascalallen/pascalallen.com/database"
@@ -18,13 +16,6 @@ import (
 	"net/http"
 	"os"
 )
-
-var env = map[string]string{
-	"APP_BASE_URL": os.Getenv("APP_BASE_URL"),
-	"APP_ENV":      os.Getenv("APP_ENV"),
-	"GITHUB_TOKEN": os.Getenv("GITHUB_TOKEN"),
-	"SLACK_DM_URL": os.Getenv("SLACK_DM_URL"),
-}
 
 func main() {
 	unitOfWork, err := database.NewGormUnitOfWork()
@@ -46,8 +37,6 @@ func main() {
 
 	seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 
-	envBytes, _ := json.Marshal(env)
-
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
 	if err := router.SetTrustedProxies(nil); err != nil {
@@ -55,11 +44,7 @@ func main() {
 	}
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/public", "./public")
-	router.NoRoute(func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"environment": base64.StdEncoding.EncodeToString(envBytes),
-		})
-	})
+	router.NoRoute(http2.HandleDefault())
 
 	v1 := router.Group("/api/v1")
 	{
