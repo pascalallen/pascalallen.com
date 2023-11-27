@@ -22,13 +22,11 @@ const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';
 type State = {
   repos: [];
   packages: [];
-  professionText: string;
 };
 
 const initialState: State = {
   repos: [],
-  packages: [],
-  professionText: ''
+  packages: []
 };
 
 const IndexPage = (): ReactElement => {
@@ -38,8 +36,6 @@ const IndexPage = (): ReactElement => {
 
   const [repos, setRepos] = useState(initialState.repos);
   const [packages, setPackages] = useState(initialState.packages);
-  const [professionText, setProfessionText] = useState(initialState.professionText);
-
   const navbar: HTMLElement | null = document.getElementById('navbar');
   const sectionLinks: HTMLElement | null = document.getElementById('section-links');
   const socialLinks: HTMLElement | null = document.getElementById('social-links');
@@ -60,24 +56,6 @@ const IndexPage = (): ReactElement => {
       };
       axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
     }
-  }, []);
-
-  useEffect(() => {
-    const professionString = 'Software Developer';
-    let i = 0;
-    let result = '';
-    const typewriter = () => {
-      setTimeout(() => {
-        result += professionString[i];
-        setProfessionText(result);
-        i++;
-        if (result != professionString) {
-          typewriter();
-        }
-      }, 40);
-    };
-
-    typewriter();
   }, []);
 
   const scrollToLocation = (event?: MouseEvent) => {
@@ -172,8 +150,8 @@ const IndexPage = (): ReactElement => {
       <header className="header">
         <div>
           <h1>Pascal Allen</h1>
-          <p id="profession" className="profession">
-            {professionText}
+          <p className="profession">
+            <span id="profession-text" />
             <span className="blink">_</span>
           </p>
         </div>

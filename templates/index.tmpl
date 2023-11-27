@@ -20,7 +20,7 @@
         const go = new Go();
         WebAssembly.instantiateStreaming(fetch("../public/assets/wasm.wasm"), go.importObject).then((result) => {
             go.run(result.instance);
-            echo("Hello, World!");
+            typewriter("profession-text", "Software Developer", 40);
         });
     </script>
 </body>
