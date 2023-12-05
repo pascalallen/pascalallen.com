@@ -93,18 +93,18 @@ const IndexPage = (): ReactElement => {
     !navbar?.classList.contains('navbar-mobile-open')
       ? navbar?.classList.add('navbar-mobile-open')
       : navbar?.classList.contains('navbar-mobile-open')
-      ? navbar?.classList.remove('navbar-mobile-open')
-      : null;
+        ? navbar?.classList.remove('navbar-mobile-open')
+        : null;
     !sectionLinks?.classList.contains('d-flex')
       ? sectionLinks?.classList.add('d-flex')
       : sectionLinks?.classList.contains('d-flex')
-      ? sectionLinks?.classList.remove('d-flex')
-      : null;
+        ? sectionLinks?.classList.remove('d-flex')
+        : null;
     !socialLinks?.classList.contains('d-flex')
       ? socialLinks?.classList.add('d-flex')
       : socialLinks?.classList.contains('d-flex')
-      ? socialLinks?.classList.remove('d-flex')
-      : null;
+        ? socialLinks?.classList.remove('d-flex')
+        : null;
   };
 
   return (
