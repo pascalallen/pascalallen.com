@@ -19,7 +19,7 @@ class AuthStore {
   }
 
   public clearData(): void {
-    delete this.data;
+    this.data = undefined;
     localStorage.removeItem('auth_data');
   }
 

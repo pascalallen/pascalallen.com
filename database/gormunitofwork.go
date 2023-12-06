@@ -2,8 +2,12 @@ package database
 
 import (
 	"fmt"
+	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
+	"github.com/pascalallen/pascalallen.com/domain/auth/role"
+	"github.com/pascalallen/pascalallen.com/domain/auth/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 	"os"
 )
 
@@ -23,4 +27,23 @@ func NewGormUnitOfWork() (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+func Migrate(unitOfWork *gorm.DB) {
+	if err := unitOfWork.AutoMigrate(&permission.Permission{}, &role.Role{}, &user.User{}); err != nil {
+		err := fmt.Errorf("failed to auto migrate database: %s", err)
+		log.Fatal(err)
+	}
+}
+
+func Seed(unitOfWork *gorm.DB, permissionRepository permission.PermissionRepository, roleRepository role.RoleRepository, userRepository user.UserRepository) {
+	dataSeeder := DataSeeder{
+		UnitOfWork:           unitOfWork,
+		PermissionRepository: permissionRepository,
+		RoleRepository:       roleRepository,
+		UserRepository:       userRepository,
+	}
+	if err := dataSeeder.Seed(); err != nil {
+		log.Fatal(err)
+	}
 }

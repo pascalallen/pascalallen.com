@@ -81,7 +81,7 @@ func (dataSeeder *DataSeeder) seedPermissions() error {
 	}
 
 	rootDir := path.Dir(filename)
-	permissionsFile := fmt.Sprintf("%s/database/seeds/auth.permissions.json", rootDir)
+	permissionsFile := fmt.Sprintf("%s/seeds/auth.permissions.json", rootDir)
 
 	contents, err := os.ReadFile(permissionsFile)
 	if err != nil {
@@ -163,7 +163,7 @@ func (dataSeeder *DataSeeder) seedRoles() error {
 	}
 
 	rootDir := path.Dir(filename)
-	rolesFile := fmt.Sprintf("%s/database/seeds/auth.roles.json", rootDir)
+	rolesFile := fmt.Sprintf("%s/seeds/auth.roles.json", rootDir)
 
 	contents, err := os.ReadFile(rolesFile)
 	if err != nil {
@@ -264,7 +264,7 @@ func (dataSeeder *DataSeeder) seedUsers() error {
 	}
 
 	rootDir := path.Dir(filename)
-	usersFile := fmt.Sprintf("%s/database/seeds/auth.users.json", rootDir)
+	usersFile := fmt.Sprintf("%s/seeds/auth.users.json", rootDir)
 
 	contents, err := os.ReadFile(usersFile)
 	if err != nil {
