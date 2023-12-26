@@ -116,33 +116,37 @@ const IndexPage = (): ReactElement => {
       <div className="navbar-container">
         <div id="navbar" className="navbar">
           <div id="section-links" className="section-links">
-            <a href="#technology" onClick={scrollToLocation}>
+            <a id="navbar-technology-link" href="#technology" onClick={scrollToLocation}>
               Technology
             </a>
-            <a href="#publications" onClick={scrollToLocation}>
+            <a id="navbar-publications-link" href="#publications" onClick={scrollToLocation}>
               Publications
             </a>
-            <a href="#golang" onClick={scrollToLocation}>
+            <a id="navbar-golang-link" href="#golang" onClick={scrollToLocation}>
               Golang
             </a>
-            <a href="#github" onClick={scrollToLocation}>
+            <a id="navbar-github-link" href="#github" onClick={scrollToLocation}>
               GitHub
             </a>
-            <a href="#npm" onClick={scrollToLocation}>
+            <a id="navbar-npm-link" href="#npm" onClick={scrollToLocation}>
               NPM
             </a>
           </div>
           <div id="social-links" className="social-links">
-            <a href="https://www.linkedin.com/in/pascal-allen-942749112/" target="_blank" rel="noreferrer">
+            <a
+              id="social-linkedin-link"
+              href="https://www.linkedin.com/in/pascal-allen-942749112/"
+              target="_blank"
+              rel="noreferrer">
               <i className="fa-brands fa-linkedin" />
             </a>
-            <a href="https://github.com/pascalallen" target="_blank" rel="noreferrer">
+            <a id="social-github-link" href="https://github.com/pascalallen" target="_blank" rel="noreferrer">
               <i className="fa-brands fa-github" />
             </a>
           </div>
         </div>
         <div className="hamburger">
-          <a onClick={handleToggleNav}>
+          <a id="hamburger-link" onClick={handleToggleNav}>
             <i className="fa-solid fa-bars" />
           </a>
         </div>
@@ -160,7 +164,7 @@ const IndexPage = (): ReactElement => {
         <div>
           <h2>
             This Site Runs On{' '}
-            <a href="#technology" onClick={scrollToLocation}>
+            <a id="technology-hashtag" href="#technology" onClick={scrollToLocation}>
               #
             </a>
           </h2>
@@ -194,12 +198,13 @@ const IndexPage = (): ReactElement => {
         <div>
           <h2>
             Publications{' '}
-            <a href="#publications" onClick={scrollToLocation}>
+            <a id="publications-hashtag" href="#publications" onClick={scrollToLocation}>
               #
             </a>
           </h2>
           <p>
             <a
+              id="medium-cron-link"
               href="https://pascalallen.medium.com/automate-your-deployments-with-cron-7174ecb9f52f"
               target="_blank"
               rel="noreferrer">
@@ -209,6 +214,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-grpc-link"
               href="https://pascalallen.medium.com/how-to-build-a-grpc-server-in-go-943f337c4e05"
               target="_blank"
               rel="noreferrer">
@@ -219,6 +225,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-framework-link"
               href="https://pascalallen.medium.com/developing-a-framework-for-any-project-9cf7dac82ffe"
               target="_blank"
               rel="noreferrer">
@@ -229,6 +236,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-sse-go-link"
               href="https://pascalallen.medium.com/streaming-server-sent-events-with-go-8cc1f615d561"
               target="_blank"
               rel="noreferrer">
@@ -239,6 +247,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-event-dispatch-react-link"
               href="https://pascalallen.medium.com/dispatching-events-with-react-and-typescript-89f80f07635f"
               target="_blank"
               rel="noreferrer">
@@ -248,6 +257,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-jwt-go-link"
               href="https://pascalallen.medium.com/jwt-authentication-with-go-242215a9b4f8"
               target="_blank"
               rel="noreferrer">
@@ -258,6 +268,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-wasm-go-link"
               href="https://pascalallen.medium.com/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
               target="_blank"
               rel="noreferrer">
@@ -268,6 +279,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-deploy-k8s-link"
               href="https://pascalallen.medium.com/how-to-deploy-to-kubernetes-76c42e5ea28c"
               target="_blank"
               rel="noreferrer">
@@ -278,6 +290,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-docker-go-link"
               href="https://pascalallen.medium.com/how-to-build-a-containerized-web-app-in-go-73f42619a193"
               target="_blank"
               rel="noreferrer">
@@ -288,6 +301,7 @@ const IndexPage = (): ReactElement => {
           </p>
           <p>
             <a
+              id="medium-npm-package-link"
               href="https://pascalallen.medium.com/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
               target="_blank"
               rel="noreferrer">
@@ -298,13 +312,18 @@ const IndexPage = (): ReactElement => {
             the npm Registry.
           </p>
           <p>
-            <a href="https://pascalallen.medium.com/scrum-simplified-880113ed0db" target="_blank" rel="noreferrer">
+            <a
+              id="medium-scrum-link"
+              href="https://pascalallen.medium.com/scrum-simplified-880113ed0db"
+              target="_blank"
+              rel="noreferrer">
               Scrum Simplified
             </a>
             <br />A simple Scrum infrastructure, with insights.
           </p>
           <p>
             <a
+              id="medium-sabj-link"
               href="https://www.bizjournals.com/sanantonio/news/2016/11/23/divergent-career-paths-how-tech-talent-is-leaking.html"
               target="_blank"
               rel="noreferrer">
@@ -319,12 +338,16 @@ const IndexPage = (): ReactElement => {
         <div>
           <h2>
             Go{' '}
-            <a href="#golang" onClick={scrollToLocation}>
+            <a id="golang-hashtag" href="#golang" onClick={scrollToLocation}>
               #
             </a>
           </h2>
           <p>
-            <a href="https://pkg.go.dev/github.com/pascalallen/pubsub" target="_blank" rel="noreferrer">
+            <a
+              id="pubsub-package-link"
+              href="https://pkg.go.dev/github.com/pascalallen/pubsub"
+              target="_blank"
+              rel="noreferrer">
               pubsub
             </a>{' '}
             v1.0.0
@@ -334,7 +357,11 @@ const IndexPage = (): ReactElement => {
             </code>
           </p>
           <p>
-            <a href="https://pkg.go.dev/github.com/pascalallen/hmac" target="_blank" rel="noreferrer">
+            <a
+              id="hmac-package-link"
+              href="https://pkg.go.dev/github.com/pascalallen/hmac"
+              target="_blank"
+              rel="noreferrer">
               hmac
             </a>{' '}
             v1.0.1
@@ -359,14 +386,14 @@ const IndexPage = (): ReactElement => {
           <div>
             <h2>
               GitHub{' '}
-              <a href="#github" onClick={scrollToLocation}>
+              <a id="github-hashtag" href="#github" onClick={scrollToLocation}>
                 #
               </a>
             </h2>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {repos.map((repo: any, index: number) => (
               <p key={`repo-${index}`}>
-                <a href={repo.html_url} target="_blank" rel="noreferrer">
+                <a id={`${repo.name}-repo-link`} href={repo.html_url} target="_blank" rel="noreferrer">
                   {repo.name}
                 </a>{' '}
                 {new Date(Date.parse(repo.updated_at)).toLocaleDateString()}
@@ -382,14 +409,14 @@ const IndexPage = (): ReactElement => {
           <div>
             <h2>
               NPM{' '}
-              <a href="#npm" onClick={scrollToLocation}>
+              <a id="npm-hashtag" href="#npm" onClick={scrollToLocation}>
                 #
               </a>
             </h2>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {packages.map((pkg: any, index: number) => (
               <p key={`pkg-${index}`}>
-                <a href={pkg.package.links.npm} target="_blank" rel="noreferrer">
+                <a id={`${pkg.package.name}-npm-link`} href={pkg.package.links.npm} target="_blank" rel="noreferrer">
                   {pkg.package.name}
                 </a>{' '}
                 v{pkg.package.version}
