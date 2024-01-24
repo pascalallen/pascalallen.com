@@ -16,7 +16,12 @@ import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
 import Footer from '@components/Footer';
 
-const gitHubUrl = 'https://api.github.com/users/pascalallen/repos?per_page=10&sort=updated_at&direction=desc';
+const gitHubQuery =
+  'q=' +
+  encodeURIComponent(
+    'user:pascalallen -repo:pascalallen/acme_widget_co -repo:pascalallen/uservoice_react -repo:pascalallen/uservoice'
+  );
+const gitHubUrl = `https://api.github.com/search/repositories?${gitHubQuery}&per_page=10&sort=updated&direction=desc`;
 const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';
 
 type State = {
@@ -43,7 +48,7 @@ const IndexPage = (): ReactElement => {
   useEffect(() => {
     fetch(gitHubUrl, { headers: { Authorization: `token ${env(EnvKey.GITHUB_TOKEN)}` } })
       .then(response => response.json())
-      .then(data => setRepos(data));
+      .then(data => setRepos(data.items));
 
     fetch(npmUrl)
       .then(response => response.json())
