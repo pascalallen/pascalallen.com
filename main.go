@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pascalallen/pascalallen.com/database"
 	http2 "github.com/pascalallen/pascalallen.com/http"
-	temp "github.com/pascalallen/pascalallen.com/http/api/v1"
 	"github.com/pascalallen/pascalallen.com/http/api/v1/auth"
+	"github.com/pascalallen/pascalallen.com/http/api/v1/temp"
 	"github.com/pascalallen/pascalallen.com/http/middleware"
 	"github.com/pascalallen/pascalallen.com/repository"
 	"log"
@@ -56,6 +56,17 @@ func main() {
 			"/temp",
 			middleware.AuthRequired(userRepository),
 			temp.HandleTemp(),
+		)
+		ch := make(chan string)
+		v1.POST(
+			"/event-stream",
+			middleware.AuthRequired(userRepository),
+			temp.HandleEventStreamPost(ch),
+		)
+		v1.GET(
+			"/event-stream",
+			middleware.EventStreamHeaders(),
+			temp.HandleEventStreamGet(ch),
 		)
 	}
 

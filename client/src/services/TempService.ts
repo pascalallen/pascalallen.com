@@ -18,6 +18,15 @@ class TempService {
 
     return response.body.data;
   }
+
+  public async eventStreamPost(params: { message: string }) {
+    await request.send({
+      method: HttpMethod.POST,
+      uri: '/api/v1/event-stream',
+      body: params,
+      options: { auth: true, authStore: this.authStore }
+    });
+  }
 }
 
 export default TempService;
