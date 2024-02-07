@@ -4,11 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pascalallen/pascalallen.com/database"
 	http2 "github.com/pascalallen/pascalallen.com/http"
+	temp "github.com/pascalallen/pascalallen.com/http/api/v1"
 	"github.com/pascalallen/pascalallen.com/http/api/v1/auth"
 	"github.com/pascalallen/pascalallen.com/http/middleware"
 	"github.com/pascalallen/pascalallen.com/repository"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -55,17 +55,7 @@ func main() {
 		v1.GET(
 			"/temp",
 			middleware.AuthRequired(userRepository),
-			func(c *gin.Context) {
-				c.JSON(
-					http.StatusOK,
-					http2.JSendSuccessResponse[string]{
-						Status: "success",
-						Data:   "Ok",
-					},
-				)
-
-				return
-			},
+			temp.HandleTemp(),
 		)
 	}
 
