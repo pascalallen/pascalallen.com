@@ -12,6 +12,21 @@ services:
     networks:
       - pascalallen
 
+  pascalallen-rabbitmq:
+    env_file:
+      - .env
+    build:
+      context: ./etc/rabbitmq
+    hostname: pascalallen-rabbitmq
+    container_name: pascalallen-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./etc/rabbitmq:/etc/rabbitmq
+    networks:
+      - pascalallen
+
   pascalallen-go:
     env_file:
       - .env
