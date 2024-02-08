@@ -1,6 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"syscall/js"
 )
 
@@ -10,6 +15,11 @@ func typewriter(this js.Value, args []js.Value) interface{} {
 	delay := args[2]
 	document := js.Global().Get("document")
 	element := document.Call("getElementById", id)
+
+	if element.IsNull() {
+		return nil
+	}
+
 	i := 0
 	result := ""
 
@@ -33,14 +43,34 @@ func typewriter(this js.Value, args []js.Value) interface{} {
 }
 
 func handleAllButtonClicks(this js.Value, args []js.Value) interface{} {
+	if os.Getenv("APP_ENV") != "prod" || os.Getenv("APP_ENV") != "production" {
+		return nil
+	}
+
 	eventListener := js.FuncOf(func(this js.Value, p []js.Value) interface{} {
 		event := p[0]
 		target := event.Get("target")
 		id := target.Get("id")
 		tagName := target.Get("tagName")
 		if tagName.String() == "BUTTON" {
-			// TODO: Outgoing request to Slack
-			js.Global().Get("console").Call("log", id)
+			jsonBody := []byte(`{"text": ` + id.String() + `}`)
+			bodyReader := bytes.NewReader(jsonBody)
+			res, err := http.Post(os.Getenv("SLACK_DM_URL"), "application/json", bodyReader)
+			if err != nil {
+				js.Global().Get("console").Call("log", err)
+				return nil
+			}
+			body, err := io.ReadAll(res.Body)
+			res.Body.Close()
+			if res.StatusCode > 299 {
+				js.Global().Get("console").Call("log", fmt.Sprintf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body))
+				return nil
+			}
+			if err != nil {
+				js.Global().Get("console").Call("log", err)
+				return nil
+			}
+			js.Global().Get("console").Call("log", body)
 		}
 
 		return nil
@@ -54,14 +84,34 @@ func handleAllButtonClicks(this js.Value, args []js.Value) interface{} {
 }
 
 func handleAllAnchorClicks(this js.Value, args []js.Value) interface{} {
+	if os.Getenv("APP_ENV") != "prod" || os.Getenv("APP_ENV") != "production" {
+		return nil
+	}
+
 	eventListener := js.FuncOf(func(this js.Value, p []js.Value) interface{} {
 		event := p[0]
 		target := event.Get("target")
 		id := target.Get("id")
 		tagName := target.Get("tagName")
 		if tagName.String() == "A" {
-			// TODO: Outgoing request to Slack
-			js.Global().Get("console").Call("log", id)
+			jsonBody := []byte(`{"text": ` + id.String() + `}`)
+			bodyReader := bytes.NewReader(jsonBody)
+			res, err := http.Post(os.Getenv("SLACK_DM_URL"), "application/json", bodyReader)
+			if err != nil {
+				js.Global().Get("console").Call("log", err)
+				return nil
+			}
+			body, err := io.ReadAll(res.Body)
+			res.Body.Close()
+			if res.StatusCode > 299 {
+				js.Global().Get("console").Call("log", fmt.Sprintf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body))
+				return nil
+			}
+			if err != nil {
+				js.Global().Get("console").Call("log", err)
+				return nil
+			}
+			js.Global().Get("console").Call("log", body)
 		}
 
 		return nil
@@ -75,11 +125,9 @@ func handleAllAnchorClicks(this js.Value, args []js.Value) interface{} {
 }
 
 func main() {
-	c := make(chan struct{})
+	c := make(chan struct{}, 3)
 
 	js.Global().Set("typewriter", js.FuncOf(typewriter))
-	js.Global().Set("handleAllButtonClicks", js.FuncOf(handleAllButtonClicks))
-	js.Global().Set("handleAllAnchorClicks", js.FuncOf(handleAllAnchorClicks))
 
 	<-c
 }

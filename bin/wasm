@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# change to the project root
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit
+
+docker exec -w /app -e GOOS=js -e GOARCH=wasm pascalallen-go go build -o ./public/assets/wasm.wasm ./wasm/wasm.go \
+  && docker exec -w /app pascalallen-go cp "$(docker exec -w /app pascalallen-go go env GOROOT)/misc/wasm/wasm_exec.js" ./public/assets/wasm.js \

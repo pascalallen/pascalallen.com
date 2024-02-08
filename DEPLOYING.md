@@ -12,7 +12,7 @@ This document describes the steps necessary for deploying to a Kubernetes cluste
 ### Create New Docker Images
 
 ```bash
-docker compose -f docker-compose.yml build
+docker compose -f compose.yaml build
 ```
 
 ### Tag Docker Images

@@ -21,8 +21,6 @@
         WebAssembly.instantiateStreaming(fetch("../public/assets/wasm.wasm"), go.importObject).then((result) => {
             go.run(result.instance);
             typewriter("profession-text", "Software Developer", 40);
-            handleAllButtonClicks();
-            handleAllAnchorClicks();
         });
     </script>
 </body>

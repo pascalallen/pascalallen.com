@@ -6,8 +6,8 @@ cd "$DIR"/.. || exit
 
 if [ "$1" == "prod" ]
 then
-    docker compose -f docker-compose.yml --progress quiet build \
-      && docker compose -f docker-compose.yml --progress quiet up -d \
+    docker compose -f compose.yaml --progress quiet build \
+      && docker compose -f compose.yaml --progress quiet up -d \
       && docker exec -d -w /app -e GOOS=js -e GOARCH=wasm pascalallen-go go build -o ./public/assets/wasm.wasm ./wasm/wasm.go \
       && docker exec -d -w /app pascalallen-go cp "$(docker exec -w /app pascalallen-go go env GOROOT)/misc/wasm/wasm_exec.js" ./public/assets/wasm.js
 else
