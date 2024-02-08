@@ -6,7 +6,29 @@
 ![GitHub](https://img.shields.io/github/license/pascalallen/pascalallen.com)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pascalallen/pascalallen.com)
 
-My personal website.
+pascalallen.com is a containerized web application built with Kubernetes, Docker, RabbitMQ, Postgres, Go, React, 
+TypeScript, Sass, Webpack, and WebAssembly. This ongoing project is designed, developed, deployed, and 
+maintained by myself, Pascal Allen. The motivation behind this project was to develop a scalable and portable 
+framework that can be used as a template for future web applications. This project is based on domain-driven design, 
+hexagonal architecture, and the SOLID principles.
+
+## Features
+
+- Configurable CI/CD pipeline
+- Helper scripts
+- MobX store
+- JWT/HMAC authentication services
+- Middleware
+- Frontend linting with ESLint and Prettier
+- GORM ORM
+- Database seeds for permissions, roles, and users
+- Database seeder
+- Domain models
+- Kubernetes config with deployment instructions
+- API endpoints for authentication and registration
+- API endpoints for server-sent events
+- Repositories
+- WebAssembly template
 
 ## Prerequisites
 
