@@ -18,6 +18,7 @@ hexagonal architecture, and the SOLID principles.
 - Helper scripts
 - MobX store
 - JWT/HMAC authentication services
+- RabbitMQ task queue with worker
 - Middleware
 - Frontend linting with ESLint and Prettier
 - GORM ORM

@@ -7,6 +7,7 @@ import (
 	"github.com/pascalallen/pascalallen.com/http/api/v1/auth"
 	"github.com/pascalallen/pascalallen.com/http/api/v1/temp"
 	"github.com/pascalallen/pascalallen.com/http/middleware"
+	"github.com/pascalallen/pascalallen.com/messaging"
 	"github.com/pascalallen/pascalallen.com/repository"
 	"log"
 	"os"
@@ -31,6 +32,8 @@ func main() {
 	}
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
+
+	messaging.WorkerInit()
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()

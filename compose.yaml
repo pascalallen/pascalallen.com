@@ -24,6 +24,11 @@ services:
       - "15672:15672"
     volumes:
       - ./etc/rabbitmq:/etc/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 10
     networks:
       - pascalallen
 
@@ -38,7 +43,10 @@ services:
     volumes:
       - .:/app:rw
     depends_on:
-      - pascalallen-postgres
+      pascalallen-postgres:
+        condition: service_started
+      pascalallen-rabbitmq:
+        condition: service_healthy
     deploy:
       restart_policy:
         condition: on-failure
