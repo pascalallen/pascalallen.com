@@ -87,3 +87,28 @@ bin/yarn watch
 ```bash
 bin/down <prod>
 ```
+
+## Testing
+
+Run tests and create coverage profile:
+
+```bash
+go test -covermode=count -coverprofile=coverage.out
+```
+
+View test coverage profile:
+
+```bash
+go tool cover -html=coverage.out
+```
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first
+to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+
+[MIT](LICENSE)
