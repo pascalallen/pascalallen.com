@@ -33,7 +33,7 @@ func main() {
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 
-	messaging.WorkerInit()
+	messaging.WorkerTest()
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
