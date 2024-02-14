@@ -4,20 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/oklog/ulid/v2"
-	"github.com/pascalallen/pascalallen.com/command"
-	"github.com/pascalallen/pascalallen.com/command_handler"
 	"github.com/rabbitmq/amqp091-go"
-	"log"
 	"os"
 	"reflect"
 	"time"
 )
 
 type Worker interface {
-	OpenChannel() error
 	DeclareQueue(queueName string) error
 	PublishMessage(queueName string, message interface{}) error
+	Close()
 }
 
 type RabbitMQWorker struct {
@@ -40,18 +36,12 @@ func NewRabbitMQWorker() (*RabbitMQWorker, error) {
 		return nil, fmt.Errorf("failed to connect to message queue: %s", err)
 	}
 
-	return &RabbitMQWorker{connection: conn}, nil
-}
-
-func (w *RabbitMQWorker) OpenChannel() error {
-	ch, err := w.connection.Channel()
+	ch, err := conn.Channel()
 	if err != nil {
-		return fmt.Errorf("failed to open server channel for message queue: %s", err)
+		return nil, fmt.Errorf("failed to open server channel for message queue: %s", err)
 	}
 
-	w.channel = ch
-
-	return nil
+	return &RabbitMQWorker{connection: conn, channel: ch}, nil
 }
 
 func (w *RabbitMQWorker) DeclareQueue(queueName string) error {
@@ -116,59 +106,7 @@ func (w *RabbitMQWorker) ConsumeMessages(queueName string) (<-chan amqp091.Deliv
 	)
 }
 
-func WorkerTest() {
-	w, _ := NewRabbitMQWorker()
-	defer w.connection.Close()
-
-	w.OpenChannel()
-	defer w.channel.Close()
-
-	w.DeclareQueue("commands")
-	w.DeclareQueue("events")
-
-	cmdMsgs, _ := w.ConsumeMessages("commands")
-	evtMsgs, _ := w.ConsumeMessages("events")
-
-	var forever chan struct{}
-
-	go func() {
-		for d := range cmdMsgs {
-			switch d.Type {
-			case "command.RegisterUser":
-				var cmd command.RegisterUser
-				json.Unmarshal(d.Body, &cmd)
-				handler := &command_handler.RegisterUserHandler{}
-				handler.Handle(cmd)
-				d.Ack(false)
-			case "command.UpdateUser":
-				var cmd command.UpdateUser
-				json.Unmarshal(d.Body, &cmd)
-				handler := &command_handler.UpdateUserHandler{}
-				handler.Handle(cmd)
-				d.Ack(false)
-			default:
-				log.Printf("Unknown command received: %s", d.RoutingKey)
-				d.Ack(false)
-			}
-		}
-	}()
-
-	go func() {
-		for d := range evtMsgs {
-			log.Printf("Received event: %s", d.Body)
-			// handle event logic here
-			d.Ack(false)
-		}
-	}()
-
-	registerUser := command.RegisterUser{
-		Id:           ulid.Make(),
-		FirstName:    "Leeroy",
-		LastName:     "Jenkins",
-		EmailAddress: "ljenkins@example.com",
-	}
-	w.PublishMessage("commands", registerUser)
-	//w.PublishMessage("events", "Event data")
-
-	<-forever
+func (w *RabbitMQWorker) Close() {
+	w.connection.Close()
+	w.channel.Close()
 }

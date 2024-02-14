@@ -26,9 +26,9 @@ services:
       - ./etc/rabbitmq:/etc/rabbitmq
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity
-      interval: 30s
-      timeout: 30s
-      retries: 10
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - pascalallen
 

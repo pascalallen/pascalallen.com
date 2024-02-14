@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pascalallen/pascalallen.com/command"
+	"github.com/pascalallen/pascalallen.com/command_handler"
 	"github.com/pascalallen/pascalallen.com/database"
 	http2 "github.com/pascalallen/pascalallen.com/http"
 	"github.com/pascalallen/pascalallen.com/http/api/v1/auth"
@@ -33,7 +35,26 @@ func main() {
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 
-	messaging.WorkerTest()
+	w, err := messaging.NewRabbitMQWorker()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.Close()
+
+	commandBus := messaging.NewCommandBus(w)
+	commandBus.RegisterHandler(command.RegisterUser{}.GetName(), &command_handler.RegisterUserHandler{})
+
+	commandBus.StartConsuming()
+
+	//err = w.PublishMessage("commands", command.RegisterUser{
+	//	Id:           ulid.Make(),
+	//	FirstName:    "Leeroy",
+	//	LastName:     "Jenkins",
+	//	EmailAddress: "ljenkins@example.com",
+	//})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()

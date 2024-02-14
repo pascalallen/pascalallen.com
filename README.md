@@ -9,7 +9,7 @@
 pascalallen.com is a containerized web application built with Kubernetes, Docker, RabbitMQ, Postgres, Go, React, 
 TypeScript, Sass, Webpack, and WebAssembly. This ongoing project is designed, developed, deployed, and 
 maintained by myself, Pascal Allen. The motivation behind this project was to develop a scalable and portable 
-framework that can be used as a template for future web applications. This project is based on domain-driven design, 
+framework that can be used as a template for future web applications. This project is based on CQRS, domain-driven design, 
 hexagonal architecture, and the SOLID principles.
 
 ## Features
@@ -18,7 +18,9 @@ hexagonal architecture, and the SOLID principles.
 - Helper scripts
 - MobX store
 - JWT/HMAC authentication services
-- RabbitMQ task queue with worker
+- RabbitMQ message broker
+- Asynchronous command bus
+- Asynchronous event dispatcher (work in progress)
 - Middleware
 - Frontend linting with ESLint and Prettier
 - GORM ORM
