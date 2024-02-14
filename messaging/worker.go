@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/rabbitmq/amqp091-go"
+	"log"
 	"os"
 	"reflect"
 	"time"
@@ -13,7 +14,7 @@ import (
 type Worker interface {
 	DeclareQueue(queueName string) error
 	PublishMessage(queueName string, message interface{}) error
-	Close()
+	Stop()
 }
 
 type RabbitMQWorker struct {
@@ -22,7 +23,7 @@ type RabbitMQWorker struct {
 	queues     []amqp091.Queue
 }
 
-func NewRabbitMQWorker() (*RabbitMQWorker, error) {
+func NewRabbitMQWorker() *RabbitMQWorker {
 	url := fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/",
 		os.Getenv("RABBITMQ_DEFAULT_USER"),
@@ -33,25 +34,25 @@ func NewRabbitMQWorker() (*RabbitMQWorker, error) {
 
 	conn, err := amqp091.Dial(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to message queue: %s", err)
+		log.Fatalf("failed to connect to message queue: %s", err)
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open server channel for message queue: %s", err)
+		log.Fatalf("failed to open server channel for message queue: %s", err)
 	}
 
-	return &RabbitMQWorker{connection: conn, channel: ch}, nil
+	return &RabbitMQWorker{connection: conn, channel: ch}
 }
 
 func (w *RabbitMQWorker) DeclareQueue(queueName string) error {
 	q, err := w.channel.QueueDeclare(
-		queueName, // name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		queueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 
 	if err != nil {
@@ -73,9 +74,9 @@ func (w *RabbitMQWorker) PublishMessage(queueName string, message interface{}) e
 	}
 
 	return w.channel.PublishWithContext(ctx,
-		"",        // exchange
-		queueName, // routing key
-		false,     // mandatory
+		"",
+		queueName,
+		false,
 		false,
 		amqp091.Publishing{
 			DeliveryMode: amqp091.Persistent,
@@ -87,26 +88,33 @@ func (w *RabbitMQWorker) PublishMessage(queueName string, message interface{}) e
 
 func (w *RabbitMQWorker) ConsumeMessages(queueName string) (<-chan amqp091.Delivery, error) {
 	err := w.channel.Qos(
-		1,     // prefetch count
-		0,     // prefetch size
-		false, // global
+		1,
+		0,
+		false,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set QoS: %s", err)
 	}
 
 	return w.channel.Consume(
-		queueName, // queue
-		"",        // consumer
-		false,     // auto-ack
-		false,     // exclusive
-		false,     // no-local
-		false,     // no-wait
-		nil,       // args
+		queueName,
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
 	)
 }
 
-func (w *RabbitMQWorker) Close() {
-	w.connection.Close()
-	w.channel.Close()
+func (w *RabbitMQWorker) Stop() {
+	err := w.connection.Close()
+	if err != nil {
+		log.Fatalf("failed to close connection to message queue: %s", err)
+	}
+
+	err = w.channel.Close()
+	if err != nil {
+		log.Fatalf("failed to close message queue channel: %s", err)
+	}
 }

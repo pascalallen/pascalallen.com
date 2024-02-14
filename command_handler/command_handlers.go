@@ -1,34 +1,45 @@
 package command_handler
 
 import (
+	"fmt"
 	"github.com/pascalallen/pascalallen.com/command"
+	"github.com/pascalallen/pascalallen.com/domain/auth/user"
 	"log"
 )
 
 type CommandHandler interface {
-	Handle(command command.Command)
+	Handle(command command.Command) error
 }
 
-type RegisterUserHandler struct{}
+type RegisterUserHandler struct {
+	UserRepository user.UserRepository
+}
 
-func (h *RegisterUserHandler) Handle(cmd command.Command) {
-	registerUserCommand, ok := cmd.(*command.RegisterUser)
+func (h RegisterUserHandler) Handle(cmd command.Command) error {
+	c, ok := cmd.(*command.RegisterUser)
 	if !ok {
-		log.Println("Invalid command type for RegisterUserCommandHandler")
-		return
+		return fmt.Errorf("invalid command type passed to RegisterUserHandler: %v", cmd)
 	}
-	log.Printf("Command passed to handler: %s", registerUserCommand)
-	// TODO
+
+	u := user.Register(c.Id, c.FirstName, c.LastName, c.EmailAddress)
+
+	err := h.UserRepository.Add(u)
+	if err != nil {
+		return fmt.Errorf("user registration failed: %s", err)
+	}
+
+	return nil
 }
 
 type UpdateUserHandler struct{}
 
-func (h *UpdateUserHandler) Handle(cmd command.Command) {
+func (h UpdateUserHandler) Handle(cmd command.Command) error {
 	updateUserCommand, ok := cmd.(*command.UpdateUser)
 	if !ok {
-		log.Println("Invalid command type for UpdateUserCommandHandler")
-		return
+		return fmt.Errorf("invalid command type passed to UpdateUserHandler: %v", cmd)
 	}
+
 	log.Printf("Command passed to handler: %s", updateUserCommand)
-	// TODO
+
+	return nil
 }

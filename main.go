@@ -35,30 +35,16 @@ func main() {
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 
-	w, err := messaging.NewRabbitMQWorker()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer w.Close()
+	w := messaging.NewRabbitMQWorker()
+	defer w.Stop()
 
 	commandBus := messaging.NewCommandBus(w)
-	commandBus.RegisterHandler(command.RegisterUser{}.GetName(), &command_handler.RegisterUserHandler{})
-
+	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository})
 	commandBus.StartConsuming()
-
-	//err = w.PublishMessage("commands", command.RegisterUser{
-	//	Id:           ulid.Make(),
-	//	FirstName:    "Leeroy",
-	//	LastName:     "Jenkins",
-	//	EmailAddress: "ljenkins@example.com",
-	//})
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
-	if err := router.SetTrustedProxies(nil); err != nil {
+	if err = router.SetTrustedProxies(nil); err != nil {
 		log.Fatal(err)
 	}
 	router.LoadHTMLGlob("templates/*")
@@ -69,7 +55,7 @@ func main() {
 	{
 		a := v1.Group("/auth")
 		{
-			//a.POST("/register", auth.HandleRegisterUser(userRepository))
+			a.POST("/register", auth.HandleRegisterUser(userRepository))
 			a.POST("/login", auth.HandleLoginUser(userRepository))
 			a.PATCH("/refresh", auth.HandleRefreshTokens(userRepository))
 			//a.POST("/request-reset", auth.HandleRequestPasswordReset)

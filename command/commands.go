@@ -3,7 +3,7 @@ package command
 import "github.com/oklog/ulid/v2"
 
 type Command interface {
-	GetName() string
+	CommandName() string
 }
 
 type RegisterUser struct {
@@ -13,7 +13,7 @@ type RegisterUser struct {
 	EmailAddress string
 }
 
-func (c RegisterUser) GetName() string {
+func (c RegisterUser) CommandName() string {
 	return "command.RegisterUser"
 }
 
@@ -24,6 +24,6 @@ type UpdateUser struct {
 	EmailAddress string
 }
 
-func (c UpdateUser) GetName() string {
+func (c UpdateUser) CommandName() string {
 	return "command.UpdateUser"
 }

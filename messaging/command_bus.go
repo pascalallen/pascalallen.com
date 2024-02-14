@@ -20,19 +20,17 @@ func NewCommandBus(w *RabbitMQWorker) *CommandBus {
 	}
 }
 
-// RegisterHandler registers a command handler for a specific command type
 func (bus *CommandBus) RegisterHandler(commandType string, handler command_handler.CommandHandler) {
 	bus.handlers[commandType] = handler
 }
 
-// StartConsuming starts consuming messages from the command queue
 func (bus *CommandBus) StartConsuming() {
 	err := bus.worker.DeclareQueue("commands")
 	if err != nil {
 		log.Fatal("Failed to declare command queue:", err)
 	}
 
-	cmdMsgs, err := bus.worker.ConsumeMessages("commands")
+	msgs, err := bus.worker.ConsumeMessages("commands")
 	if err != nil {
 		log.Fatal("Failed to register command consumer:", err)
 	}
@@ -40,7 +38,7 @@ func (bus *CommandBus) StartConsuming() {
 	var forever chan struct{}
 
 	go func() {
-		for msg := range cmdMsgs {
+		for msg := range msgs {
 			bus.processCommand(msg)
 		}
 	}()
@@ -48,13 +46,20 @@ func (bus *CommandBus) StartConsuming() {
 	<-forever
 }
 
+func (bus *CommandBus) Execute(cmd command.Command) {
+	err := bus.worker.PublishMessage("commands", cmd)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (bus *CommandBus) processCommand(msg amqp091.Delivery) {
 	var cmd command.Command
 
 	switch msg.Type {
-	case "command.RegisterUser":
+	case command.RegisterUser{}.CommandName():
 		cmd = &command.RegisterUser{}
-	case "command.UpdateUser":
+	case command.UpdateUser{}.CommandName():
 		cmd = &command.UpdateUser{}
 	default:
 		log.Printf("Unknown command received: %s", msg.Type)
@@ -67,9 +72,9 @@ func (bus *CommandBus) processCommand(msg amqp091.Delivery) {
 		return
 	}
 
-	handler, found := bus.handlers[cmd.GetName()]
+	handler, found := bus.handlers[cmd.CommandName()]
 	if !found {
-		log.Printf("No handler registered for command type: %s", cmd.GetName())
+		log.Printf("No handler registered for command type: %s", cmd.CommandName())
 		return
 	}
 
