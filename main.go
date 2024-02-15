@@ -40,7 +40,7 @@ func main() {
 
 	commandBus := messaging.NewCommandBus(w)
 	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository})
-	commandBus.StartConsuming()
+	go commandBus.StartConsuming()
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
@@ -55,7 +55,7 @@ func main() {
 	{
 		a := v1.Group("/auth")
 		{
-			//a.POST("/register", auth.HandleRegisterUser(userRepository, *commandBus))
+			a.POST("/register", auth.HandleRegisterUser(userRepository, *commandBus))
 			a.POST("/login", auth.HandleLoginUser(userRepository))
 			a.PATCH("/refresh", auth.HandleRefreshTokens(userRepository))
 			//a.POST("/request-reset", auth.HandleRequestPasswordReset)
