@@ -20,6 +20,7 @@ hexagonal architecture, and the SOLID principles.
 - JWT/HMAC authentication services
 - RabbitMQ message broker
 - Asynchronous command bus
+- Asynchronous query bus (work in progress)
 - Asynchronous event dispatcher (work in progress)
 - Middleware
 - Frontend linting with ESLint and Prettier
