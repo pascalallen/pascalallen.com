@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/ulid/v2"
+	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/domain/auth/passwordhash"
 	"github.com/pascalallen/pascalallen.com/domain/auth/user"
 	"github.com/pascalallen/pascalallen.com/http"
+	"github.com/pascalallen/pascalallen.com/messaging"
 )
 
 type RegisterUserRules struct {
@@ -18,7 +20,7 @@ type RegisterUserRules struct {
 	ConfirmPassword string `form:"confirm_password" json:"confirm_password" binding:"required,eqfield=Password"`
 }
 
-func HandleRegisterUser(userRepository user.UserRepository) gin.HandlerFunc {
+func HandleRegisterUser(userRepository user.UserRepository, commandBus messaging.CommandBus) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request RegisterUserRules
 
@@ -36,19 +38,16 @@ func HandleRegisterUser(userRepository user.UserRepository) gin.HandlerFunc {
 			return
 		}
 
-		id := ulid.Make()
-		u := user.Register(id, request.FirstName, request.LastName, request.EmailAddress)
-		passwordHash := passwordhash.Create(request.Password)
-		u.SetPasswordHash(passwordHash)
-
-		if err := userRepository.Add(u); err != nil {
-			errorMessage := fmt.Sprintf("Error persisting user: %s", err.Error())
-			http.InternalServerErrorResponse(c, errors.New(errorMessage))
-
-			return
+		cmd := command.RegisterUser{
+			Id:           ulid.Make(),
+			FirstName:    request.FirstName,
+			LastName:     request.LastName,
+			EmailAddress: request.EmailAddress,
+			PasswordHash: passwordhash.Create(request.Password),
 		}
+		commandBus.Execute(cmd)
 
-		http.CreatedResponse(c, u)
+		http.CreatedResponse[RegisterUserRules](c, &request)
 
 		return
 	}

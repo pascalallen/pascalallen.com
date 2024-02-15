@@ -22,6 +22,7 @@ func (h RegisterUserHandler) Handle(cmd command.Command) error {
 	}
 
 	u := user.Register(c.Id, c.FirstName, c.LastName, c.EmailAddress)
+	u.SetPasswordHash(c.PasswordHash)
 
 	err := h.UserRepository.Add(u)
 	if err != nil {

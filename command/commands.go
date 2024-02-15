@@ -1,6 +1,10 @@
 package command
 
-import "github.com/oklog/ulid/v2"
+import (
+	"github.com/oklog/ulid/v2"
+	"github.com/pascalallen/pascalallen.com/domain/auth/passwordhash"
+	"reflect"
+)
 
 type Command interface {
 	CommandName() string
@@ -11,10 +15,11 @@ type RegisterUser struct {
 	FirstName    string
 	LastName     string
 	EmailAddress string
+	PasswordHash passwordhash.PasswordHash
 }
 
 func (c RegisterUser) CommandName() string {
-	return "command.RegisterUser"
+	return reflect.TypeOf(c).Name()
 }
 
 type UpdateUser struct {
@@ -25,5 +30,5 @@ type UpdateUser struct {
 }
 
 func (c UpdateUser) CommandName() string {
-	return "command.UpdateUser"
+	return reflect.TypeOf(c).Name()
 }

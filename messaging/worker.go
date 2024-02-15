@@ -82,7 +82,7 @@ func (w *RabbitMQWorker) PublishMessage(queueName string, message interface{}) e
 			DeliveryMode: amqp091.Persistent,
 			ContentType:  "text/plain",
 			Body:         b,
-			Type:         reflect.TypeOf(message).String(),
+			Type:         reflect.TypeOf(message).Name(),
 		})
 }
 

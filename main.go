@@ -55,7 +55,7 @@ func main() {
 	{
 		a := v1.Group("/auth")
 		{
-			a.POST("/register", auth.HandleRegisterUser(userRepository))
+			//a.POST("/register", auth.HandleRegisterUser(userRepository, *commandBus))
 			a.POST("/login", auth.HandleLoginUser(userRepository))
 			a.PATCH("/refresh", auth.HandleRefreshTokens(userRepository))
 			//a.POST("/request-reset", auth.HandleRequestPasswordReset)
