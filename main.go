@@ -35,8 +35,8 @@ func main() {
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 
-	w := messaging.NewRabbitMQWorker()
-	defer w.Stop()
+	w := messaging.NewRabbitMQConnection()
+	defer w.Close()
 
 	commandBus := messaging.NewCommandBus(w)
 	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository})

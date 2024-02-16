@@ -1,21 +1,43 @@
 package messaging
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/command_handler"
 	"github.com/rabbitmq/amqp091-go"
 	"log"
+	"reflect"
+	"time"
 )
 
 type CommandBus struct {
-	worker   *RabbitMQWorker
+	channel  *amqp091.Channel
 	handlers map[string]command_handler.CommandHandler
 }
 
-func NewCommandBus(w *RabbitMQWorker) *CommandBus {
+const queueName = "commands"
+
+func NewCommandBus(conn *amqp091.Connection) *CommandBus {
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("failed to open server channel for command queue: %s", err)
+	}
+
+	_, err = ch.QueueDeclare(
+		queueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("failed to create or fetch queue: %s", err)
+	}
+
 	return &CommandBus{
-		worker:   w,
+		channel:  ch,
 		handlers: make(map[string]command_handler.CommandHandler),
 	}
 }
@@ -25,15 +47,7 @@ func (bus *CommandBus) RegisterHandler(commandType string, handler command_handl
 }
 
 func (bus *CommandBus) StartConsuming() {
-	err := bus.worker.DeclareQueue("commands")
-	if err != nil {
-		log.Fatal("Failed to declare command queue:", err)
-	}
-
-	msgs, err := bus.worker.ConsumeMessages("commands")
-	if err != nil {
-		log.Fatal("Failed to register command consumer:", err)
-	}
+	msgs := bus.messages()
 
 	var forever chan struct{}
 
@@ -47,10 +61,56 @@ func (bus *CommandBus) StartConsuming() {
 }
 
 func (bus *CommandBus) Execute(cmd command.Command) {
-	err := bus.worker.PublishMessage("commands", cmd)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	b, err := json.Marshal(cmd)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to JSON encode command: %s", err)
 	}
+
+	err = bus.channel.PublishWithContext(
+		ctx,
+		"",
+		queueName,
+		false,
+		false,
+		amqp091.Publishing{
+			DeliveryMode: amqp091.Persistent,
+			ContentType:  "text/plain",
+			Body:         b,
+			Type:         reflect.TypeOf(cmd).Name(),
+		},
+	)
+	if err != nil {
+		log.Fatalf("failed to publish command: %s", err)
+	}
+}
+
+func (bus *CommandBus) messages() <-chan amqp091.Delivery {
+	err := bus.channel.Qos(
+		1,
+		0,
+		false,
+	)
+	if err != nil {
+		log.Fatalf("failed to set QoS: %s", err)
+	}
+
+	d, err := bus.channel.Consume(
+		queueName,
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("failed to consume command messages: %s", err)
+	}
+
+	return d
 }
 
 func (bus *CommandBus) processCommand(msg amqp091.Delivery) {
@@ -78,7 +138,15 @@ func (bus *CommandBus) processCommand(msg amqp091.Delivery) {
 		return
 	}
 
-	handler.Handle(cmd)
+	err = handler.Handle(cmd)
+	if err != nil {
+		log.Printf("Error calling command handler: %s", err)
+		return
+	}
 
-	msg.Ack(false)
+	err = msg.Ack(false)
+	if err != nil {
+		log.Printf("Error acknowledging command message: %s", err)
+		return
+	}
 }
