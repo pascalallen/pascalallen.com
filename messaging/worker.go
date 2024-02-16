@@ -73,7 +73,8 @@ func (w *RabbitMQWorker) PublishMessage(queueName string, message interface{}) e
 		return fmt.Errorf("failed to publish message. failed to JSON encode: %v", message)
 	}
 
-	return w.channel.PublishWithContext(ctx,
+	return w.channel.PublishWithContext(
+		ctx,
 		"",
 		queueName,
 		false,
@@ -83,7 +84,8 @@ func (w *RabbitMQWorker) PublishMessage(queueName string, message interface{}) e
 			ContentType:  "text/plain",
 			Body:         b,
 			Type:         reflect.TypeOf(message).Name(),
-		})
+		},
+	)
 }
 
 func (w *RabbitMQWorker) ConsumeMessages(queueName string) (<-chan amqp091.Delivery, error) {
