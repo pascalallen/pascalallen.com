@@ -3,7 +3,7 @@ package role
 import (
 	"github.com/oklog/ulid/v2"
 	_type "github.com/pascalallen/pascalallen.com/database/type"
-	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
+	"github.com/pascalallen/pascalallen.com/domain/permission"
 	"time"
 )
 
@@ -13,6 +13,15 @@ type Role struct {
 	Permissions []permission.Permission `json:"permissions,omitempty" gorm:"many2many:role_permissions"`
 	CreatedAt   time.Time               `json:"created_at"`
 	ModifiedAt  time.Time               `json:"modified_at"`
+}
+
+type RoleRepository interface {
+	GetById(id ulid.ULID) (*Role, error)
+	GetByName(name string) (*Role, error)
+	GetAll() (*[]Role, error)
+	Add(role *Role) error
+	Remove(role *Role) error
+	UpdateOrAdd(role *Role) error
 }
 
 func Define(id ulid.ULID, name string) *Role {

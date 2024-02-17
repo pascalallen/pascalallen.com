@@ -3,23 +3,31 @@ package user
 import (
 	"github.com/oklog/ulid/v2"
 	_type "github.com/pascalallen/pascalallen.com/database/type"
-	"github.com/pascalallen/pascalallen.com/domain/auth/passwordhash"
-	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
-	"github.com/pascalallen/pascalallen.com/domain/auth/role"
+	"github.com/pascalallen/pascalallen.com/domain/password"
+	"github.com/pascalallen/pascalallen.com/domain/permission"
+	"github.com/pascalallen/pascalallen.com/domain/role"
 	"time"
 )
 
 type User struct {
-	Id           _type.GormUlid            `json:"id" gorm:"primaryKey;size:26;not null"`
-	FirstName    string                    `json:"first_name" gorm:"size:100;not null"`
-	LastName     string                    `json:"last_name" gorm:"size:100;not null"`
-	EmailAddress string                    `json:"email_address" gorm:"size:100;not null"`
-	PasswordHash passwordhash.PasswordHash `json:"-" gorm:"column:password;size:255;default:null"`
-	Roles        []role.Role               `json:"roles" gorm:"many2many:user_roles"`
-	CreatedAt    time.Time                 `json:"created_at" gorm:"not null"`
-	ModifiedAt   time.Time                 `json:"modified_at" gorm:"not null"`
-	// TODO: Determine how to make nullable/optional
-	DeletedAt time.Time `json:"deleted_at" gorm:"default:null"`
+	Id           _type.GormUlid        `json:"id" gorm:"primaryKey;size:26;not null"`
+	FirstName    string                `json:"first_name" gorm:"size:100;not null"`
+	LastName     string                `json:"last_name" gorm:"size:100;not null"`
+	EmailAddress string                `json:"email_address" gorm:"size:100;not null"`
+	PasswordHash password.PasswordHash `json:"-" gorm:"column:password;size:255;default:null"`
+	Roles        []role.Role           `json:"roles" gorm:"many2many:user_roles"`
+	CreatedAt    time.Time             `json:"created_at" gorm:"not null"`
+	ModifiedAt   time.Time             `json:"modified_at" gorm:"not null"`
+	DeletedAt    time.Time             `json:"deleted_at" gorm:"default:null"` // TODO: Make nullable/optional
+}
+
+type UserRepository interface {
+	GetById(id ulid.ULID) (*User, error)
+	GetByEmailAddress(emailAddress string) (*User, error)
+	GetAll(includeDeleted bool) (*[]User, error)
+	Add(user *User) error
+	Remove(user *User) error
+	UpdateOrAdd(user *User) error
 }
 
 func Register(id ulid.ULID, firstName string, lastName string, emailAddress string) *User {
@@ -50,7 +58,7 @@ func (u *User) UpdateEmailAddress(emailAddress string) {
 	u.ModifiedAt = time.Now()
 }
 
-func (u *User) SetPasswordHash(passwordHash passwordhash.PasswordHash) {
+func (u *User) SetPasswordHash(passwordHash password.PasswordHash) {
 	u.PasswordHash = passwordHash
 	u.ModifiedAt = time.Now()
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/ulid/v2"
-	"github.com/pascalallen/pascalallen.com/domain/auth/user"
+	"github.com/pascalallen/pascalallen.com/domain/user"
 	"github.com/pascalallen/pascalallen.com/http/response"
 	"github.com/pascalallen/pascalallen.com/service/tokenservice"
 	"strings"

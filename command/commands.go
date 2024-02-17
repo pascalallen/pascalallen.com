@@ -2,7 +2,7 @@ package command
 
 import (
 	"github.com/oklog/ulid/v2"
-	"github.com/pascalallen/pascalallen.com/domain/auth/passwordhash"
+	"github.com/pascalallen/pascalallen.com/domain/password"
 	"reflect"
 )
 
@@ -15,7 +15,7 @@ type RegisterUser struct {
 	FirstName    string
 	LastName     string
 	EmailAddress string
-	PasswordHash passwordhash.PasswordHash
+	PasswordHash password.PasswordHash
 }
 
 func (c RegisterUser) CommandName() string {

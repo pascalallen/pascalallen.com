@@ -3,7 +3,8 @@ package command_handler
 import (
 	"fmt"
 	"github.com/pascalallen/pascalallen.com/command"
-	"github.com/pascalallen/pascalallen.com/domain/auth/user"
+	"github.com/pascalallen/pascalallen.com/domain/user"
+	user2 "github.com/pascalallen/pascalallen.com/domain/user"
 	"log"
 )
 
@@ -21,7 +22,7 @@ func (h RegisterUserHandler) Handle(cmd command.Command) error {
 		return fmt.Errorf("invalid command type passed to RegisterUserHandler: %v", cmd)
 	}
 
-	u := user.Register(c.Id, c.FirstName, c.LastName, c.EmailAddress)
+	u := user2.Register(c.Id, c.FirstName, c.LastName, c.EmailAddress)
 	u.SetPasswordHash(c.PasswordHash)
 
 	err := h.UserRepository.Add(u)

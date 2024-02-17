@@ -14,6 +14,15 @@ type Permission struct {
 	ModifiedAt  time.Time      `json:"modified_at"`
 }
 
+type PermissionRepository interface {
+	GetById(id ulid.ULID) (*Permission, error)
+	GetByName(name string) (*Permission, error)
+	GetAll() (*[]Permission, error)
+	Add(permission *Permission) error
+	Remove(permission *Permission) error
+	UpdateOrAdd(permission *Permission) error
+}
+
 func Define(id ulid.ULID, name string, description string) *Permission {
 	createdAt := time.Now()
 

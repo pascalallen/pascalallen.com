@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
-	"github.com/pascalallen/pascalallen.com/domain/auth/permission"
-	"github.com/pascalallen/pascalallen.com/domain/auth/role"
-	"github.com/pascalallen/pascalallen.com/domain/auth/user"
+	"github.com/pascalallen/pascalallen.com/domain/permission"
+	"github.com/pascalallen/pascalallen.com/domain/role"
+	"github.com/pascalallen/pascalallen.com/domain/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -38,6 +38,8 @@ func Migrate(unitOfWork *gorm.DB) {
 
 func Seed(unitOfWork *gorm.DB, permissionRepository permission.PermissionRepository, roleRepository role.RoleRepository, userRepository user.UserRepository) {
 	dataSeeder := DataSeeder{
+		permissionsMap:       make(map[string]permission.Permission),
+		rolesMap:             make(map[string]role.Role),
 		UnitOfWork:           unitOfWork,
 		PermissionRepository: permissionRepository,
 		RoleRepository:       roleRepository,

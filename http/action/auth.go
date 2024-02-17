@@ -7,8 +7,8 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/oklog/ulid/v2"
 	"github.com/pascalallen/pascalallen.com/command"
-	"github.com/pascalallen/pascalallen.com/domain/auth/passwordhash"
-	"github.com/pascalallen/pascalallen.com/domain/auth/user"
+	"github.com/pascalallen/pascalallen.com/domain/password"
+	"github.com/pascalallen/pascalallen.com/domain/user"
 	"github.com/pascalallen/pascalallen.com/http/response"
 	"github.com/pascalallen/pascalallen.com/messaging"
 	"github.com/pascalallen/pascalallen.com/service/tokenservice"
@@ -247,7 +247,7 @@ func HandleRegisterUser(userRepository user.UserRepository, commandBus messaging
 			FirstName:    request.FirstName,
 			LastName:     request.LastName,
 			EmailAddress: request.EmailAddress,
-			PasswordHash: passwordhash.Create(request.Password),
+			PasswordHash: password.Create(request.Password),
 		}
 		commandBus.Execute(cmd)
 
