@@ -5,9 +5,7 @@ import (
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/command_handler"
 	"github.com/pascalallen/pascalallen.com/database"
-	http2 "github.com/pascalallen/pascalallen.com/http"
-	"github.com/pascalallen/pascalallen.com/http/api/v1/auth"
-	"github.com/pascalallen/pascalallen.com/http/api/v1/temp"
+	"github.com/pascalallen/pascalallen.com/http/action"
 	"github.com/pascalallen/pascalallen.com/http/middleware"
 	"github.com/pascalallen/pascalallen.com/messaging"
 	"github.com/pascalallen/pascalallen.com/repository"
@@ -49,15 +47,15 @@ func main() {
 	}
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/public", "./public")
-	router.NoRoute(http2.HandleDefault())
+	router.NoRoute(action.HandleDefault())
 
 	v1 := router.Group("/api/v1")
 	{
 		a := v1.Group("/auth")
 		{
-			a.POST("/register", auth.HandleRegisterUser(userRepository, *commandBus))
-			a.POST("/login", auth.HandleLoginUser(userRepository))
-			a.PATCH("/refresh", auth.HandleRefreshTokens(userRepository))
+			a.POST("/register", action.HandleRegisterUser(userRepository, *commandBus))
+			a.POST("/login", action.HandleLoginUser(userRepository))
+			a.PATCH("/refresh", action.HandleRefreshTokens(userRepository))
 			//a.POST("/request-reset", auth.HandleRequestPasswordReset)
 			//a.POST("/reset-password", auth.HandleResetPassword)
 		}
@@ -65,18 +63,18 @@ func main() {
 		v1.GET(
 			"/temp",
 			middleware.AuthRequired(userRepository),
-			temp.HandleTemp(),
+			action.HandleTemp(),
 		)
 		ch := make(chan string)
 		v1.POST(
 			"/event-stream",
 			middleware.AuthRequired(userRepository),
-			temp.HandleEventStreamPost(ch),
+			action.HandleEventStreamPost(ch),
 		)
 		v1.GET(
 			"/event-stream",
 			middleware.EventStreamHeaders(),
-			temp.HandleEventStreamGet(ch),
+			action.HandleEventStreamGet(ch),
 		)
 	}
 

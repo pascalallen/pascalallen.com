@@ -348,9 +348,8 @@ func (dataSeeder *DataSeeder) loadPermissionsMap() error {
 		return err
 	}
 
-	m := make(map[string]permission.Permission)
 	for _, p := range *permissions {
-		m[p.Name] = p
+		dataSeeder.permissionsMap[p.Name] = p
 	}
 
 	return nil
@@ -362,9 +361,8 @@ func (dataSeeder *DataSeeder) loadRolesMap() error {
 		return err
 	}
 
-	m := make(map[string]role.Role)
 	for _, r := range *roles {
-		m[r.Name] = r
+		dataSeeder.rolesMap[r.Name] = r
 	}
 
 	return nil

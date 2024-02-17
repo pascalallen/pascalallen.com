@@ -1,10 +1,10 @@
-package temp
+package action
 
 import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	http2 "github.com/pascalallen/pascalallen.com/http"
+	http2 "github.com/pascalallen/pascalallen.com/http/response"
 	"io"
 	"net/http"
 )
