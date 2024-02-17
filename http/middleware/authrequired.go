@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/ulid/v2"
 	"github.com/pascalallen/pascalallen.com/domain/user"
-	"github.com/pascalallen/pascalallen.com/http/response"
+	"github.com/pascalallen/pascalallen.com/http/responder"
 	"github.com/pascalallen/pascalallen.com/service/tokenservice"
 	"strings"
 )
@@ -14,7 +14,7 @@ func AuthRequired(userRepository user.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			response.BadRequestResponse(c, errors.New("authorization header is required"))
+			responder.BadRequestResponse(c, errors.New("authorization header is required"))
 
 			return
 		}
@@ -24,7 +24,7 @@ func AuthRequired(userRepository user.UserRepository) gin.HandlerFunc {
 
 		u, err := userRepository.GetById(ulid.MustParse(userClaims.Id))
 		if u == nil || err != nil {
-			response.UnauthorizedResponse(c, errors.New("invalid credentials"))
+			responder.UnauthorizedResponse(c, errors.New("invalid credentials"))
 
 			return
 		}

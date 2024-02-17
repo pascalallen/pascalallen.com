@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	http2 "github.com/pascalallen/pascalallen.com/http/response"
+	http2 "github.com/pascalallen/pascalallen.com/http/responder"
 	"io"
 	"net/http"
 )

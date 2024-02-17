@@ -9,7 +9,7 @@ import (
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/domain/password"
 	"github.com/pascalallen/pascalallen.com/domain/user"
-	"github.com/pascalallen/pascalallen.com/http/response"
+	"github.com/pascalallen/pascalallen.com/http/responder"
 	"github.com/pascalallen/pascalallen.com/messaging"
 	"github.com/pascalallen/pascalallen.com/service/tokenservice"
 	"time"
@@ -57,7 +57,7 @@ func HandleLoginUser(userRepository user.UserRepository) gin.HandlerFunc {
 
 		if err := c.ShouldBind(&request); err != nil {
 			errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
-			response.BadRequestResponse(c, errors.New(errorMessage))
+			responder.BadRequestResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -65,14 +65,14 @@ func HandleLoginUser(userRepository user.UserRepository) gin.HandlerFunc {
 		u, err := userRepository.GetByEmailAddress(request.EmailAddress)
 		if u == nil || err != nil {
 			errorMessage := "invalid credentials"
-			response.UnauthorizedResponse(c, errors.New(errorMessage))
+			responder.UnauthorizedResponse(c, errors.New(errorMessage))
 
 			return
 		}
 
 		if u.PasswordHash.Compare(request.Password) == false {
 			errorMessage := "invalid credentials"
-			response.UnauthorizedResponse(c, errors.New(errorMessage))
+			responder.UnauthorizedResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -90,7 +90,7 @@ func HandleLoginUser(userRepository user.UserRepository) gin.HandlerFunc {
 		signedAccessToken, err := tokenservice.NewAccessToken(userClaims)
 		if err != nil {
 			errorMessage := "error creating access token"
-			response.InternalServerErrorResponse(c, errors.New(errorMessage))
+			responder.InternalServerErrorResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -125,7 +125,7 @@ func HandleLoginUser(userRepository user.UserRepository) gin.HandlerFunc {
 		signedRefreshToken, err := tokenservice.NewRefreshToken(refreshClaims)
 		if err != nil {
 			errorMessage := "error creating refresh token"
-			response.InternalServerErrorResponse(c, errors.New(errorMessage))
+			responder.InternalServerErrorResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -138,7 +138,7 @@ func HandleLoginUser(userRepository user.UserRepository) gin.HandlerFunc {
 			Permissions:  permissions,
 		}
 
-		response.CreatedResponse(c, responseData)
+		responder.CreatedResponse(c, responseData)
 
 		return
 	}
@@ -150,7 +150,7 @@ func HandleRefreshTokens(userRepository user.UserRepository) gin.HandlerFunc {
 
 		if err := c.ShouldBind(&request); err != nil {
 			errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
-			response.BadRequestResponse(c, errors.New(errorMessage))
+			responder.BadRequestResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -161,7 +161,7 @@ func HandleRefreshTokens(userRepository user.UserRepository) gin.HandlerFunc {
 		u, err := userRepository.GetById(ulid.MustParse(userClaims.Id))
 		if u == nil || err != nil {
 			errorMessage := "invalid credentials"
-			response.UnauthorizedResponse(c, errors.New(errorMessage))
+			responder.UnauthorizedResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -171,7 +171,7 @@ func HandleRefreshTokens(userRepository user.UserRepository) gin.HandlerFunc {
 			request.RefreshToken, err = tokenservice.NewRefreshToken(*refreshClaims)
 			if err != nil {
 				errorMessage := "error creating refresh token"
-				response.InternalServerErrorResponse(c, errors.New(errorMessage))
+				responder.InternalServerErrorResponse(c, errors.New(errorMessage))
 
 				return
 			}
@@ -182,7 +182,7 @@ func HandleRefreshTokens(userRepository user.UserRepository) gin.HandlerFunc {
 			request.AccessToken, err = tokenservice.NewAccessToken(*userClaims)
 			if err != nil {
 				errorMessage := "error creating access token"
-				response.InternalServerErrorResponse(c, errors.New(errorMessage))
+				responder.InternalServerErrorResponse(c, errors.New(errorMessage))
 
 				return
 			}
@@ -218,7 +218,7 @@ func HandleRefreshTokens(userRepository user.UserRepository) gin.HandlerFunc {
 			Permissions:  permissions,
 		}
 
-		response.CreatedResponse(c, responseData)
+		responder.CreatedResponse(c, responseData)
 
 		return
 	}
@@ -230,14 +230,14 @@ func HandleRegisterUser(userRepository user.UserRepository, commandBus messaging
 
 		if err := c.ShouldBind(&request); err != nil {
 			errorMessage := fmt.Sprintf("Request validation error: %s", err.Error())
-			response.BadRequestResponse(c, errors.New(errorMessage))
+			responder.BadRequestResponse(c, errors.New(errorMessage))
 
 			return
 		}
 
 		if u, err := userRepository.GetByEmailAddress(request.EmailAddress); u != nil || err != nil {
 			errorMessage := fmt.Sprint("Something went wrong. If you already have an account, please log in.")
-			response.UnprocessableEntityResponse(c, errors.New(errorMessage))
+			responder.UnprocessableEntityResponse(c, errors.New(errorMessage))
 
 			return
 		}
@@ -251,7 +251,7 @@ func HandleRegisterUser(userRepository user.UserRepository, commandBus messaging
 		}
 		commandBus.Execute(cmd)
 
-		response.CreatedResponse[RegisterUserRules](c, &request)
+		responder.CreatedResponse[RegisterUserRules](c, &request)
 
 		return
 	}
