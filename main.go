@@ -21,15 +21,9 @@ func main() {
 
 	database.Migrate(unitOfWork)
 
-	permissionRepository := repository.GormPermissionRepository{
-		UnitOfWork: unitOfWork,
-	}
-	roleRepository := repository.GormRoleRepository{
-		UnitOfWork: unitOfWork,
-	}
-	userRepository := repository.GormUserRepository{
-		UnitOfWork: unitOfWork,
-	}
+	permissionRepository := repository.NewGormPermissionRepository(unitOfWork)
+	roleRepository := repository.NewGormRoleRepository(unitOfWork)
+	userRepository := repository.NewGormUserRepository(unitOfWork)
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 

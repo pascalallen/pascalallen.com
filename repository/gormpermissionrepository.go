@@ -9,12 +9,18 @@ import (
 )
 
 type GormPermissionRepository struct {
-	UnitOfWork *gorm.DB
+	unitOfWork *gorm.DB
+}
+
+func NewGormPermissionRepository(unitOfWork *gorm.DB) GormPermissionRepository {
+	return GormPermissionRepository{
+		unitOfWork: unitOfWork,
+	}
 }
 
 func (repository GormPermissionRepository) GetById(id ulid.ULID) (*permission.Permission, error) {
 	var p *permission.Permission
-	if err := repository.UnitOfWork.First(&p, "id = ?", id.String()).Error; err != nil {
+	if err := repository.unitOfWork.First(&p, "id = ?", id.String()).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -27,7 +33,7 @@ func (repository GormPermissionRepository) GetById(id ulid.ULID) (*permission.Pe
 
 func (repository GormPermissionRepository) GetByName(name string) (*permission.Permission, error) {
 	var p *permission.Permission
-	if err := repository.UnitOfWork.First(&p, "name = ?", name).Error; err != nil {
+	if err := repository.unitOfWork.First(&p, "name = ?", name).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -41,7 +47,7 @@ func (repository GormPermissionRepository) GetByName(name string) (*permission.P
 // GetAll TODO: Add pagination
 func (repository GormPermissionRepository) GetAll() (*[]permission.Permission, error) {
 	var permissions *[]permission.Permission
-	if err := repository.UnitOfWork.Find(&permissions).Error; err != nil {
+	if err := repository.unitOfWork.Find(&permissions).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch all Permissions: %s", err)
 	}
 
@@ -49,7 +55,7 @@ func (repository GormPermissionRepository) GetAll() (*[]permission.Permission, e
 }
 
 func (repository GormPermissionRepository) Add(permission *permission.Permission) error {
-	if err := repository.UnitOfWork.Create(&permission).Error; err != nil {
+	if err := repository.unitOfWork.Create(&permission).Error; err != nil {
 		return fmt.Errorf("failed to persist Permission to database: %s", permission)
 	}
 
@@ -57,7 +63,7 @@ func (repository GormPermissionRepository) Add(permission *permission.Permission
 }
 
 func (repository GormPermissionRepository) Remove(permission *permission.Permission) error {
-	if err := repository.UnitOfWork.Delete(&permission).Error; err != nil {
+	if err := repository.unitOfWork.Delete(&permission).Error; err != nil {
 		return fmt.Errorf("failed to delete Permission from database: %s", permission)
 	}
 
@@ -65,7 +71,7 @@ func (repository GormPermissionRepository) Remove(permission *permission.Permiss
 }
 
 func (repository GormPermissionRepository) UpdateOrAdd(permission *permission.Permission) error {
-	if err := repository.UnitOfWork.Save(&permission).Error; err != nil {
+	if err := repository.unitOfWork.Save(&permission).Error; err != nil {
 		return fmt.Errorf("failed to update Permission: %s", permission)
 	}
 
