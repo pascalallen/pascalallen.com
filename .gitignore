@@ -10,3 +10,4 @@ main
 .env
 .DS_Store
 tmp/
+coverage.out

@@ -96,7 +96,7 @@ bin/down <prod>
 Run tests and create coverage profile:
 
 ```bash
-go test -covermode=count -coverprofile=coverage.out
+go test ./... -covermode=count -coverprofile=coverage.out
 ```
 
 View test coverage profile:
