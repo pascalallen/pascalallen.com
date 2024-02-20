@@ -2,7 +2,7 @@
 
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/pascalallen/pascalallen.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pascalallen/pascalallen.com)](https://goreportcard.com/report/github.com/pascalallen/pascalallen.com)
-![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/pascalallen/pascalallen.com/go.yml?branch=main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/pascalallen/pascalallen.com/go.yml)
 ![GitHub](https://img.shields.io/github/license/pascalallen/pascalallen.com)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pascalallen/pascalallen.com)
 
