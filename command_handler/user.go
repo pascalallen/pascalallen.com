@@ -4,13 +4,8 @@ import (
 	"fmt"
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/domain/user"
-	user2 "github.com/pascalallen/pascalallen.com/domain/user"
 	"log"
 )
-
-type CommandHandler interface {
-	Handle(command command.Command) error
-}
 
 type RegisterUserHandler struct {
 	UserRepository user.UserRepository
@@ -22,7 +17,7 @@ func (h RegisterUserHandler) Handle(cmd command.Command) error {
 		return fmt.Errorf("invalid command type passed to RegisterUserHandler: %v", cmd)
 	}
 
-	u := user2.Register(c.Id, c.FirstName, c.LastName, c.EmailAddress)
+	u := user.Register(c.Id, c.FirstName, c.LastName, c.EmailAddress)
 	u.SetPasswordHash(c.PasswordHash)
 
 	err := h.UserRepository.Add(u)

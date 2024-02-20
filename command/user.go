@@ -6,10 +6,6 @@ import (
 	"reflect"
 )
 
-type Command interface {
-	CommandName() string
-}
-
 type RegisterUser struct {
 	Id           ulid.ULID
 	FirstName    string
