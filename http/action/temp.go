@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	http2 "github.com/pascalallen/pascalallen.com/http/responder"
+	"github.com/pascalallen/pascalallen.com/http/responder"
 	"io"
 	"net/http"
 )
@@ -17,7 +17,7 @@ func HandleTemp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(
 			http.StatusOK,
-			http2.JSendSuccessResponse[string]{
+			responder.JSendSuccessResponse[string]{
 				Status: "success",
 				Data:   "Ok",
 			},
@@ -32,14 +32,14 @@ func HandleEventStreamPost(ch chan string) gin.HandlerFunc {
 		var request EventStreamRequest
 		if err := c.ShouldBind(&request); err != nil {
 			errorMessage := fmt.Sprintf("request validation error: %s", err.Error())
-			http2.BadRequestResponse(c, errors.New(errorMessage))
+			responder.BadRequestResponse(c, errors.New(errorMessage))
 
 			return
 		}
 
 		ch <- request.Message
 
-		http2.CreatedResponse(c, &request.Message)
+		responder.CreatedResponse(c, &request.Message)
 
 		return
 	}
