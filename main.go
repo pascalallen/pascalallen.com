@@ -5,8 +5,10 @@ import (
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/command_handler"
 	"github.com/pascalallen/pascalallen.com/database"
+	"github.com/pascalallen/pascalallen.com/event"
 	"github.com/pascalallen/pascalallen.com/http/action"
 	"github.com/pascalallen/pascalallen.com/http/middleware"
+	"github.com/pascalallen/pascalallen.com/listener"
 	"github.com/pascalallen/pascalallen.com/messaging"
 	"github.com/pascalallen/pascalallen.com/repository"
 	"log"
@@ -31,8 +33,17 @@ func main() {
 	defer w.Close()
 
 	commandBus := messaging.NewCommandBus(w)
-	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository})
+	eventDispatcher := messaging.NewEventDispatcher(w)
+
+	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository, EventDispatcher: *eventDispatcher})
+	commandBus.RegisterHandler(command.UpdateUser{}.CommandName(), command_handler.UpdateUserHandler{})
+	commandBus.RegisterHandler(command.SendWelcomeEmail{}.CommandName(), command_handler.SendWelcomeEmailHandler{})
+
 	go commandBus.StartConsuming()
+
+	eventDispatcher.RegisterListener(event.UserRegistered{}.EventName(), listener.UserRegistration{CommandBus: *commandBus})
+
+	go eventDispatcher.StartConsuming()
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()

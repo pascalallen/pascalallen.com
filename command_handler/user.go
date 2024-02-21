@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/domain/user"
+	"github.com/pascalallen/pascalallen.com/event"
+	"github.com/pascalallen/pascalallen.com/messaging"
 	"log"
 )
 
 type RegisterUserHandler struct {
-	UserRepository user.UserRepository
+	UserRepository  user.UserRepository
+	EventDispatcher messaging.EventDispatcher
 }
 
 func (h RegisterUserHandler) Handle(cmd command.Command) error {
@@ -25,18 +28,27 @@ func (h RegisterUserHandler) Handle(cmd command.Command) error {
 		return fmt.Errorf("user registration failed: %s", err)
 	}
 
+	evt := event.UserRegistered{
+		Id:           c.Id,
+		FirstName:    c.FirstName,
+		LastName:     c.LastName,
+		EmailAddress: c.EmailAddress,
+	}
+	h.EventDispatcher.Dispatch(evt)
+
 	return nil
 }
 
 type UpdateUserHandler struct{}
 
 func (h UpdateUserHandler) Handle(cmd command.Command) error {
-	updateUserCommand, ok := cmd.(*command.UpdateUser)
+	c, ok := cmd.(*command.UpdateUser)
 	if !ok {
 		return fmt.Errorf("invalid command type passed to UpdateUserHandler: %v", cmd)
 	}
 
-	log.Printf("Command passed to handler: %s", updateUserCommand)
+	// TODO
+	log.Printf("UpdateUserHandler executed: %v", c)
 
 	return nil
 }
