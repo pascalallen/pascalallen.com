@@ -5,12 +5,14 @@ import (
 	"github.com/pascalallen/pascalallen.com/command"
 	"github.com/pascalallen/pascalallen.com/command_handler"
 	"github.com/pascalallen/pascalallen.com/database"
+	"github.com/pascalallen/pascalallen.com/domain/permission"
+	"github.com/pascalallen/pascalallen.com/domain/role"
+	"github.com/pascalallen/pascalallen.com/domain/user"
 	"github.com/pascalallen/pascalallen.com/event"
-	"github.com/pascalallen/pascalallen.com/http/action"
-	"github.com/pascalallen/pascalallen.com/http/middleware"
 	"github.com/pascalallen/pascalallen.com/listener"
 	"github.com/pascalallen/pascalallen.com/messaging"
 	"github.com/pascalallen/pascalallen.com/repository"
+	"github.com/pascalallen/pascalallen.com/routes"
 	"log"
 	"os"
 )
@@ -23,9 +25,9 @@ func main() {
 
 	database.Migrate(unitOfWork)
 
-	permissionRepository := repository.NewGormPermissionRepository(unitOfWork)
-	roleRepository := repository.NewGormRoleRepository(unitOfWork)
-	userRepository := repository.NewGormUserRepository(unitOfWork)
+	var permissionRepository permission.PermissionRepository = repository.NewGormPermissionRepository(unitOfWork)
+	var roleRepository role.RoleRepository = repository.NewGormRoleRepository(unitOfWork)
+	var userRepository user.UserRepository = repository.NewGormUserRepository(unitOfWork)
 
 	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
 
@@ -47,41 +49,11 @@ func main() {
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
-	if err = router.SetTrustedProxies(nil); err != nil {
-		log.Fatal(err)
-	}
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/public", "./public")
-	router.NoRoute(action.HandleDefault())
-
-	v1 := router.Group("/api/v1")
-	{
-		a := v1.Group("/auth")
-		{
-			a.POST("/register", action.HandleRegisterUser(userRepository, *commandBus))
-			a.POST("/login", action.HandleLoginUser(userRepository))
-			a.PATCH("/refresh", action.HandleRefreshTokens(userRepository))
-			//a.POST("/request-reset", auth.HandleRequestPasswordReset)
-			//a.POST("/reset-password", auth.HandleResetPassword)
-		}
-
-		v1.GET(
-			"/temp",
-			middleware.AuthRequired(userRepository),
-			action.HandleTemp(),
-		)
-		ch := make(chan string)
-		v1.POST(
-			"/event-stream",
-			middleware.AuthRequired(userRepository),
-			action.HandleEventStreamPost(ch),
-		)
-		v1.GET(
-			"/event-stream",
-			middleware.EventStreamHeaders(),
-			action.HandleEventStreamGet(ch),
-		)
-	}
+	routes.Config(router)
+	routes.Fileserver(router)
+	routes.Default(router)
+	routes.Auth(router, userRepository, *commandBus)
+	routes.Temp(router, userRepository)
 
 	log.Fatalf("error running HTTP server: %s\n", router.Run(":9990"))
 }
