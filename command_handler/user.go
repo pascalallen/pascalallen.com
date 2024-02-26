@@ -11,7 +11,7 @@ import (
 
 type RegisterUserHandler struct {
 	UserRepository  user.UserRepository
-	EventDispatcher messaging.EventDispatcher
+	EventDispatcher *messaging.EventDispatcher
 }
 
 func (h RegisterUserHandler) Handle(cmd command.Command) error {

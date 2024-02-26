@@ -224,7 +224,7 @@ func HandleRefreshTokens(userRepository user.UserRepository) gin.HandlerFunc {
 	}
 }
 
-func HandleRegisterUser(userRepository user.UserRepository, commandBus messaging.CommandBus) gin.HandlerFunc {
+func HandleRegisterUser(userRepository user.UserRepository, commandBus *messaging.CommandBus) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request RegisterUserRules
 

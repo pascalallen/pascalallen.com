@@ -6,7 +6,7 @@ import (
 	"github.com/pascalallen/pascalallen.com/messaging"
 )
 
-func (r Router) Auth(repository user.UserRepository, bus messaging.CommandBus) {
+func (r Router) Auth(repository user.UserRepository, bus *messaging.CommandBus) {
 	v := r.engine.Group(v1)
 	{
 		auth := v.Group("/auth")

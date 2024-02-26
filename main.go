@@ -37,14 +37,12 @@ func main() {
 	commandBus := messaging.NewCommandBus(w)
 	eventDispatcher := messaging.NewEventDispatcher(w)
 
-	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository, EventDispatcher: *eventDispatcher})
+	commandBus.RegisterHandler(command.RegisterUser{}.CommandName(), command_handler.RegisterUserHandler{UserRepository: userRepository, EventDispatcher: eventDispatcher})
 	commandBus.RegisterHandler(command.UpdateUser{}.CommandName(), command_handler.UpdateUserHandler{})
 	commandBus.RegisterHandler(command.SendWelcomeEmail{}.CommandName(), command_handler.SendWelcomeEmailHandler{})
+	eventDispatcher.RegisterListener(event.UserRegistered{}.EventName(), listener.UserRegistration{CommandBus: commandBus})
 
 	go commandBus.StartConsuming()
-
-	eventDispatcher.RegisterListener(event.UserRegistered{}.EventName(), listener.UserRegistration{CommandBus: *commandBus})
-
 	go eventDispatcher.StartConsuming()
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
@@ -52,7 +50,7 @@ func main() {
 	router.Config()
 	router.Fileserver()
 	router.Default()
-	router.Auth(userRepository, *commandBus)
+	router.Auth(userRepository, commandBus)
 	router.Temp(userRepository)
 	router.Serve(":9990")
 }

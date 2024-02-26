@@ -9,7 +9,7 @@ import (
 )
 
 type UserRegistration struct {
-	CommandBus messaging.CommandBus
+	CommandBus *messaging.CommandBus
 }
 
 func (l UserRegistration) Handle(evt event.Event) error {
