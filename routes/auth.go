@@ -7,9 +7,15 @@ import (
 )
 
 func (r Router) Auth(repository user.UserRepository, bus messaging.CommandBus) {
-	r.engine.POST("/api/v1/auth/register", action.HandleRegisterUser(repository, bus))
-	r.engine.POST("/api/v1/auth/login", action.HandleLoginUser(repository))
-	r.engine.PATCH("/api/v1/auth/refresh", action.HandleRefreshTokens(repository))
-	// router.POST("/api/v1/auth/request-reset", auth.HandleRequestPasswordReset)
-	// router.POST("/api/v1/auth/reset-password", auth.HandleResetPassword)
+	v := r.engine.Group(v1)
+	{
+		auth := v.Group("/auth")
+		{
+			auth.POST("/register", action.HandleRegisterUser(repository, bus))
+			auth.POST("/login", action.HandleLoginUser(repository))
+			auth.PATCH("/refresh", action.HandleRefreshTokens(repository))
+			// router.POST("/request-reset", auth.HandleRequestPasswordReset)
+			// router.POST("/reset-password", auth.HandleResetPassword)
+		}
+	}
 }

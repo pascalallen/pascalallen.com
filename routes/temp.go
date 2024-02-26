@@ -7,20 +7,24 @@ import (
 )
 
 func (r Router) Temp(repository user.UserRepository) {
-	r.engine.GET(
-		"/api/v1/temp",
-		middleware.AuthRequired(repository),
-		action.HandleTemp(),
-	)
-	ch := make(chan string)
-	r.engine.POST(
-		"/api/v1/event-stream",
-		middleware.AuthRequired(repository),
-		action.HandleEventStreamPost(ch),
-	)
-	r.engine.GET(
-		"/api/v1/event-stream",
-		middleware.EventStreamHeaders(),
-		action.HandleEventStreamGet(ch),
-	)
+	v := r.engine.Group(v1)
+	{
+		v.GET(
+			"/temp",
+			middleware.AuthRequired(repository),
+			action.HandleTemp(),
+		)
+
+		ch := make(chan string)
+		v.POST(
+			"/event-stream",
+			middleware.AuthRequired(repository),
+			action.HandleEventStreamPost(ch),
+		)
+		v.GET(
+			"/event-stream",
+			middleware.EventStreamHeaders(),
+			action.HandleEventStreamGet(ch),
+		)
+	}
 }

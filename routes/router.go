@@ -5,6 +5,8 @@ import (
 	"log"
 )
 
+const v1 = "/api/v1"
+
 type Router struct {
 	engine *gin.Engine
 }
