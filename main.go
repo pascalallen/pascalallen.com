@@ -48,12 +48,11 @@ func main() {
 	go eventDispatcher.StartConsuming()
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
-	router := gin.Default()
-	routes.Config(router)
-	routes.Fileserver(router)
-	routes.Default(router)
-	routes.Auth(router, userRepository, *commandBus)
-	routes.Temp(router, userRepository)
-
-	log.Fatalf("error running HTTP server: %s\n", router.Run(":9990"))
+	router := routes.NewRouter()
+	router.Config()
+	router.Fileserver()
+	router.Default()
+	router.Auth(userRepository, *commandBus)
+	router.Temp(userRepository)
+	router.Serve(":9990")
 }
