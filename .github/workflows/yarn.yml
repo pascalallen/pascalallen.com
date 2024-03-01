@@ -18,13 +18,13 @@ jobs:
           node-version: 'lts/*'
 
       - name: Test that JavaScript dependencies can be installed with Yarn
-        working-directory: ./client
+        working-directory: ./web/app
         run: yarn install --frozen-lockfile
 
       - name: Test that TypeScript can be compiled with Webpack
-        working-directory: ./client
+        working-directory: ./web/app
         run: yarn webpack --config webpack.config.js --mode development
 
       - name: Test that linter passes
-        working-directory: ./client
+        working-directory: ./web/app
         run: yarn eslint './src/**/*.{ts,tsx}' -c ./.eslintrc.json

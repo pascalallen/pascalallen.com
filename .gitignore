@@ -1,13 +1,9 @@
 # client
-/client/node_modules/
-/client/yarn-error.log
-/public/assets/
+/web/app/node_modules/
+/web/app/yarn-error.log
+/web/static/assets/
 
 # misc
-*.exe
-main
 .idea
 .env
 .DS_Store
-tmp/
-coverage.out

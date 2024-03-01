@@ -44,5 +44,5 @@ kubectl create secret generic env-vars --from-env-file=.env
 ### Apply Services to Kubernetes Cluster
 
 ```bash
-kubectl apply -f etc/k8s/postgres && kubectl apply -f etc/k8s/go
+kubectl apply -f internal/pascalallen/etc/k8s/postgres && kubectl apply -f internal/pascalallen/etc/k8s/go
 ```
