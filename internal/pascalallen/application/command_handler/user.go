@@ -14,7 +14,7 @@ type RegisterUserHandler struct {
 	EventDispatcher messaging.EventDispatcher
 }
 
-func (h RegisterUserHandler) Handle(cmd interface{}) error {
+func (h RegisterUserHandler) Handle(cmd messaging.Command) error {
 	c, ok := cmd.(*command.RegisterUser)
 	if !ok {
 		return fmt.Errorf("invalid command type passed to RegisterUserHandler: %v", cmd)
@@ -41,7 +41,7 @@ func (h RegisterUserHandler) Handle(cmd interface{}) error {
 
 type UpdateUserHandler struct{}
 
-func (h UpdateUserHandler) Handle(cmd interface{}) error {
+func (h UpdateUserHandler) Handle(cmd messaging.Command) error {
 	c, ok := cmd.(*command.UpdateUser)
 	if !ok {
 		return fmt.Errorf("invalid command type passed to UpdateUserHandler: %v", cmd)

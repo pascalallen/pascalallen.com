@@ -3,9 +3,9 @@ package messaging
 import (
 	"context"
 	"encoding/json"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command"
 	"github.com/rabbitmq/amqp091-go"
 	"log"
-	"reflect"
 	"time"
 )
 
@@ -14,7 +14,7 @@ type Command interface {
 }
 
 type CommandHandler interface {
-	Handle(command interface{}) error
+	Handle(command Command) error
 }
 
 type CommandBus interface {
@@ -30,7 +30,7 @@ type RabbitMqCommandBus struct {
 
 const queueName = "commands"
 
-func NewRabbitMqCommandBus(conn *amqp091.Connection) *RabbitMqCommandBus {
+func NewRabbitMqCommandBus(conn *amqp091.Connection) RabbitMqCommandBus {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open server channel for command queue: %s", err)
@@ -48,17 +48,17 @@ func NewRabbitMqCommandBus(conn *amqp091.Connection) *RabbitMqCommandBus {
 		log.Fatalf("failed to create or fetch queue: %s", err)
 	}
 
-	return &RabbitMqCommandBus{
+	return RabbitMqCommandBus{
 		channel:  ch,
 		handlers: make(map[string]CommandHandler),
 	}
 }
 
-func (bus *RabbitMqCommandBus) RegisterHandler(commandType string, handler CommandHandler) {
+func (bus RabbitMqCommandBus) RegisterHandler(commandType string, handler CommandHandler) {
 	bus.handlers[commandType] = handler
 }
 
-func (bus *RabbitMqCommandBus) StartConsuming() {
+func (bus RabbitMqCommandBus) StartConsuming() {
 	msgs := bus.messages()
 
 	var forever chan struct{}
@@ -72,7 +72,7 @@ func (bus *RabbitMqCommandBus) StartConsuming() {
 	<-forever
 }
 
-func (bus *RabbitMqCommandBus) Execute(cmd Command) {
+func (bus RabbitMqCommandBus) Execute(cmd Command) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -91,7 +91,7 @@ func (bus *RabbitMqCommandBus) Execute(cmd Command) {
 			DeliveryMode: amqp091.Persistent,
 			ContentType:  "text/plain",
 			Body:         b,
-			Type:         reflect.TypeOf(cmd).Name(),
+			Type:         cmd.CommandName(),
 		},
 	)
 	if err != nil {
@@ -99,7 +99,7 @@ func (bus *RabbitMqCommandBus) Execute(cmd Command) {
 	}
 }
 
-func (bus *RabbitMqCommandBus) messages() <-chan amqp091.Delivery {
+func (bus RabbitMqCommandBus) messages() <-chan amqp091.Delivery {
 	err := bus.channel.Qos(
 		1,
 		0,
@@ -125,8 +125,20 @@ func (bus *RabbitMqCommandBus) messages() <-chan amqp091.Delivery {
 	return d
 }
 
-func (bus *RabbitMqCommandBus) processCommand(msg amqp091.Delivery) {
+func (bus RabbitMqCommandBus) processCommand(msg amqp091.Delivery) {
 	var cmd Command
+
+	switch msg.Type {
+	case command.RegisterUser{}.CommandName():
+		cmd = &command.RegisterUser{}
+	case command.UpdateUser{}.CommandName():
+		cmd = &command.UpdateUser{}
+	case command.SendWelcomeEmail{}.CommandName():
+		cmd = &command.SendWelcomeEmail{}
+	default:
+		log.Printf("Unknown command received: %s", msg.Type)
+		return
+	}
 
 	err := json.Unmarshal(msg.Body, &cmd)
 	if err != nil {

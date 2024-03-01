@@ -12,7 +12,7 @@ type UserRegistration struct {
 	CommandBus messaging.CommandBus
 }
 
-func (l UserRegistration) Handle(evt interface{}) error {
+func (l UserRegistration) Handle(evt messaging.Event) error {
 	e, ok := evt.(*event.UserRegistered)
 	if !ok {
 		return fmt.Errorf("invalid event type passed to UserRegistration listener: %v", evt)
