@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Json } from '../domain/types/Json';
+import { Json } from '@domain/types/Json';
 
 export const listToMap = (array: string[]): { [key: string]: string } => {
   const map: { [key: string]: string } = {};

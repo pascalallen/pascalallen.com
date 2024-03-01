@@ -1,4 +1,4 @@
-import { Json } from '../domain/types/Json';
+import { Json } from '@domain/types/Json';
 
 const scriptConfig = JSON.parse(atob(`${document.getElementById('script_config')?.getAttribute('value')}`));
 

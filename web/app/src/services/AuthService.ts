@@ -1,11 +1,11 @@
 import jwtDecode from 'jwt-decode';
 import moment from 'moment';
-import { listToMap } from '../utilities/collections';
-import request from '../utilities/request';
-import HttpMethod from '../domain/constants/HttpMethod';
-import { User } from '../domain/types/User';
-import AuthStore from '../stores/AuthStore';
-import { LoginFormValues } from '../pages/LoginPage';
+import { listToMap } from '@utilities/collections';
+import request from '@utilities/request';
+import HttpMethod from '@domain/constants/HttpMethod';
+import { User } from '@domain/types/User';
+import AuthStore from '@stores/AuthStore';
+import { LoginFormValues } from '@pages/LoginPage';
 
 // TODO: Extract to reset password component
 export type ResetPasswordFormValues = {

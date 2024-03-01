@@ -1,13 +1,13 @@
-import HttpMethod from '../domain/constants/HttpMethod';
-import { Json } from '../domain/types/Json';
-import AuthStore from '../stores/AuthStore';
+import HttpMethod from '@domain/constants/HttpMethod';
+import { Json } from '@domain/types/Json';
+import AuthStore from '@stores/AuthStore';
 import {
   ApiResponse,
   makeApiErrorResponse,
   makeApiFailResponse,
   makeApiService,
   makeAppError
-} from '../services/ApiService';
+} from '@services/ApiService';
 
 export type RequestProps = {
   method: string;

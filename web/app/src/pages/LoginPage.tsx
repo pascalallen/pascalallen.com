@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import Path from '../domain/constants/Path';
-import useAuth from '../hooks/useAuth';
+import Path from '@domain/constants/Path';
+import useAuth from '@hooks/useAuth';
 
 export type LoginFormValues = {
   email_address: string;

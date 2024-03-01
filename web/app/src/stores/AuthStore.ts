@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { AuthData } from '../domain/types/AuthData';
+import { AuthData } from '@domain/types/AuthData';
 
 class AuthStore {
   private data?: AuthData;

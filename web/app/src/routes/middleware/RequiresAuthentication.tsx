@@ -2,8 +2,8 @@ import React, { ReactElement, ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLocation } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import Path from '../../domain/constants/Path';
-import useAuth from '../../hooks/useAuth';
+import Path from '@domain/constants/Path';
+import useAuth from '@hooks/useAuth';
 
 export type RequiresAuthenticationProps = {
   children: ReactNode;

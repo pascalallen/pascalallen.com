@@ -1,5 +1,5 @@
+import AuthService from '@services/AuthService';
 import useStore from './useStore';
-import AuthService from '../services/AuthService';
 
 const useAuth = (): AuthService => {
   const authStore = useStore('authStore');

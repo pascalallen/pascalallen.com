@@ -2,10 +2,10 @@ import React, { FormEvent, ReactElement, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import Path from '../domain/constants/Path';
-import useStore from '../hooks/useStore';
-import AuthService from '../services/AuthService';
-import TempService from '../services/TempService';
+import Path from '@domain/constants/Path';
+import useStore from '@hooks/useStore';
+import AuthService from '@services/AuthService';
+import TempService from '@services/TempService';
 
 const TempPage = observer((): ReactElement => {
   const authStore = useStore('authStore');

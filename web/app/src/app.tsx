@@ -2,9 +2,9 @@ import React, { ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import routes from './routes/routes';
-import { storesInstance, StoresProvider } from './stores/Stores';
-import './assets/scss/app.scss';
+import routes from '@routes/routes';
+import { storesInstance, StoresProvider } from '@stores/Stores';
+import '@assets/scss/app.scss';
 
 const container: HTMLElement | null = document.getElementById('root');
 if (container === null) {

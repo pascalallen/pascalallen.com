@@ -1,6 +1,6 @@
-import request from '../utilities/request';
-import HttpMethod from '../domain/constants/HttpMethod';
-import AuthStore from '../stores/AuthStore';
+import request from '@utilities/request';
+import HttpMethod from '@domain/constants/HttpMethod';
+import AuthStore from '@stores/AuthStore';
 
 class TempService {
   private readonly authStore: AuthStore;
