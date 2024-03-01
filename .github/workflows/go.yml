@@ -25,7 +25,7 @@ jobs:
         run: go mod verify
 
       - name: Test that packages can be compiled
-        run: go build
+        run: go build -C cmd/pascalallen
 
       - name: Run tests
-        run: go test
+        run: go test ./...

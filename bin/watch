@@ -17,4 +17,4 @@ docker container run \
     --net pascalallen \
     --env-file .env \
     cosmtrek/air \
-    -build.exclude_dir "client" "tmp"
+    -build.exclude_dir "web"

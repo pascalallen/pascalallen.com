@@ -1,0 +1,48 @@
+{
+    "extends": "@tsconfig/recommended/tsconfig.json",
+    "compilerOptions": {
+        "outDir": "../static/assets/",
+        "moduleResolution": "node",
+        "jsx": "react-jsx",
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        "isolatedModules": true,
+        "noImplicitAny": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "baseUrl": "./src/",
+        "paths": {
+            "@assets/*": [
+                "assets/*"
+            ],
+            "@components/*": [
+                "components/*"
+            ],
+            "@domain/*": [
+                "domain/*"
+            ],
+            "@hooks/*": [
+                "hooks/*"
+            ],
+            "@pages/*": [
+                "pages/*"
+            ],
+            "@routes/*": [
+                "routes/*"
+            ],
+            "@services/*": [
+                "services/*"
+            ],
+            "@stores/*": [
+                "stores/*"
+            ],
+            "@utilities/*": [
+                "utilities/*"
+            ]
+        }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}

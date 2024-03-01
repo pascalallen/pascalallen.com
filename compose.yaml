@@ -3,7 +3,7 @@ services:
     env_file:
       - .env
     build:
-      context: ./etc/postgres
+      context: internal/pascalallen/infrastructure/etc/postgres
     container_name: pascalallen-postgres
     ports:
       - "5432:5432"
@@ -16,19 +16,19 @@ services:
     env_file:
       - .env
     build:
-      context: ./etc/rabbitmq
+      context: internal/pascalallen/infrastructure/etc/rabbitmq
     hostname: pascalallen-rabbitmq
     container_name: pascalallen-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     volumes:
-      - ./etc/rabbitmq:/etc/rabbitmq
+      - ./internal/pascalallen/infrastructure/etc/rabbitmq:/etc/rabbitmq
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      interval: 10s
+      timeout: 10s
+      retries: 10
     networks:
       - pascalallen
 

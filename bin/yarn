@@ -10,14 +10,14 @@ case "$1" in
         -p 127.0.0.1:8181:8181/tcp \
         --rm -it \
         -v "$(pwd)":/app \
-        -w /app/client \
+        -w /app/web/app \
         node:lts yarn "$@"
     ;;
     *)
     docker container run \
         --rm -it \
         -v "$(pwd)":/app \
-        -w /app/client \
+        -w /app/web/app \
         node:lts yarn "$@"
     ;;
 esac

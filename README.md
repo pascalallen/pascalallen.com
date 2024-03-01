@@ -21,7 +21,7 @@ hexagonal architecture, and the SOLID principles.
 - RabbitMQ message broker
 - Asynchronous command bus
 - Asynchronous query bus (work in progress)
-- Asynchronous event dispatcher (work in progress)
+- Asynchronous event dispatcher
 - Middleware
 - Frontend linting with ESLint and Prettier
 - GORM ORM

@@ -14,7 +14,7 @@ RUN chmod +x /usr/bin/wait-for-it.sh
 
 ENV GOCACHE=/root/.cache/go-build
 
-RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux go build -o /pascalallen
+RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux go build -C cmd/pascalallen -o /pascalallen
 
 EXPOSE 9990
 
