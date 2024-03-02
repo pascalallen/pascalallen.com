@@ -160,6 +160,8 @@ func (e RabbitMqEventDispatcher) processEvent(msg amqp091.Delivery) {
 		evt = &event.UserRegistered{}
 	case event.UserUpdated{}.EventName():
 		evt = &event.UserUpdated{}
+	case event.WelcomeEmailSent{}.EventName():
+		evt = &event.WelcomeEmailSent{}
 	default:
 		log.Printf("Unknown event received: %s", msg.Type)
 		return
