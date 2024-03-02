@@ -3,11 +3,13 @@ package command_handler
 import (
 	"fmt"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/event"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/messaging"
-	"log"
 )
 
-type SendWelcomeEmailHandler struct{}
+type SendWelcomeEmailHandler struct {
+	EventDispatcher messaging.EventDispatcher
+}
 
 func (h SendWelcomeEmailHandler) Handle(cmd messaging.Command) error {
 	c, ok := cmd.(*command.SendWelcomeEmail)
@@ -15,8 +17,16 @@ func (h SendWelcomeEmailHandler) Handle(cmd messaging.Command) error {
 		return fmt.Errorf("invalid command type passed to SendWelcomeEmailHandler: %v", cmd)
 	}
 
-	// TODO
-	log.Printf("SendWelcomeEmailHandler executed: %v", c)
+	// TODO: send welcome email
+
+	evt := event.WelcomeEmailSent{
+		Id:           c.Id,
+		FirstName:    c.FirstName,
+		LastName:     c.LastName,
+		EmailAddress: c.EmailAddress,
+		Token:        c.Token,
+	}
+	h.EventDispatcher.Dispatch(evt)
 
 	return nil
 }
