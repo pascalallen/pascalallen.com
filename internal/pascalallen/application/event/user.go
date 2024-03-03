@@ -6,10 +6,10 @@ import (
 )
 
 type UserRegistered struct {
-	Id           ulid.ULID
-	FirstName    string
-	LastName     string
-	EmailAddress string
+	Id           ulid.ULID `json:"id"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	EmailAddress string    `json:"email_address"`
 }
 
 func (e UserRegistered) EventName() string {
@@ -17,10 +17,10 @@ func (e UserRegistered) EventName() string {
 }
 
 type UserUpdated struct {
-	Id           ulid.ULID
-	FirstName    string
-	LastName     string
-	EmailAddress string
+	Id           ulid.ULID `json:"id"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	EmailAddress string    `json:"email_address"`
 }
 
 func (e UserUpdated) EventName() string {

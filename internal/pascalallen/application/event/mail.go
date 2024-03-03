@@ -7,11 +7,11 @@ import (
 )
 
 type WelcomeEmailSent struct {
-	Id           ulid.ULID
-	FirstName    string
-	LastName     string
-	EmailAddress string
-	Token        crypto.Crypto
+	Id           ulid.ULID     `json:"id"`
+	FirstName    string        `json:"first_name"`
+	LastName     string        `json:"last_name"`
+	EmailAddress string        `json:"email_address"`
+	Token        crypto.Crypto `json:"token"`
 }
 
 func (e WelcomeEmailSent) EventName() string {

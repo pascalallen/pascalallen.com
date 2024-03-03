@@ -1,4 +1,4 @@
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import moment from 'moment';
 import { listToMap } from '@utilities/collections';
 import request from '@utilities/request';
