@@ -7,11 +7,11 @@ import (
 )
 
 type RegisterUser struct {
-	Id           ulid.ULID
-	FirstName    string
-	LastName     string
-	EmailAddress string
-	PasswordHash password.PasswordHash
+	Id           ulid.ULID             `json:"id"`
+	FirstName    string                `json:"first_name"`
+	LastName     string                `json:"last_name"`
+	EmailAddress string                `json:"email_address"`
+	PasswordHash password.PasswordHash `json:"password_hash"`
 }
 
 func (c RegisterUser) CommandName() string {
