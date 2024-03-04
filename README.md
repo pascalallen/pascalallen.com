@@ -6,11 +6,30 @@
 ![GitHub](https://img.shields.io/github/license/pascalallen/pascalallen.com)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pascalallen/pascalallen.com)
 
+<div style="text-align: center;">
+    <img src="./logo.svg" alt="Logo">
+</div>
+
 pascalallen.com is a containerized web application built with Kubernetes, Docker, RabbitMQ, Postgres, Go, React, 
 TypeScript, Sass, Webpack, and WebAssembly. This ongoing project is designed, developed, deployed, and 
-maintained by myself, Pascal Allen. The motivation behind this project was to develop a scalable and portable 
-framework that can be used as a template for future web applications. This project is based on CQRS, domain-driven design, 
-hexagonal architecture, and the SOLID principles.
+maintained by myself, Pascal Allen. 
+
+## Motivation
+
+The motivation behind this project was to develop a scalable and portable framework that can be used as a template 
+for web apps and microservices. This project attempts to adhere to [Effective Go](https://go.dev/doc/effective_go) and 
+[Organizing a Go module](https://go.dev/doc/modules/layout) by the core Go dev team. Also used in the architecture 
+of this project are various design principles such as CQRS, DDD, hexagonal architecture, and SOLID.
+
+## Core Project Tree
+
+```
+├── bin/       # Executable CLI commands
+├── cmd/       # Go commands
+├── internal/  # Supporting packages
+├── scripts/   # Application-specific scripts
+└── web/       # Web app components
+```
 
 ## Features
 
@@ -96,13 +115,13 @@ bin/down <prod>
 Run tests and create coverage profile:
 
 ```bash
-go test ./... -covermode=count -coverprofile=coverage.out
+bin/exec go test ./... -covermode=count -coverprofile=coverage.out
 ```
 
 View test coverage profile:
 
 ```bash
-go tool cover -html=coverage.out
+bin/exec go tool cover -html=coverage.out
 ```
 
 ## Contributing
