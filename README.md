@@ -36,6 +36,7 @@ of this project are various design principles such as CQRS, DDD, hexagonal archi
 - Configurable CI/CD pipeline
 - Helper scripts
 - MobX store
+- DI container (work in progress)
 - JWT/HMAC authentication services
 - RabbitMQ message broker
 - Asynchronous command bus
