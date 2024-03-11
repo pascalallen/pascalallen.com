@@ -2,31 +2,27 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command_handler"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/event"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/listener"
-	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/database"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/permission"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/role"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/user"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/messaging"
-	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/repository"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/routes"
-	"log"
 	"os"
 )
 
 func main() {
-	unitOfWork, err := database.NewGormUnitOfWork()
-	if err != nil {
-		log.Fatal(err)
-	}
+	container := InitializeContainer()
+	dbSession := container.DatabaseSession
+	dbSeeder := container.DatabaseSeeder
+	userRepository := container.UserRepository
 
-	database.Migrate(unitOfWork)
-
-	permissionRepository := repository.NewGormPermissionRepository(unitOfWork)
-	roleRepository := repository.NewGormRoleRepository(unitOfWork)
-	userRepository := repository.NewGormUserRepository(unitOfWork)
-
-	database.Seed(unitOfWork, permissionRepository, roleRepository, userRepository)
+	dbSession.AutoMigrate(&permission.Permission{}, &role.Role{}, &user.User{})
+	dbSeeder.Seed()
 
 	w := messaging.NewRabbitMQConnection()
 	defer w.Close()

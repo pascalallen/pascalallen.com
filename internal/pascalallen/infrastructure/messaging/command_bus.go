@@ -30,7 +30,7 @@ type RabbitMqCommandBus struct {
 
 const queueName = "commands"
 
-func NewRabbitMqCommandBus(conn *amqp091.Connection) RabbitMqCommandBus {
+func NewRabbitMqCommandBus(conn *amqp091.Connection) *RabbitMqCommandBus {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open server channel for command queue: %s", err)
@@ -48,17 +48,17 @@ func NewRabbitMqCommandBus(conn *amqp091.Connection) RabbitMqCommandBus {
 		log.Fatalf("failed to create or fetch queue: %s", err)
 	}
 
-	return RabbitMqCommandBus{
+	return &RabbitMqCommandBus{
 		channel:  ch,
 		handlers: make(map[string]CommandHandler),
 	}
 }
 
-func (bus RabbitMqCommandBus) RegisterHandler(commandType string, handler CommandHandler) {
+func (bus *RabbitMqCommandBus) RegisterHandler(commandType string, handler CommandHandler) {
 	bus.handlers[commandType] = handler
 }
 
-func (bus RabbitMqCommandBus) StartConsuming() {
+func (bus *RabbitMqCommandBus) StartConsuming() {
 	msgs := bus.messages()
 
 	var forever chan struct{}
@@ -72,7 +72,7 @@ func (bus RabbitMqCommandBus) StartConsuming() {
 	<-forever
 }
 
-func (bus RabbitMqCommandBus) Execute(cmd Command) {
+func (bus *RabbitMqCommandBus) Execute(cmd Command) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -99,7 +99,7 @@ func (bus RabbitMqCommandBus) Execute(cmd Command) {
 	}
 }
 
-func (bus RabbitMqCommandBus) messages() <-chan amqp091.Delivery {
+func (bus *RabbitMqCommandBus) messages() <-chan amqp091.Delivery {
 	err := bus.channel.Qos(
 		1,
 		0,
@@ -125,7 +125,7 @@ func (bus RabbitMqCommandBus) messages() <-chan amqp091.Delivery {
 	return d
 }
 
-func (bus RabbitMqCommandBus) processCommand(msg amqp091.Delivery) {
+func (bus *RabbitMqCommandBus) processCommand(msg amqp091.Delivery) {
 	var cmd Command
 
 	switch msg.Type {
