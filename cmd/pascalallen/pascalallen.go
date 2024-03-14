@@ -57,6 +57,7 @@ func configureServer(container Container) {
 
 	router.Config()
 	router.Fileserver()
+	router.VideoFeed()
 	router.Default()
 	router.Auth(userRepository, commandBus)
 	router.Temp(userRepository)
