@@ -46,6 +46,7 @@ func main() {
 	router := routes.NewRouter()
 	router.Config()
 	router.Fileserver()
+	router.VideoFeed()
 	router.Default()
 	router.Auth(userRepository, commandBus)
 	router.Temp(userRepository)
