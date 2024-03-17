@@ -36,7 +36,7 @@ of this project are various design principles such as CQRS, DDD, hexagonal archi
 - Configurable CI/CD pipeline
 - Helper scripts
 - MobX store
-- DI container (work in progress)
+- Google Wire DI container
 - JWT/HMAC authentication services
 - RabbitMQ message broker
 - Asynchronous command bus
@@ -119,10 +119,10 @@ Run tests and create coverage profile:
 bin/exec go test ./... -covermode=count -coverprofile=coverage.out
 ```
 
-View test coverage profile:
+Generate HTML file to view test coverage profile:
 
 ```bash
-bin/exec go tool cover -html=coverage.out
+bin/exec go tool cover -html=coverage.out -o coverage.html
 ```
 
 ## Contributing

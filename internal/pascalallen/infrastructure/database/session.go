@@ -24,7 +24,7 @@ type GormSession struct {
 	session *gorm.DB
 }
 
-func NewGormSession() *GormSession {
+func NewGormSession() Session {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s",
 		os.Getenv("DB_HOST"),
@@ -39,32 +39,32 @@ func NewGormSession() *GormSession {
 		log.Fatalf("failed to initialize database session: %s", err)
 	}
 
-	return &GormSession{session: db}
+	return GormSession{session: db}
 }
 
-func (s *GormSession) AutoMigrate(dests ...interface{}) {
-	if err := s.session.AutoMigrate(&dests); err != nil {
+func (s GormSession) AutoMigrate(dests ...interface{}) {
+	if err := s.session.AutoMigrate(dests...); err != nil {
 		log.Fatalf("failed to auto migrate database: %s", err)
 	}
 }
 
-func (s *GormSession) First(dest interface{}, conds ...interface{}) error {
-	if err := s.session.First(dest, conds).Error; err != nil {
+func (s GormSession) First(dest interface{}, conds ...interface{}) error {
+	if err := s.session.First(dest, conds...).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *GormSession) Find(dest interface{}, conds ...interface{}) error {
-	if err := s.session.Find(&dest, conds).Error; err != nil {
+func (s GormSession) Find(dest interface{}, conds ...interface{}) error {
+	if err := s.session.Find(dest, conds...).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *GormSession) Create(value interface{}) error {
+func (s GormSession) Create(value interface{}) error {
 	if err := s.session.Create(value).Error; err != nil {
 		return err
 	}
@@ -72,15 +72,15 @@ func (s *GormSession) Create(value interface{}) error {
 	return nil
 }
 
-func (s *GormSession) Delete(value interface{}, conds ...interface{}) error {
-	if err := s.session.Delete(value, conds).Error; err != nil {
+func (s GormSession) Delete(value interface{}, conds ...interface{}) error {
+	if err := s.session.Delete(value, conds...).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *GormSession) Save(value interface{}) error {
+func (s GormSession) Save(value interface{}) error {
 	if err := s.session.Save(value).Error; err != nil {
 		return err
 	}
@@ -88,20 +88,20 @@ func (s *GormSession) Save(value interface{}) error {
 	return nil
 }
 
-func (s *GormSession) Preload(query string, args ...interface{}) Session {
-	s.session = s.session.Preload(query, args)
+func (s GormSession) Preload(query string, args ...interface{}) Session {
+	s.session = s.session.Preload(query, args...)
 
 	return s
 }
 
-func (s *GormSession) Where(query interface{}, args ...interface{}) Session {
-	s.session = s.session.Where(query, args)
+func (s GormSession) Where(query interface{}, args ...interface{}) Session {
+	s.session = s.session.Where(query, args...)
 
 	return s
 }
 
-func (s *GormSession) Replace(model interface{}, association string, values ...interface{}) error {
-	if err := s.session.Model(model).Association(association).Replace(values); err != nil {
+func (s GormSession) Replace(model interface{}, association string, values ...interface{}) error {
+	if err := s.session.Model(model).Association(association).Replace(values...); err != nil {
 		return err
 	}
 

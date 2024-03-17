@@ -13,7 +13,7 @@ type GormPermissionRepository struct {
 	session database.Session
 }
 
-func NewGormPermissionRepository(session database.Session) *GormPermissionRepository {
+func NewGormPermissionRepository(session database.Session) permission.PermissionRepository {
 	return &GormPermissionRepository{
 		session: session,
 	}
@@ -56,7 +56,7 @@ func (repository *GormPermissionRepository) GetAll() (*[]permission.Permission, 
 }
 
 func (repository *GormPermissionRepository) Add(permission *permission.Permission) error {
-	if err := repository.session.Create(&permission); err != nil {
+	if err := repository.session.Create(permission); err != nil {
 		return fmt.Errorf("failed to persist Permission to database: %s", permission)
 	}
 

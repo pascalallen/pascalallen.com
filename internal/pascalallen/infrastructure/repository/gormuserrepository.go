@@ -13,7 +13,7 @@ type GormUserRepository struct {
 	session database.Session
 }
 
-func NewGormUserRepository(session database.Session) *GormUserRepository {
+func NewGormUserRepository(session database.Session) user.UserRepository {
 	return &GormUserRepository{
 		session: session,
 	}
@@ -60,7 +60,7 @@ func (repository *GormUserRepository) GetAll(includeDeleted bool) (*[]user.User,
 }
 
 func (repository *GormUserRepository) Add(user *user.User) error {
-	if err := repository.session.Create(&user); err != nil {
+	if err := repository.session.Create(user); err != nil {
 		return fmt.Errorf("failed to persist User to database: %s", user)
 	}
 

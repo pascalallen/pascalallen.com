@@ -30,7 +30,7 @@ type RabbitMqEventDispatcher struct {
 
 const exchangeName = "events"
 
-func NewRabbitMqEventDispatcher(conn *amqp091.Connection) *RabbitMqEventDispatcher {
+func NewRabbitMqEventDispatcher(conn *amqp091.Connection) EventDispatcher {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open server channel for event dispatcher: %s", err)

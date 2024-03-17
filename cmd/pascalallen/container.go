@@ -15,8 +15,8 @@ type Container struct {
 	DatabaseSeeder       database.Seeder
 }
 
-func NewContainer(dbSession database.Session, permissionRepo permission.PermissionRepository, roleRepo role.RoleRepository, userRepo user.UserRepository, dbSeeder database.Seeder) *Container {
-	return &Container{
+func NewContainer(dbSession database.Session, permissionRepo permission.PermissionRepository, roleRepo role.RoleRepository, userRepo user.UserRepository, dbSeeder database.Seeder) Container {
+	return Container{
 		DatabaseSession:      dbSession,
 		PermissionRepository: permissionRepo,
 		RoleRepository:       roleRepo,

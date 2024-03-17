@@ -7,7 +7,8 @@
 package main
 
 import (
-	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/providers"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/database"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/repository"
 )
 
 import (
@@ -16,12 +17,12 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeContainer() *Container {
-	session := providers.NewDatabaseSession()
-	permissionRepository := providers.NewPermissionRepository(session)
-	roleRepository := providers.NewRoleRepository(session)
-	userRepository := providers.NewUserRepository(session)
-	seeder := providers.NewDatabaseSeeder(session, permissionRepository, roleRepository, userRepository)
+func InitializeContainer() Container {
+	session := database.NewGormSession()
+	permissionRepository := repository.NewGormPermissionRepository(session)
+	roleRepository := repository.NewGormRoleRepository(session)
+	userRepository := repository.NewGormUserRepository(session)
+	seeder := database.NewDatabaseSeeder(session, permissionRepository, roleRepository, userRepository)
 	container := NewContainer(session, permissionRepository, roleRepository, userRepository, seeder)
 	return container
 }

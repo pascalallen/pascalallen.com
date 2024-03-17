@@ -30,7 +30,7 @@ type RabbitMqCommandBus struct {
 
 const queueName = "commands"
 
-func NewRabbitMqCommandBus(conn *amqp091.Connection) *RabbitMqCommandBus {
+func NewRabbitMqCommandBus(conn *amqp091.Connection) CommandBus {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open server channel for command queue: %s", err)

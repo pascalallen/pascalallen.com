@@ -13,7 +13,7 @@ type GormRoleRepository struct {
 	session database.Session
 }
 
-func NewGormRoleRepository(session database.Session) *GormRoleRepository {
+func NewGormRoleRepository(session database.Session) role.RoleRepository {
 	return &GormRoleRepository{
 		session: session,
 	}
@@ -56,7 +56,7 @@ func (repository *GormRoleRepository) GetAll() (*[]role.Role, error) {
 }
 
 func (repository *GormRoleRepository) Add(role *role.Role) error {
-	if err := repository.session.Create(&role); err != nil {
+	if err := repository.session.Create(role); err != nil {
 		return fmt.Errorf("failed to persist Role to database: %s", role)
 	}
 
