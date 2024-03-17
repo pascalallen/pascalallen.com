@@ -30,7 +30,7 @@ type RabbitMqEventDispatcher struct {
 
 const exchangeName = "events"
 
-func NewRabbitMqEventDispatcher(conn *amqp091.Connection) RabbitMqEventDispatcher {
+func NewRabbitMqEventDispatcher(conn *amqp091.Connection) EventDispatcher {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open server channel for event dispatcher: %s", err)
@@ -49,17 +49,17 @@ func NewRabbitMqEventDispatcher(conn *amqp091.Connection) RabbitMqEventDispatche
 		log.Fatalf("failed to declare exchange: %s", err)
 	}
 
-	return RabbitMqEventDispatcher{
+	return &RabbitMqEventDispatcher{
 		channel:   ch,
 		listeners: make(map[string]Listener),
 	}
 }
 
-func (e RabbitMqEventDispatcher) RegisterListener(eventType string, listener Listener) {
+func (e *RabbitMqEventDispatcher) RegisterListener(eventType string, listener Listener) {
 	e.listeners[eventType] = listener
 }
 
-func (e RabbitMqEventDispatcher) StartConsuming() {
+func (e *RabbitMqEventDispatcher) StartConsuming() {
 	msgs := e.messages()
 
 	var forever chan struct{}
@@ -73,7 +73,7 @@ func (e RabbitMqEventDispatcher) StartConsuming() {
 	<-forever
 }
 
-func (e RabbitMqEventDispatcher) Dispatch(evt Event) {
+func (e *RabbitMqEventDispatcher) Dispatch(evt Event) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -99,7 +99,7 @@ func (e RabbitMqEventDispatcher) Dispatch(evt Event) {
 	}
 }
 
-func (e RabbitMqEventDispatcher) messages() <-chan amqp091.Delivery {
+func (e *RabbitMqEventDispatcher) messages() <-chan amqp091.Delivery {
 	err := e.channel.ExchangeDeclare(
 		exchangeName,
 		"fanout",
@@ -152,7 +152,7 @@ func (e RabbitMqEventDispatcher) messages() <-chan amqp091.Delivery {
 	return d
 }
 
-func (e RabbitMqEventDispatcher) processEvent(msg amqp091.Delivery) {
+func (e *RabbitMqEventDispatcher) processEvent(msg amqp091.Delivery) {
 	var evt Event
 
 	switch msg.Type {

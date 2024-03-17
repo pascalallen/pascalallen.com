@@ -5,6 +5,8 @@ go 1.22
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/wire v0.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rabbitmq/amqp091-go v1.9.0
 	golang.org/x/crypto v0.20.0
