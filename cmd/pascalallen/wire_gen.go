@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/database"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/messaging"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/repository"
 )
 
@@ -23,6 +24,9 @@ func InitializeContainer() Container {
 	roleRepository := repository.NewGormRoleRepository(session)
 	userRepository := repository.NewGormUserRepository(session)
 	seeder := database.NewDatabaseSeeder(session, permissionRepository, roleRepository, userRepository)
-	container := NewContainer(session, permissionRepository, roleRepository, userRepository, seeder)
+	connection := messaging.NewRabbitMQConnection()
+	commandBus := messaging.NewRabbitMqCommandBus(connection)
+	eventDispatcher := messaging.NewRabbitMqEventDispatcher(connection)
+	container := NewContainer(session, permissionRepository, roleRepository, userRepository, seeder, connection, commandBus, eventDispatcher)
 	return container
 }

@@ -6,9 +6,7 @@
 ![GitHub](https://img.shields.io/github/license/pascalallen/pascalallen.com)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pascalallen/pascalallen.com)
 
-<div style="text-align: center;">
-    <img src="./logo.svg" alt="Logo">
-</div>
+![Logo](web/static/logo.svg)
 
 pascalallen.com is a containerized web application built with Kubernetes, Docker, RabbitMQ, Postgres, Go, React, 
 TypeScript, Sass, Webpack, and WebAssembly. This ongoing project is designed, developed, deployed, and 
