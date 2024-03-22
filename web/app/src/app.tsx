@@ -17,8 +17,11 @@ const App = (): ReactElement => {
       <StoresProvider value={storesInstance}>
         <HelmetProvider>
           <Helmet>
-            <title>Pascal Allen</title>
-            <meta name="description" content="Software Developer" />
+            <title>Pascal Allen - pascalallen.com</title>
+            <meta
+              name="description"
+              content="pascalallen.com is a containerized web application built with Kubernetes, Docker, RabbitMQ, Postgres, Go, React, TypeScript, Sass, Webpack, and WebAssembly. This ongoing project is designed, developed, deployed, and maintained by myself, Pascal Allen."
+            />
             <meta name="robots" content="index, follow" />
             <link rel="canonical" href="https://pascalallen.com/" />
           </Helmet>
