@@ -15,6 +15,22 @@ type QueryParamsObject = {
   [key: string]: Json;
 };
 
+export const queryStringify = (params: QueryParamsObject): string => {
+  const query = _.chain(params)
+    .keys()
+    .map(key => {
+      const value = params[key];
+      if (_.isArray(value)) {
+        return `${key}[]=${_.join(value, `&${key}[]=`)}`;
+      }
+      return `${key}=${value}`;
+    })
+    .join('&')
+    .value();
+
+  return query ? `?${query}` : '';
+};
+
 export const removeEmptyKeys = (params: QueryParamsObject): QueryParamsObject => {
   _.forEach(params, (value, key) => {
     if (

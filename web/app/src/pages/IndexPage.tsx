@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router';
 import env, { EnvKey } from '@utilities/env';
+import GitHubApiService, { GitHubRepository } from '@services/GitHubApiService';
 import DockerLogo from '@assets/images/docker-logo.svg';
 import GoLogo from '@assets/images/go-logo.svg';
 import K8sLogo from '@assets/images/k8s-logo.svg';
@@ -16,12 +17,10 @@ import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
 import Footer from '@components/Footer';
 
-const gitHubQuery = 'q=' + encodeURIComponent('user:pascalallen');
-const gitHubUrl = `https://api.github.com/search/repositories?${gitHubQuery}&per_page=10&sort=updated&direction=desc`;
 const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';
 
 type State = {
-  repos: [];
+  repos: GitHubRepository[];
   packages: [];
 };
 
@@ -42,9 +41,16 @@ const IndexPage = (): ReactElement => {
   const socialLinks: HTMLElement | null = document.getElementById('social-links');
 
   useEffect(() => {
-    fetch(gitHubUrl, { headers: { Authorization: `token ${env(EnvKey.GITHUB_TOKEN)}` } })
-      .then(response => response.json())
-      .then(data => setRepos(data.items));
+    const gitHubService = new GitHubApiService();
+    gitHubService
+      .getAllRepositories({
+        type: 'owner',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: 10,
+        page: 1
+      })
+      .then(response => setRepos(response.body.data ?? []));
 
     fetch(npmUrl)
       .then(response => response.json())
@@ -391,8 +397,7 @@ const IndexPage = (): ReactElement => {
                 #
               </a>
             </h2>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {repos.map((repo: any, index: number) => (
+            {repos.map((repo: GitHubRepository, index: number) => (
               <p key={`repo-${index}`}>
                 <a id={`${repo.name}-repo-link`} href={repo.html_url} target="_blank" rel="noreferrer">
                   {repo.name}
