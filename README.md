@@ -23,6 +23,7 @@ of this project are various design principles such as CQRS, DDD, hexagonal archi
 
 ```
 ├── bin/       # Executable CLI commands
+├── docs/      # Additional documentation
 ├── cmd/       # Go commands
 ├── internal/  # Supporting packages
 ├── scripts/   # Application-specific scripts
