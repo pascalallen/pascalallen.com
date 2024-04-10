@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router';
 import env, { EnvKey } from '@utilities/env';
 import GitHubApiService, { GitHubRepository } from '@services/GitHubApiService';
+import NpmApiService, { NpmPackage } from '@services/NpmApiService';
 import DockerLogo from '@assets/images/docker-logo.svg';
 import GoLogo from '@assets/images/go-logo.svg';
 import K8sLogo from '@assets/images/k8s-logo.svg';
@@ -17,11 +18,9 @@ import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
 import Footer from '@components/Footer';
 
-const npmUrl = 'https://registry.npmjs.org/-/v1/search?text=@pascalallen';
-
 type State = {
   repos: GitHubRepository[];
-  packages: [];
+  packages: NpmPackage[];
 };
 
 const initialState: State = {
@@ -41,8 +40,8 @@ const IndexPage = (): ReactElement => {
   const socialLinks: HTMLElement | null = document.getElementById('social-links');
 
   useEffect(() => {
-    const gitHubService = new GitHubApiService();
-    gitHubService
+    const gitHubApiService = new GitHubApiService();
+    gitHubApiService
       .getAllRepositories({
         type: 'owner',
         sort: 'updated',
@@ -52,9 +51,8 @@ const IndexPage = (): ReactElement => {
       })
       .then(response => setRepos(response.body.data ?? []));
 
-    fetch(npmUrl)
-      .then(response => response.json())
-      .then(data => setPackages(data.objects));
+    const npmApiService = new NpmApiService();
+    npmApiService.getAllPackages().then(response => setPackages(response.body.data ?? []));
 
     if (`${env(EnvKey.APP_ENV)}` === 'prod' || `${env(EnvKey.APP_ENV)}` === 'production') {
       const user = {
@@ -419,8 +417,7 @@ const IndexPage = (): ReactElement => {
                 #
               </a>
             </h2>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {packages.map((pkg: any, index: number) => (
+            {packages.map((pkg: NpmPackage, index: number) => (
               <p key={`pkg-${index}`}>
                 <a id={`${pkg.package.name}-npm-link`} href={pkg.package.links.npm} target="_blank" rel="noreferrer">
                   {pkg.package.name}
