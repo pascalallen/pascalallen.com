@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   pascalallen-adminer:
     image: adminer:4-standalone
