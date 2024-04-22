@@ -28,6 +28,6 @@ jobs:
 
       - name: Push new Docker images to Docker Hub
         run: |
-          docker push pascalallen-postgres
-          docker push pascalallen-rabbitmq
-          docker push pascalallen-go
+          docker push pascalallen/pascalallen-postgres
+          docker push pascalallen/pascalallen-rabbitmq
+          docker push pascalallen/pascalallen-go
