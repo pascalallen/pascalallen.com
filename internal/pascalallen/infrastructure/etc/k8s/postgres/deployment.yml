@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: pascalallen-postgres
-          image: pascalallen/pascalallen-postgres
+          image: pascalallen/pascalallen-postgres:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5432
