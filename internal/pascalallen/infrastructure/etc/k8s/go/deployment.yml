@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: pascalallen-go
-          image: pascalallen/pascalallen-go
+          image: pascalallen/pascalallen-go:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 9990
