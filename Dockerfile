@@ -1,4 +1,4 @@
-FROM golang:1.22
+FROM --platform=linux/arm64 golang:1.22
 
 LABEL org.opencontainers.image.source=https://github.com/pascalallen/pascalallen.com
 LABEL org.opencontainers.image.description="Container image for pascalallen.com"
