@@ -17,9 +17,11 @@ kubectl create secret generic env-vars --from-env-file=.env
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/baremetal/deploy.yaml \
-    && kubectl apply -f internal/pascalallen/etc/k8s/postgres \
-# TODO && kubectl apply -f internal/pascalallen/etc/k8s/rabbitmq \
-    && kubectl apply -f internal/pascalallen/etc/k8s/go
+    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/postgres \
+    && kubectl apply -f https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml \
+    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/rabbitmq \
+    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/go \
+    && kubectl run pascalallen-go --image=pascalallen/pascalallen-go -- --uri amqp://<RABBITMQ_USERNAME>:<RABBITMQ_PASSWORD>@<APP_CLUSTER_IP>
 ```
 
 ### Retrieve `EXTERNAL-IP`
