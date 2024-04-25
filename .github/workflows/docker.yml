@@ -17,7 +17,6 @@ jobs:
       - name: Tag Docker images
         run: |
           docker tag $(docker images -q pascalallencom-pascalallen-postgres) pascalallen/pascalallen-postgres
-          docker tag $(docker images -q pascalallencom-pascalallen-rabbitmq) pascalallen/pascalallen-rabbitmq
           docker tag $(docker images -q pascalallencom-pascalallen-go) pascalallen/pascalallen-go
 
       - name: Log in to Docker Hub
@@ -29,5 +28,4 @@ jobs:
       - name: Push new Docker images to Docker Hub
         run: |
           docker push pascalallen/pascalallen-postgres
-          docker push pascalallen/pascalallen-rabbitmq
           docker push pascalallen/pascalallen-go
