@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set environment variables
-        shell: bash
-        run: cat ${{ env.ENV_FILE }} >> $GITHUB_ENV
+      - uses: cardinalby/export-env-action@v1
+        with:
+          envFile: '.env'
+          expand: 'true'
 
       - name: Create new Docker images
         run: docker compose -f compose.yaml build
