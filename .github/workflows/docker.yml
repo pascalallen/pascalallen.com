@@ -10,10 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: cardinalby/export-env-action@v1
-        with:
-          envFile: '.env'
-          expand: 'true'
+
+      - name: Create .env file
+        run: |
+          source .env
+          echo FOO=$BAR >> .env
 
       - name: Create new Docker images
         run: docker compose -f compose.yaml build
