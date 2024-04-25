@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# change to the project root
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit
+
+source .env
+
+docker compose -f compose.yaml build
+
+docker tag "$(docker images -q pascalallencom-pascalallen-postgres)" pascalallen/pascalallen-postgres
+docker tag "$(docker images -q pascalallencom-pascalallen-go)" pascalallen/pascalallen-go
+
+docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
+
+docker push pascalallen/pascalallen-postgres
+docker push pascalallen/pascalallen-go
