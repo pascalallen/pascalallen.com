@@ -18,4 +18,6 @@ RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux G
 
 EXPOSE 9990
 
-ENTRYPOINT /bin/bash /usr/bin/wait-for-it.sh -t 60 $DB_HOST:$DB_PORT -s -- /pascalallen
+CMD /usr/bin/wait-for-it.sh $DB_HOST:$DB_PORT \
+    && /usr/bin/wait-for-it.sh $RABBITMQ_HOST:$RABBITMQ_PORT \
+    && /pascalallen

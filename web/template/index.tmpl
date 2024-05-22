@@ -21,7 +21,7 @@
         const go = new Go();
         WebAssembly.instantiateStreaming(fetch("/static/assets/wasm.wasm"), go.importObject).then((result) => {
             go.run(result.instance);
-            typewriter("profession-text", "Software Developer", 40);
+            typewriter("profession-text", "Computer Scientist", 40);
         });
     </script>
 </body>
