@@ -44,7 +44,7 @@ const IndexPage = (): ReactElement => {
     gitHubApiService
       .getAllRepositories({
         type: 'owner',
-        visibility: 'private',
+        visibility: 'public',
         sort: 'updated',
         direction: 'desc',
         per_page: 10,
