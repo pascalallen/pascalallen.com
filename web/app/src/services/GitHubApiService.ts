@@ -4,7 +4,7 @@ import env, { EnvKey } from '@utilities/env';
 import { ApiResponse } from '@services/ApiService';
 
 export type GitHubRepositoryQueryParams = {
-  type: 'all' | 'owner' | 'member';
+  type?: 'all' | 'owner' | 'member';
   visibility?: 'all' | 'public' | 'private' | 'forks' | 'sources' | 'member';
   sort?: 'created' | 'updated' | 'pushed' | 'full_name';
   direction?: 'asc' | 'desc';
