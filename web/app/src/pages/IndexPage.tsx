@@ -210,6 +210,19 @@ const IndexPage = (): ReactElement => {
           <p>
             <a
               id="medium-cron-link"
+              href="https://pascalallen.medium.com/mastering-the-fundamentals-of-algorithms-a-beginners-guide-364adaf31556"
+              target="_blank"
+              rel="noreferrer">
+              Mastering the Fundamentals of Algorithms: A Beginner’s Guide
+            </a>
+            <br />
+            Algorithms power the technology we use daily, from searching through data to sorting our emails.
+            Understanding their efficiency and use cases is a foundational skill for any aspiring computer scientist or
+            programmer. Let’s explore some core algorithms, their efficiency, and how they work step by step.
+          </p>
+          <p>
+            <a
+              id="medium-cron-link"
               href="https://pascalallen.medium.com/automate-your-deployments-with-cron-7174ecb9f52f"
               target="_blank"
               rel="noreferrer">
