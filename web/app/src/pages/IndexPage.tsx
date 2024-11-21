@@ -216,9 +216,7 @@ const IndexPage = (): ReactElement => {
               Mastering the Fundamentals of Algorithms: A Beginner’s Guide
             </a>
             <br />
-            Algorithms power the technology we use daily, from searching through data to sorting our emails.
-            Understanding their efficiency and use cases is a foundational skill for any aspiring computer scientist or
-            programmer. Let’s explore some core algorithms, their efficiency, and how they work step by step.
+            An exploratory look into some core algorithms, their efficiency, and how they work step by step.
           </p>
           <p>
             <a
