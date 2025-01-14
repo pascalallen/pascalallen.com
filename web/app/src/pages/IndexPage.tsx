@@ -209,7 +209,19 @@ const IndexPage = (): ReactElement => {
           </h2>
           <p>
             <a
-              id="medium-cron-link"
+              id="medium-go-link"
+              href="https://pascalallen.medium.com/go-ing-beyond-the-ordinary-discovering-the-unique-superpowers-of-the-go-language-372bfbf54445"
+              target="_blank"
+              rel="noreferrer">
+              Go-ing Beyond the Ordinary: Discovering the Unique Superpowers of the Go Language
+            </a>
+            <br />
+            From Fortune 500 heavyweights to indie open-source projects, many developers worldwide have already fallen
+            in love with Go.
+          </p>
+          <p>
+            <a
+              id="medium-algos-link"
               href="https://pascalallen.medium.com/mastering-the-fundamentals-of-algorithms-a-beginners-guide-364adaf31556"
               target="_blank"
               rel="noreferrer">
