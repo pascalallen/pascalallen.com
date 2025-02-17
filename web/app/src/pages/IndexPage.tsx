@@ -173,7 +173,7 @@ const IndexPage = (): ReactElement => {
               #
             </a>
           </h2>
-          <div className="technology-list">
+          <div className="technology-list section-content-list">
             <img className="tech-image" src={UbuntuLogo} alt="Ubuntu logo" title="Ubuntu" width={60} />
             <img className="tech-image" src={NginxLogo} alt="Nginx logo" title="Nginx" width={60} />
             <img className="tech-image" src={K8sLogo} alt="Kubernetes logo" title="Kubernetes" width={60} />
@@ -207,159 +207,161 @@ const IndexPage = (): ReactElement => {
               #
             </a>
           </h2>
-          <p>
-            <a
-              id="medium-go-link"
-              href="https://pascalallen.medium.com/go-ing-beyond-the-ordinary-discovering-the-unique-superpowers-of-the-go-language-372bfbf54445"
-              target="_blank"
-              rel="noreferrer">
-              Go-ing Beyond the Ordinary: Discovering the Unique Superpowers of the Go Language
-            </a>
-            <br />
-            From Fortune 500 heavyweights to indie open-source projects, many developers worldwide have already fallen
-            in love with Go.
-          </p>
-          <p>
-            <a
-              id="medium-algos-link"
-              href="https://pascalallen.medium.com/mastering-the-fundamentals-of-algorithms-a-beginners-guide-364adaf31556"
-              target="_blank"
-              rel="noreferrer">
-              Mastering the Fundamentals of Algorithms: A Beginner’s Guide
-            </a>
-            <br />
-            An exploratory look into some core algorithms, their efficiency, and how they work step by step.
-          </p>
-          <p>
-            <a
-              id="medium-cron-link"
-              href="https://pascalallen.medium.com/automate-your-deployments-with-cron-7174ecb9f52f"
-              target="_blank"
-              rel="noreferrer">
-              Automate Your Deployments With Cron
-            </a>
-            <br />A basic set of instructions to automatically deploy your app with cron.
-          </p>
-          <p>
-            <a
-              id="medium-grpc-link"
-              href="https://pascalallen.medium.com/how-to-build-a-grpc-server-in-go-943f337c4e05"
-              target="_blank"
-              rel="noreferrer">
-              How To: Build a gRPC Server In Go
-            </a>
-            <br />
-            Learn how to build a gRPC server and client in Go.
-          </p>
-          <p>
-            <a
-              id="medium-framework-link"
-              href="https://pascalallen.medium.com/developing-a-framework-for-any-project-9cf7dac82ffe"
-              target="_blank"
-              rel="noreferrer">
-              Developing a Framework for Any Project
-            </a>
-            <br />A resource for designing and developing a product that can be easily maintained and extended by future
-            software developers and domain experts.
-          </p>
-          <p>
-            <a
-              id="medium-sse-go-link"
-              href="https://pascalallen.medium.com/streaming-server-sent-events-with-go-8cc1f615d561"
-              target="_blank"
-              rel="noreferrer">
-              Streaming Server-Sent Events With Go
-            </a>
-            <br />
-            This publication demonstrates how to stream server-sent events over HTTP with Go.
-          </p>
-          <p>
-            <a
-              id="medium-event-dispatch-react-link"
-              href="https://pascalallen.medium.com/dispatching-events-with-react-and-typescript-89f80f07635f"
-              target="_blank"
-              rel="noreferrer">
-              Dispatching Events With React and TypeScript
-            </a>
-            <br />A demonstration on how to dispatch and listen to events with React and TypeScript.
-          </p>
-          <p>
-            <a
-              id="medium-jwt-go-link"
-              href="https://pascalallen.medium.com/jwt-authentication-with-go-242215a9b4f8"
-              target="_blank"
-              rel="noreferrer">
-              JWT Authentication With Go
-            </a>
-            <br />A walk-through of creating, validating, and refreshing JSON Web Tokens using the HMAC signing method
-            with Go.
-          </p>
-          <p>
-            <a
-              id="medium-wasm-go-link"
-              href="https://pascalallen.medium.com/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
-              target="_blank"
-              rel="noreferrer">
-              How To: Compile a WebAssembly Module From Go
-            </a>
-            <br />
-            Learn how to compile a WebAssembly module from Go.
-          </p>
-          <p>
-            <a
-              id="medium-deploy-k8s-link"
-              href="https://pascalallen.medium.com/how-to-deploy-to-kubernetes-76c42e5ea28c"
-              target="_blank"
-              rel="noreferrer">
-              How To: Deploy to Kubernetes
-            </a>
-            <br />
-            Learn how to deploy to Kubernetes.
-          </p>
-          <p>
-            <a
-              id="medium-docker-go-link"
-              href="https://pascalallen.medium.com/how-to-build-a-containerized-web-app-in-go-73f42619a193"
-              target="_blank"
-              rel="noreferrer">
-              How To: Build a Containerized Web App In Go
-            </a>
-            <br />
-            Learn how to build a containerized web app with Docker and Go.
-          </p>
-          <p>
-            <a
-              id="medium-npm-package-link"
-              href="https://pascalallen.medium.com/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
-              target="_blank"
-              rel="noreferrer">
-              Releasing Packages to GitHub and the npm Registry
-            </a>
-            <br />
-            This publication describes a simple process I follow to tag and release a new package version to GitHub and
-            the npm Registry.
-          </p>
-          <p>
-            <a
-              id="medium-scrum-link"
-              href="https://pascalallen.medium.com/scrum-simplified-880113ed0db"
-              target="_blank"
-              rel="noreferrer">
-              Scrum Simplified
-            </a>
-            <br />A simple Scrum infrastructure, with insights.
-          </p>
-          <p>
-            <a
-              id="medium-sabj-link"
-              href="https://www.bizjournals.com/sanantonio/news/2016/11/23/divergent-career-paths-how-tech-talent-is-leaking.html"
-              target="_blank"
-              rel="noreferrer">
-              Divergent Career Paths
-            </a>
-            <br />
-            San Antonio Business Journal: How tech talent is leaking out of San Antonio.
-          </p>
+          <div id="publications-list" className="publications-list section-content-list">
+            <p>
+              <a
+                id="medium-go-link"
+                href="https://pascalallen.medium.com/go-ing-beyond-the-ordinary-discovering-the-unique-superpowers-of-the-go-language-372bfbf54445"
+                target="_blank"
+                rel="noreferrer">
+                Go-ing Beyond the Ordinary: Discovering the Unique Superpowers of the Go Language
+              </a>
+              <br />
+              From Fortune 500 heavyweights to indie open-source projects, many developers worldwide have already fallen
+              in love with Go.
+            </p>
+            <p>
+              <a
+                id="medium-algos-link"
+                href="https://pascalallen.medium.com/mastering-the-fundamentals-of-algorithms-a-beginners-guide-364adaf31556"
+                target="_blank"
+                rel="noreferrer">
+                Mastering the Fundamentals of Algorithms: A Beginner’s Guide
+              </a>
+              <br />
+              An exploratory look into some core algorithms, their efficiency, and how they work step by step.
+            </p>
+            <p>
+              <a
+                id="medium-cron-link"
+                href="https://pascalallen.medium.com/automate-your-deployments-with-cron-7174ecb9f52f"
+                target="_blank"
+                rel="noreferrer">
+                Automate Your Deployments With Cron
+              </a>
+              <br />A basic set of instructions to automatically deploy your app with cron.
+            </p>
+            <p>
+              <a
+                id="medium-grpc-link"
+                href="https://pascalallen.medium.com/how-to-build-a-grpc-server-in-go-943f337c4e05"
+                target="_blank"
+                rel="noreferrer">
+                How To: Build a gRPC Server In Go
+              </a>
+              <br />
+              Learn how to build a gRPC server and client in Go.
+            </p>
+            <p>
+              <a
+                id="medium-framework-link"
+                href="https://pascalallen.medium.com/developing-a-framework-for-any-project-9cf7dac82ffe"
+                target="_blank"
+                rel="noreferrer">
+                Developing a Framework for Any Project
+              </a>
+              <br />A resource for designing and developing a product that can be easily maintained and extended by
+              future software developers and domain experts.
+            </p>
+            <p>
+              <a
+                id="medium-sse-go-link"
+                href="https://pascalallen.medium.com/streaming-server-sent-events-with-go-8cc1f615d561"
+                target="_blank"
+                rel="noreferrer">
+                Streaming Server-Sent Events With Go
+              </a>
+              <br />
+              This publication demonstrates how to stream server-sent events over HTTP with Go.
+            </p>
+            <p>
+              <a
+                id="medium-event-dispatch-react-link"
+                href="https://pascalallen.medium.com/dispatching-events-with-react-and-typescript-89f80f07635f"
+                target="_blank"
+                rel="noreferrer">
+                Dispatching Events With React and TypeScript
+              </a>
+              <br />A demonstration on how to dispatch and listen to events with React and TypeScript.
+            </p>
+            <p>
+              <a
+                id="medium-jwt-go-link"
+                href="https://pascalallen.medium.com/jwt-authentication-with-go-242215a9b4f8"
+                target="_blank"
+                rel="noreferrer">
+                JWT Authentication With Go
+              </a>
+              <br />A walk-through of creating, validating, and refreshing JSON Web Tokens using the HMAC signing method
+              with Go.
+            </p>
+            <p>
+              <a
+                id="medium-wasm-go-link"
+                href="https://pascalallen.medium.com/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
+                target="_blank"
+                rel="noreferrer">
+                How To: Compile a WebAssembly Module From Go
+              </a>
+              <br />
+              Learn how to compile a WebAssembly module from Go.
+            </p>
+            <p>
+              <a
+                id="medium-deploy-k8s-link"
+                href="https://pascalallen.medium.com/how-to-deploy-to-kubernetes-76c42e5ea28c"
+                target="_blank"
+                rel="noreferrer">
+                How To: Deploy to Kubernetes
+              </a>
+              <br />
+              Learn how to deploy to Kubernetes.
+            </p>
+            <p>
+              <a
+                id="medium-docker-go-link"
+                href="https://pascalallen.medium.com/how-to-build-a-containerized-web-app-in-go-73f42619a193"
+                target="_blank"
+                rel="noreferrer">
+                How To: Build a Containerized Web App In Go
+              </a>
+              <br />
+              Learn how to build a containerized web app with Docker and Go.
+            </p>
+            <p>
+              <a
+                id="medium-npm-package-link"
+                href="https://pascalallen.medium.com/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
+                target="_blank"
+                rel="noreferrer">
+                Releasing Packages to GitHub and the npm Registry
+              </a>
+              <br />
+              This publication describes a simple process I follow to tag and release a new package version to GitHub
+              and the npm Registry.
+            </p>
+            <p>
+              <a
+                id="medium-scrum-link"
+                href="https://pascalallen.medium.com/scrum-simplified-880113ed0db"
+                target="_blank"
+                rel="noreferrer">
+                Scrum Simplified
+              </a>
+              <br />A simple Scrum infrastructure, with insights.
+            </p>
+            <p>
+              <a
+                id="medium-sabj-link"
+                href="https://www.bizjournals.com/sanantonio/news/2016/11/23/divergent-career-paths-how-tech-talent-is-leaking.html"
+                target="_blank"
+                rel="noreferrer">
+                Divergent Career Paths
+              </a>
+              <br />
+              San Antonio Business Journal: How tech talent is leaking out of San Antonio.
+            </p>
+          </div>
         </div>
       </section>
       <section id="golang" className="go-section">
@@ -370,32 +372,34 @@ const IndexPage = (): ReactElement => {
               #
             </a>
           </h2>
-          <p>
-            <a
-              id="pubsub-package-link"
-              href="https://pkg.go.dev/github.com/pascalallen/pubsub"
-              target="_blank"
-              rel="noreferrer">
-              pubsub
-            </a>{' '}
-            v1.0.0
-            <br />
-            <code>
-              pubsub is a Go module that offers a concurrent pub/sub service leveraging goroutines and channels.
-            </code>
-          </p>
-          <p>
-            <a
-              id="hmac-package-link"
-              href="https://pkg.go.dev/github.com/pascalallen/hmac"
-              target="_blank"
-              rel="noreferrer">
-              hmac
-            </a>{' '}
-            v1.0.1
-            <br />
-            <code>hmac is a Go module that offers services for HTTP HMAC authentication.</code>
-          </p>
+          <div id="golang-list" className="golang-list section-content-list">
+            <p>
+              <a
+                id="pubsub-package-link"
+                href="https://pkg.go.dev/github.com/pascalallen/pubsub"
+                target="_blank"
+                rel="noreferrer">
+                pubsub
+              </a>{' '}
+              v1.0.0
+              <br />
+              <code>
+                pubsub is a Go module that offers a concurrent pub/sub service leveraging goroutines and channels.
+              </code>
+            </p>
+            <p>
+              <a
+                id="hmac-package-link"
+                href="https://pkg.go.dev/github.com/pascalallen/hmac"
+                target="_blank"
+                rel="noreferrer">
+                hmac
+              </a>{' '}
+              v1.0.1
+              <br />
+              <code>hmac is a Go module that offers services for HTTP HMAC authentication.</code>
+            </p>
+          </div>
         </div>
       </section>
       {repos.length > 0 && (
@@ -418,16 +422,18 @@ const IndexPage = (): ReactElement => {
                 #
               </a>
             </h2>
-            {repos.map((repo: GitHubRepository, index: number) => (
-              <p key={`repo-${index}`}>
-                <a id={`${repo.name}-repo-link`} href={repo.html_url} target="_blank" rel="noreferrer">
-                  {repo.name}
-                </a>{' '}
-                {new Date(Date.parse(repo.updated_at)).toLocaleDateString()}
-                <br />
-                <code>{repo.description}</code>
-              </p>
-            ))}
+            <div id="github-list" className="github-list section-content-list">
+              {repos.map((repo: GitHubRepository, index: number) => (
+                <p key={`repo-${index}`}>
+                  <a id={`${repo.name}-repo-link`} href={repo.html_url} target="_blank" rel="noreferrer">
+                    {repo.name}
+                  </a>{' '}
+                  {new Date(Date.parse(repo.updated_at)).toLocaleDateString()}
+                  <br />
+                  <code>{repo.description}</code>
+                </p>
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -440,16 +446,18 @@ const IndexPage = (): ReactElement => {
                 #
               </a>
             </h2>
-            {packages.map((pkg: NpmPackage, index: number) => (
-              <p key={`pkg-${index}`}>
-                <a id={`${pkg.package.name}-npm-link`} href={pkg.package.links.npm} target="_blank" rel="noreferrer">
-                  {pkg.package.name}
-                </a>{' '}
-                v{pkg.package.version}
-                <br />
-                <code>{pkg.package.description}</code>
-              </p>
-            ))}
+            <div id="npm-list" className="npm-list section-content-list">
+              {packages.map((pkg: NpmPackage, index: number) => (
+                <p key={`pkg-${index}`}>
+                  <a id={`${pkg.package.name}-npm-link`} href={pkg.package.links.npm} target="_blank" rel="noreferrer">
+                    {pkg.package.name}
+                  </a>{' '}
+                  v{pkg.package.version}
+                  <br />
+                  <code>{pkg.package.description}</code>
+                </p>
+              ))}
+            </div>
           </div>
         </section>
       )}
