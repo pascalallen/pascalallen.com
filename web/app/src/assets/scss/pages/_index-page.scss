@@ -100,6 +100,13 @@
         }
       }
 
+      .section-content-list {
+        max-height: 60vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 1rem;
+      }
+
       &.technology-section {
         .technology-list {
           align-items: center;
