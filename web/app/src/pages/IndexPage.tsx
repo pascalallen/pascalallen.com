@@ -59,7 +59,10 @@ const IndexPage = (): ReactElement => {
         language: window.navigator.language,
         user_agent: window.navigator.userAgent
       };
-      axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
+      const isBot = user.user_agent.toLowerCase().includes('bot');
+      if (!isBot) {
+        axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
+      }
     }
   }, []);
 
