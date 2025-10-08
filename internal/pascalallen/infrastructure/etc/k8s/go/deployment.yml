@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: go
 spec:
-  replicas: 5
+  replicas: 3
   selector:
     matchLabels:
       name: go
@@ -21,3 +21,41 @@ spec:
           envFrom:
             - secretRef:
                 name: env-vars
+          env:
+            - name: GIN_MODE
+              value: "release"
+            - name: DB_HOST
+              value: "pascalallen-postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-default-user
+                  key: username
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-default-user
+                  key: password
+          readinessProbe:
+            tcpSocket:
+              port: 9990
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9990
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

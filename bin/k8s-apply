@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit 1
+
+NAMESPACE=${NAMESPACE:-pascalallen}
+
+echo "[i] Using namespace: $NAMESPACE"
+
+# Create namespace if it doesn't exist
+kubectl get ns "$NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$NAMESPACE"
+
+# Create or update env-vars secret from .env if present
+if [[ -f .env ]]; then
+  echo "[i] Applying env-vars secret from .env"
+  kubectl -n "$NAMESPACE" create secret generic env-vars \
+    --from-env-file=.env \
+    --dry-run=client -o yaml | kubectl apply -f -
+else
+  echo "[!] .env not found. Ensure required variables are provided via another Secret named 'env-vars' in namespace '$NAMESPACE'."
+fi
+
+# Apply Postgres resources
+kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/postgres
+
+# Install RabbitMQ Cluster Operator (cluster-wide CRDs & controller)
+if ! kubectl get crd rabbitmqclusters.rabbitmq.com >/dev/null 2>&1; then
+  echo "[i] Installing RabbitMQ Cluster Operator CRDs and controller..."
+  kubectl apply -f https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml
+fi
+
+# Apply RabbitMQ cluster resource
+kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/rabbitmq
+
+# Apply Go app Deployment and Service
+kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/go
+
+# Apply Ingress
+kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/ingress
+
+cat <<EOF
+
+[i] Done.
+
+Next steps:
+- Ensure your container image is accessible to the cluster: update image in internal/pascalallen/infrastructure/etc/k8s/go/deployment.yml or run:
+    kubectl -n $NAMESPACE set image deployment/go pascalallen-go=<REGISTRY>/<NAMESPACE>/pascalallen-go:<TAG>
+- If using k3s or microk8s, verify an ingress controller is installed. This repo assumes ingress-nginx.
+- Update DNS or add /etc/hosts entry for the host used in ingress (default: pascalallen.local).
+
+EOF

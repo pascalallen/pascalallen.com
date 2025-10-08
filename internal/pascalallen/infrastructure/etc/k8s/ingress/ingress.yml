@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pascalallen
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - host: pascalallen.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: go
+                port:
+                  number: 80
+  # Enable TLS with a pre-created cert secret
+  tls:
+    - hosts:
+        - pascalallen.local
+      secretName: pascalallen-tls
