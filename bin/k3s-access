@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+NAMESPACE=${NAMESPACE:-pascalallen}
+# Avoid clobbering the OS-provided HOSTNAME env var; use INGRESS_HOST instead.
+INGRESS_HOST=${INGRESS_HOST:-}
+
+bold() { printf "\033[1m%s\033[0m\n" "$*"; }
+info() { printf "[i] %s\n" "$*"; }
+warn() { printf "[!] %s\n" "$*"; }
+
+# Ensure kubectl works
+if ! kubectl cluster-info >/dev/null 2>&1; then
+  warn "kubectl is not configured or the cluster is not reachable."
+  exit 1
+fi
+
+# Auto-detect ingress host from the live Ingress if not explicitly provided
+if [[ -z "${INGRESS_HOST}" ]]; then
+  if kubectl -n "$NAMESPACE" get ingress pascalallen >/dev/null 2>&1; then
+    detected_host=$(kubectl -n "$NAMESPACE" get ingress pascalallen -o jsonpath='{.spec.rules[0].host}' 2>/dev/null || true)
+    if [[ -n "${detected_host}" ]]; then
+      INGRESS_HOST="$detected_host"
+    fi
+  fi
+fi
+# Fallback default
+if [[ -z "${INGRESS_HOST}" ]]; then
+  INGRESS_HOST="pascalallen.local"
+fi
+
+info "Namespace: $NAMESPACE"
+info "Ingress Host: $INGRESS_HOST"
+
+# Determine which ingress controller is installed
+controller=""
+if kubectl get ns ingress-nginx >/dev/null 2>&1 && kubectl -n ingress-nginx get deploy ingress-nginx-controller >/dev/null 2>&1; then
+  controller="nginx"
+elif kubectl get ns kube-system >/dev/null 2>&1 && kubectl -n kube-system get deploy -l app.kubernetes.io/name=traefik >/dev/null 2>&1; then
+  controller="traefik"
+fi
+
+if [[ -z "$controller" ]]; then
+  warn "No known ingress controller detected (nginx or Traefik)."
+  warn "Install one, e.g. for nginx:"
+  echo "  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/baremetal/deploy.yaml"
+  exit 1
+fi
+
+info "Detected ingress controller: $controller"
+
+# Fetch the service that fronts the controller
+svc_ns=""; svc_name="";
+if [[ "$controller" == "nginx" ]]; then
+  svc_ns="ingress-nginx"; svc_name="ingress-nginx-controller";
+else
+  svc_ns="kube-system"; svc_name="traefik";
+fi
+
+if ! kubectl -n "$svc_ns" get svc "$svc_name" >/dev/null 2>&1; then
+  warn "Could not find Service $svc_ns/$svc_name."
+  exit 1
+fi
+
+svc_json=$(kubectl -n "$svc_ns" get svc "$svc_name" -o json)
+svc_type=$(echo "$svc_json" | jq -r '.spec.type')
+external_ip=$(echo "$svc_json" | jq -r '.status.loadBalancer.ingress[0].ip // empty')
+hostname_ip=$(echo "$svc_json" | jq -r '.status.loadBalancer.ingress[0].hostname // empty')
+
+node_ip=""
+if [[ -z "$external_ip" && -z "$hostname_ip" ]]; then
+  # Fall back to node InternalIP (common for bare-metal k3s)
+  node_ip=$(kubectl get nodes -o json | jq -r '.items[0].status.addresses[] | select(.type=="InternalIP").address')
+fi
+
+final_ip="${external_ip:-}"
+if [[ -z "$final_ip" && -n "$hostname_ip" ]]; then
+  # Resolve hostname to IP if possible
+  if command -v getent >/dev/null 2>&1; then
+    final_ip=$(getent hosts "$hostname_ip" | awk '{print $1}' | head -n1 || true)
+  else
+    # macOS fallback: use dig if available
+    if command -v dig >/dev/null 2>&1; then
+      final_ip=$(dig +short "$hostname_ip" | head -n1 || true)
+    fi
+  fi
+fi
+
+if [[ -z "$final_ip" && -n "$node_ip" ]]; then
+  final_ip="$node_ip"
+fi
+
+if [[ -z "$final_ip" ]]; then
+  warn "Could not determine an address for the ingress controller."
+  warn "Inspect the Service: kubectl -n $svc_ns get svc $svc_name -o wide"
+  exit 1
+fi
+
+bold "Add this to /etc/hosts (or your DNS):"
+echo "${final_ip}    ${INGRESS_HOST}"
+
+info "Verify the Ingress address resolves:"
+echo "  curl -H 'Host: ${INGRESS_HOST}' http://${final_ip}/ -i"
+
+if kubectl -n "$NAMESPACE" get ingress pascalallen >/dev/null 2>&1; then
+  info "Current Ingress (namespace $NAMESPACE):"
+  kubectl -n "$NAMESPACE" get ingress pascalallen -o wide
+else
+  warn "Ingress 'pascalallen' not found in namespace $NAMESPACE. Did you apply manifests?"
+fi
+
+cat <<EOF
+
+Notes:
+- Your Ingress manifest is currently annotated for nginx. If you're using k3s' default Traefik, either install nginx (recommended for these manifests) or change the annotation to:
+    kubernetes.io/ingress.class: traefik
+  and re-apply the ingress manifest.
+- On k3s bare-metal, the controller Service may not have an EXTERNAL-IP. Using the node's InternalIP is expected.
+- You can override the host this script prints by exporting INGRESS_HOST=<your-host>. Otherwise it uses the host from the live Ingress (if present) or 'pascalallen.local'.
+
+EOF

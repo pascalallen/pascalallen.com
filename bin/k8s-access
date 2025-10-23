@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Generic access helper that delegates to k3s-access (works across Docker Desktop, k3s, microk8s, etc.)
+# Usage:
+#   INGRESS_HOST=pascalallen.local NAMESPACE=pascalallen bin/k8s-access
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$DIR"/k3s-access "$@"

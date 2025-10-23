@@ -22,8 +22,13 @@ else
   echo "[!] .env not found. Ensure required variables are provided via another Secret named 'env-vars' in namespace '$NAMESPACE'."
 fi
 
-# Apply Postgres resources
-kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/postgres
+# Clean up any legacy Postgres Deployment/PVC from older manifests
+kubectl -n "$NAMESPACE" delete deployment/postgres --ignore-not-found
+kubectl -n "$NAMESPACE" delete pvc/postgres --ignore-not-found
+
+# Apply Postgres resources (StatefulSet + Service only)
+kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/postgres/statefulset.yml
+kubectl -n "$NAMESPACE" apply -f internal/pascalallen/infrastructure/etc/k8s/postgres/service.yml
 
 # Install RabbitMQ Cluster Operator (cluster-wide CRDs & controller)
 if ! kubectl get crd rabbitmqclusters.rabbitmq.com >/dev/null 2>&1; then
