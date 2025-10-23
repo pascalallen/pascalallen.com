@@ -19,10 +19,21 @@
     <script src="/static/assets/wasm.js"></script>
     <script>
         const go = new Go();
-        WebAssembly.instantiateStreaming(fetch("/static/assets/wasm.wasm"), go.importObject).then((result) => {
-            go.run(result.instance);
-            typewriter("profession-text", "Computer Scientist", 40);
-        });
+        window.terminalReady = WebAssembly.instantiateStreaming(fetch("/static/assets/wasm.wasm"), go.importObject)
+            .then((result) => {
+                go.run(result.instance);
+                window.TerminalAPI = {
+                    init: globalThis.terminal_init,
+                    handleInput: globalThis.terminal_handle_input,
+                    getPrompt: globalThis.terminal_get_prompt,
+                    reset: globalThis.terminal_reset,
+                };
+                return true;
+            })
+            .catch((err) => {
+                console.error("Failed to initialize WASM:", err);
+                return false;
+            });
     </script>
 </body>
 </html>

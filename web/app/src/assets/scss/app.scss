@@ -1,49 +1,6 @@
 @import 'settings/variables';
 
-body {
-  background-color: $malachite;
-  color: $alabaster;
-  font-family: Helvetica, serif;
-  text-transform: uppercase;
-
-  a {
-    color: $navy;
-    font-weight: bold;
-    text-decoration: none;
-
-    &:hover {
-      color: $alabaster;
-    }
-  }
-
-  @keyframes blink {
-    from, to {
-      color: transparent;
-    }
-    50% {
-      color: $alabaster;
-    }
-  }
-
-  .blink {
-    animation: blink 1s step-end infinite;
-  }
-
-  form {
-    .form-group {
-      display: flex;
-      flex-direction: column;
-
-      label {
-        font-size: x-small;
-      }
-
-      input {
-        margin-bottom: 1rem;
-      }
-    }
-  }
-}
+body {}
 
 @import 'components/footer';
 @import 'pages/index-page';

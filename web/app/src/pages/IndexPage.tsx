@@ -1,470 +1,193 @@
-import React, { MouseEvent, ReactElement, useEffect, useRef, useState } from 'react';
-import axios from 'axios';
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router';
-import env, { EnvKey } from '@utilities/env';
-import GitHubApiService, { GitHubRepository } from '@services/GitHubApiService';
-import NpmApiService, { NpmPackage } from '@services/NpmApiService';
-import DockerLogo from '@assets/images/docker-logo.svg';
-import GoLogo from '@assets/images/go-logo.svg';
-import K8sLogo from '@assets/images/k8s-logo.svg';
-import NginxLogo from '@assets/images/nginx-logo.svg';
-import PostgresLogo from '@assets/images/postgres-logo.svg';
-import ReactLogo from '@assets/images/react-logo.svg';
-import SassLogo from '@assets/images/sass-logo.svg';
-import TsLogo from '@assets/images/ts-logo.svg';
-import UbuntuLogo from '@assets/images/ubuntu-logo.svg';
-import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
-import WebpackLogo from '@assets/images/webpack-logo.svg';
-import Footer from '@components/Footer';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 
-type State = {
-  repos: GitHubRepository[];
-  packages: NpmPackage[];
+// A lightweight terminal UI that talks to Go WASM via window.TerminalAPI
+
+type TerminalAPI = {
+  init: () => string | Promise<string>;
+  handleInput: (line: string) => string | Promise<string>;
+  getPrompt: () => string | Promise<string>;
+  reset: () => void | Promise<void>;
 };
 
-const initialState: State = {
-  repos: [],
-  packages: []
-};
+declare global {
+  interface Window {
+    TerminalAPI?: TerminalAPI;
+    terminalReady?: Promise<boolean>;
+  }
+}
 
 const IndexPage = (): ReactElement => {
-  let { hash } = useLocation();
-  const scrolledRef = useRef(false);
-  const hashRef = useRef(hash);
-
-  const [repos, setRepos] = useState(initialState.repos);
-  const [packages, setPackages] = useState(initialState.packages);
-  const navbar: HTMLElement | null = document.getElementById('navbar');
-  const sectionLinks: HTMLElement | null = document.getElementById('section-links');
-  const socialLinks: HTMLElement | null = document.getElementById('social-links');
+  const [ready, setReady] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [lines, setLines] = useState<string[]>(['Loading WASM terminal...']);
+  const [input, setInput] = useState('');
+  const historyRef = useRef<string[]>([]);
+  const historyIdxRef = useRef<number>(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const gitHubApiService = new GitHubApiService();
-    gitHubApiService
-      .getAllRepositories({
-        visibility: 'public',
-        sort: 'updated',
-        direction: 'desc',
-        per_page: 10,
-        page: 1
-      })
-      .then(response => setRepos(response.body.data ?? []));
+    const waitForWasm = (): Promise<void> => {
+      return new Promise<void>((resolve, reject) => {
+        const start = Date.now();
+        const timeoutMs = 15000;
+        const tick = async () => {
+          try {
+            if (window.terminalReady) {
+              const ok = await window.terminalReady;
+              if (ok) return resolve();
+            }
+            if (window.TerminalAPI) return resolve();
+            if (Date.now() - start > timeoutMs) return reject(new Error('WASM init timeout'));
+            setTimeout(tick, 50);
+          } catch (e) {
+            reject(e as Error);
+          }
+        };
+        tick();
+      });
+    };
 
-    const npmApiService = new NpmApiService();
-    npmApiService.getAllPackages().then(response => setPackages(response.body.data ?? []));
-
-    if (`${env(EnvKey.APP_ENV)}` === 'prod' || `${env(EnvKey.APP_ENV)}` === 'production') {
-      const user = {
-        language: window.navigator.language,
-        user_agent: window.navigator.userAgent
-      };
-      const isBot = user.user_agent.toLowerCase().includes('bot');
-      if (!isBot) {
-        axios.post(`${env(EnvKey.SLACK_DM_URL)}`, JSON.stringify({ text: JSON.stringify(user, null, 4) }));
+    const boot = async () => {
+      try {
+        await waitForWasm();
+        if (!window.TerminalAPI) {
+          setLines(prev => [...prev, 'Failed to load Terminal API. Ensure wasm.wasm and wasm.js are available.']);
+          return;
+        }
+        const p = await window.TerminalAPI.init();
+        setPrompt(p);
+        setLines(['Welcome to the WebAssembly shell (Go + WASM).', "Type 'help' to see available commands."]);
+        setReady(true);
+        // focus input when ready
+        setTimeout(() => inputRef.current?.focus(), 0);
+      } catch (e) {
+        setLines(prev => [...prev, `Error initializing terminal: ${e}`]);
       }
-    }
+    };
+    boot();
   }, []);
 
-  const scrollToLocation = (event?: MouseEvent) => {
-    if (event !== undefined) {
-      event.preventDefault();
-      hash = event.currentTarget.getAttribute('href') ?? '';
-      history.replaceState(null, '', hash);
-    }
+  useEffect(() => {
+    // keep view scrolled to bottom
+    scrollRef.current && (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
+  }, [lines, prompt]);
 
-    if (hash) {
-      if (hashRef.current !== hash) {
-        hashRef.current = hash;
-        scrolledRef.current = false;
-      }
-
-      if (!scrolledRef.current) {
-        const id = hash.replace('#', '');
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-          scrolledRef.current = true;
-          navbar?.classList.remove('navbar-mobile-open');
-          sectionLinks?.classList.remove('d-flex');
-          socialLinks?.classList.remove('d-flex');
-        }
-      }
+  const runCommand = async (cmd: string) => {
+    if (!window.TerminalAPI) return;
+    // record history
+    if (cmd.trim()) {
+      historyRef.current.unshift(cmd);
+      historyIdxRef.current = -1;
     }
+    const header = `${prompt}${cmd}`;
+    const output = await window.TerminalAPI.handleInput(cmd);
+    if (output === '__CLEAR__') {
+      setLines([]);
+    } else if (output && output.length > 0) {
+      setLines(prev => [...prev, header, ...output.split('\n')]);
+    } else {
+      setLines(prev => [...prev, header]);
+    }
+    const p = await window.TerminalAPI.getPrompt();
+    setPrompt(p);
+    setInput('');
   };
 
-  useEffect(scrollToLocation);
-
-  const handleToggleNav = (event: MouseEvent): void => {
-    event.preventDefault();
-
-    !navbar?.classList.contains('navbar-mobile-open')
-      ? navbar?.classList.add('navbar-mobile-open')
-      : navbar?.classList.contains('navbar-mobile-open')
-        ? navbar?.classList.remove('navbar-mobile-open')
-        : null;
-    !sectionLinks?.classList.contains('d-flex')
-      ? sectionLinks?.classList.add('d-flex')
-      : sectionLinks?.classList.contains('d-flex')
-        ? sectionLinks?.classList.remove('d-flex')
-        : null;
-    !socialLinks?.classList.contains('d-flex')
-      ? socialLinks?.classList.add('d-flex')
-      : socialLinks?.classList.contains('d-flex')
-        ? socialLinks?.classList.remove('d-flex')
-        : null;
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      runCommand(input);
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const nextIdx = Math.min(historyRef.current.length - 1, historyIdxRef.current + 1);
+      historyIdxRef.current = nextIdx;
+      setInput(historyRef.current[nextIdx] ?? input);
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIdx = Math.max(-1, historyIdxRef.current - 1);
+      historyIdxRef.current = nextIdx;
+      setInput(nextIdx === -1 ? '' : (historyRef.current[nextIdx] ?? ''));
+      return;
+    }
+    if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+      // Ctrl+C clears current line
+      e.preventDefault();
+      setInput('');
+      return;
+    }
   };
 
   return (
-    <div id="index-page" className="index-page">
-      <Helmet>
-        <title>Pascal Allen - Home</title>
-        <meta name="description" content="Welcome to the home page for pascalallen.com" />
-      </Helmet>
-      <div className="navbar-container">
-        <div id="navbar" className="navbar">
-          <div id="section-links" className="section-links">
-            <a id="navbar-technology-link" href="#technology" onClick={scrollToLocation}>
-              Technology
-            </a>
-            <a id="navbar-publications-link" href="#publications" onClick={scrollToLocation}>
-              Publications
-            </a>
-            <a id="navbar-golang-link" href="#golang" onClick={scrollToLocation}>
-              Golang
-            </a>
-            <a id="navbar-github-link" href="#github" onClick={scrollToLocation}>
-              GitHub
-            </a>
-            <a id="navbar-npm-link" href="#npm" onClick={scrollToLocation}>
-              NPM
-            </a>
+    <div
+      id="index-page"
+      className="index-page"
+      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div
+          id="wasm-terminal"
+          style={{
+            width: '100%',
+            maxWidth: 900,
+            height: 500,
+            background: '#0b0f14',
+            color: '#cfe3ff',
+            borderRadius: 8,
+            border: '1px solid #1e2733',
+            fontFamily: 'SFMono-Regular,Consolas,Menlo,monospace',
+            fontSize: 14,
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+          }}>
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e2733', background: '#0f141b' }}>
+            <span style={{ color: '#68a0ff' }}>Go+WASM</span> <span style={{ color: '#6dd5a3' }}>Terminal</span>
           </div>
-          <div id="social-links" className="social-links">
-            <a
-              id="social-linkedin-link"
-              href="https://www.linkedin.com/in/pascal-allen-942749112/"
-              target="_blank"
-              rel="noreferrer">
-              <i className="fa-brands fa-linkedin" />
-            </a>
-            <a id="social-github-link" href="https://github.com/pascalallen" target="_blank" rel="noreferrer">
-              <i className="fa-brands fa-github" />
-            </a>
+          <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+            {lines.map((line, i) => (
+              <div key={i} style={{ whiteSpace: 'pre-wrap' }}>
+                {line}
+              </div>
+            ))}
+            {ready && (
+              <div style={{ display: 'flex' }}>
+                <div style={{ whiteSpace: 'pre' }}>{prompt}</div>
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  spellCheck={false}
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#cfe3ff',
+                    font: 'inherit'
+                  }}
+                />
+              </div>
+            )}
           </div>
-        </div>
-        <div className="hamburger">
-          <a id="hamburger-link" onClick={handleToggleNav}>
-            <i className="fa-solid fa-bars" />
-          </a>
+          <div
+            style={{
+              padding: '6px 12px',
+              borderTop: '1px solid #1e2733',
+              background: '#0f141b',
+              fontSize: 12,
+              color: '#6b7c93'
+            }}>
+            {ready ? 'Type help, clear, ls, cd, cat, echo, mkdir, touch, rm' : 'Initializing...'}
+          </div>
         </div>
       </div>
-      <header className="header">
-        <div>
-          <h1>Pascal Allen</h1>
-          <p className="profession">
-            <span id="profession-text" />
-            <span className="blink">_</span>
-          </p>
-        </div>
-      </header>
-      <section id="technology" className="technology-section">
-        <div>
-          <h2>
-            This Site Runs On{' '}
-            <a id="technology-hashtag" href="#technology" onClick={scrollToLocation}>
-              #
-            </a>
-          </h2>
-          <div className="technology-list section-content-list">
-            <img className="tech-image" src={UbuntuLogo} alt="Ubuntu logo" title="Ubuntu" width={60} />
-            <img className="tech-image" src={NginxLogo} alt="Nginx logo" title="Nginx" width={60} />
-            <img className="tech-image" src={K8sLogo} alt="Kubernetes logo" title="Kubernetes" width={60} />
-            <img className="tech-image" src={DockerLogo} alt="Docker logo" title="Docker" width={60} />
-            <img className="tech-image" src={PostgresLogo} alt="Postgres logo" title="Postgres" width={60} />
-            <img className="tech-image" src={GoLogo} alt="Go logo" title="Go" width={60} />
-            <img className="tech-image" src={WebAssemblyLogo} alt="WebAssembly logo" title="WebAssembly" width={60} />
-            <img className="tech-image" src={ReactLogo} alt="React logo" title="React" width={60} />
-            <img className="tech-image" src={TsLogo} alt="TypeScript logo" title="TypeScript" width={60} />
-            <img className="tech-image" src={SassLogo} alt="Sass logo" title="Sass" width={60} />
-            <img className="tech-image" src={WebpackLogo} alt="Webpack logo" title="Webpack" width={60} />
-          </div>
-        </div>
-      </section>
-      <section id="publications" className="publications-section">
-        <div id="background-circles" className="background-circles">
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
-        </div>
-        <div>
-          <h2>
-            Publications{' '}
-            <a id="publications-hashtag" href="#publications" onClick={scrollToLocation}>
-              #
-            </a>
-          </h2>
-          <div id="publications-list" className="publications-list section-content-list">
-            <p>
-              <a
-                id="medium-go-link"
-                href="https://pascalallen.medium.com/go-ing-beyond-the-ordinary-discovering-the-unique-superpowers-of-the-go-language-372bfbf54445"
-                target="_blank"
-                rel="noreferrer">
-                Go-ing Beyond the Ordinary: Discovering the Unique Superpowers of the Go Language
-              </a>
-              <br />
-              From Fortune 500 heavyweights to indie open-source projects, many developers worldwide have already fallen
-              in love with Go.
-            </p>
-            <p>
-              <a
-                id="medium-algos-link"
-                href="https://pascalallen.medium.com/mastering-the-fundamentals-of-algorithms-a-beginners-guide-364adaf31556"
-                target="_blank"
-                rel="noreferrer">
-                Mastering the Fundamentals of Algorithms: A Beginner’s Guide
-              </a>
-              <br />
-              An exploratory look into some core algorithms, their efficiency, and how they work step by step.
-            </p>
-            <p>
-              <a
-                id="medium-cron-link"
-                href="https://pascalallen.medium.com/automate-your-deployments-with-cron-7174ecb9f52f"
-                target="_blank"
-                rel="noreferrer">
-                Automate Your Deployments With Cron
-              </a>
-              <br />A basic set of instructions to automatically deploy your app with cron.
-            </p>
-            <p>
-              <a
-                id="medium-grpc-link"
-                href="https://pascalallen.medium.com/how-to-build-a-grpc-server-in-go-943f337c4e05"
-                target="_blank"
-                rel="noreferrer">
-                How To: Build a gRPC Server In Go
-              </a>
-              <br />
-              Learn how to build a gRPC server and client in Go.
-            </p>
-            <p>
-              <a
-                id="medium-framework-link"
-                href="https://pascalallen.medium.com/developing-a-framework-for-any-project-9cf7dac82ffe"
-                target="_blank"
-                rel="noreferrer">
-                Developing a Framework for Any Project
-              </a>
-              <br />A resource for designing and developing a product that can be easily maintained and extended by
-              future software developers and domain experts.
-            </p>
-            <p>
-              <a
-                id="medium-sse-go-link"
-                href="https://pascalallen.medium.com/streaming-server-sent-events-with-go-8cc1f615d561"
-                target="_blank"
-                rel="noreferrer">
-                Streaming Server-Sent Events With Go
-              </a>
-              <br />
-              This publication demonstrates how to stream server-sent events over HTTP with Go.
-            </p>
-            <p>
-              <a
-                id="medium-event-dispatch-react-link"
-                href="https://pascalallen.medium.com/dispatching-events-with-react-and-typescript-89f80f07635f"
-                target="_blank"
-                rel="noreferrer">
-                Dispatching Events With React and TypeScript
-              </a>
-              <br />A demonstration on how to dispatch and listen to events with React and TypeScript.
-            </p>
-            <p>
-              <a
-                id="medium-jwt-go-link"
-                href="https://pascalallen.medium.com/jwt-authentication-with-go-242215a9b4f8"
-                target="_blank"
-                rel="noreferrer">
-                JWT Authentication With Go
-              </a>
-              <br />A walk-through of creating, validating, and refreshing JSON Web Tokens using the HMAC signing method
-              with Go.
-            </p>
-            <p>
-              <a
-                id="medium-wasm-go-link"
-                href="https://pascalallen.medium.com/how-to-compile-a-webassembly-module-from-go-a9ed5f831582"
-                target="_blank"
-                rel="noreferrer">
-                How To: Compile a WebAssembly Module From Go
-              </a>
-              <br />
-              Learn how to compile a WebAssembly module from Go.
-            </p>
-            <p>
-              <a
-                id="medium-deploy-k8s-link"
-                href="https://pascalallen.medium.com/how-to-deploy-to-kubernetes-76c42e5ea28c"
-                target="_blank"
-                rel="noreferrer">
-                How To: Deploy to Kubernetes
-              </a>
-              <br />
-              Learn how to deploy to Kubernetes.
-            </p>
-            <p>
-              <a
-                id="medium-docker-go-link"
-                href="https://pascalallen.medium.com/how-to-build-a-containerized-web-app-in-go-73f42619a193"
-                target="_blank"
-                rel="noreferrer">
-                How To: Build a Containerized Web App In Go
-              </a>
-              <br />
-              Learn how to build a containerized web app with Docker and Go.
-            </p>
-            <p>
-              <a
-                id="medium-npm-package-link"
-                href="https://pascalallen.medium.com/releasing-packages-to-github-and-the-npm-registry-8ff6c3789bc8"
-                target="_blank"
-                rel="noreferrer">
-                Releasing Packages to GitHub and the npm Registry
-              </a>
-              <br />
-              This publication describes a simple process I follow to tag and release a new package version to GitHub
-              and the npm Registry.
-            </p>
-            <p>
-              <a
-                id="medium-scrum-link"
-                href="https://pascalallen.medium.com/scrum-simplified-880113ed0db"
-                target="_blank"
-                rel="noreferrer">
-                Scrum Simplified
-              </a>
-              <br />A simple Scrum infrastructure, with insights.
-            </p>
-            <p>
-              <a
-                id="medium-sabj-link"
-                href="https://www.bizjournals.com/sanantonio/news/2016/11/23/divergent-career-paths-how-tech-talent-is-leaking.html"
-                target="_blank"
-                rel="noreferrer">
-                Divergent Career Paths
-              </a>
-              <br />
-              San Antonio Business Journal: How tech talent is leaking out of San Antonio.
-            </p>
-          </div>
-        </div>
-      </section>
-      <section id="golang" className="go-section">
-        <div>
-          <h2>
-            Go{' '}
-            <a id="golang-hashtag" href="#golang" onClick={scrollToLocation}>
-              #
-            </a>
-          </h2>
-          <div id="golang-list" className="golang-list section-content-list">
-            <p>
-              <a
-                id="pubsub-package-link"
-                href="https://pkg.go.dev/github.com/pascalallen/pubsub"
-                target="_blank"
-                rel="noreferrer">
-                pubsub
-              </a>{' '}
-              v1.0.0
-              <br />
-              <code>
-                pubsub is a Go module that offers a concurrent pub/sub service leveraging goroutines and channels.
-              </code>
-            </p>
-            <p>
-              <a
-                id="hmac-package-link"
-                href="https://pkg.go.dev/github.com/pascalallen/hmac"
-                target="_blank"
-                rel="noreferrer">
-                hmac
-              </a>{' '}
-              v1.0.1
-              <br />
-              <code>hmac is a Go module that offers services for HTTP HMAC authentication.</code>
-            </p>
-          </div>
-        </div>
-      </section>
-      {repos.length > 0 && (
-        <section id="github" className="github-section">
-          <div id="background-rectangles" className="background-rectangles">
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
-          </div>
-          <div>
-            <h2>
-              GitHub{' '}
-              <a id="github-hashtag" href="#github" onClick={scrollToLocation}>
-                #
-              </a>
-            </h2>
-            <div id="github-list" className="github-list section-content-list">
-              {repos.map((repo: GitHubRepository, index: number) => (
-                <p key={`repo-${index}`}>
-                  <a id={`${repo.name}-repo-link`} href={repo.html_url} target="_blank" rel="noreferrer">
-                    {repo.name}
-                  </a>{' '}
-                  {new Date(Date.parse(repo.updated_at)).toLocaleDateString()}
-                  <br />
-                  <code>{repo.description}</code>
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-      {packages.length > 0 && (
-        <section id="npm" className="npm-section">
-          <div>
-            <h2>
-              NPM{' '}
-              <a id="npm-hashtag" href="#npm" onClick={scrollToLocation}>
-                #
-              </a>
-            </h2>
-            <div id="npm-list" className="npm-list section-content-list">
-              {packages.map((pkg: NpmPackage, index: number) => (
-                <p key={`pkg-${index}`}>
-                  <a id={`${pkg.package.name}-npm-link`} href={pkg.package.links.npm} target="_blank" rel="noreferrer">
-                    {pkg.package.name}
-                  </a>{' '}
-                  v{pkg.package.version}
-                  <br />
-                  <code>{pkg.package.description}</code>
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-      <Footer />
     </div>
   );
 };
