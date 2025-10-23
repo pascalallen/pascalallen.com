@@ -123,39 +123,22 @@ const IndexPage = (): ReactElement => {
   };
 
   return (
-    <div
-      id="index-page"
-      className="index-page"
-      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div
-          id="wasm-terminal"
-          style={{
-            width: '100%',
-            maxWidth: 900,
-            height: 500,
-            background: '#0b0f14',
-            color: '#cfe3ff',
-            borderRadius: 8,
-            border: '1px solid #1e2733',
-            fontFamily: 'SFMono-Regular,Consolas,Menlo,monospace',
-            fontSize: 14,
-            display: 'flex',
-            flexDirection: 'column',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-          }}>
-          <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e2733', background: '#0f141b' }}>
-            <span style={{ color: '#68a0ff' }}>Go+WASM</span> <span style={{ color: '#6dd5a3' }}>Terminal</span>
+    <div id="index-page" className="index-page">
+      <div className="index-page__content">
+        <div id="wasm-terminal" className="wasm-terminal">
+          <div className="wasm-terminal__header">
+            <span className="wasm-terminal__title wasm-terminal__title--blue">Go+WASM</span>{' '}
+            <span className="wasm-terminal__title wasm-terminal__title--green">Terminal</span>
           </div>
-          <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+          <div ref={scrollRef} className="wasm-terminal__body">
             {lines.map((line, i) => (
-              <div key={i} style={{ whiteSpace: 'pre-wrap' }}>
+              <div key={i} className="wasm-terminal__line">
                 {line}
               </div>
             ))}
             {ready && (
-              <div style={{ display: 'flex' }}>
-                <div style={{ whiteSpace: 'pre' }}>{prompt}</div>
+              <div className="wasm-terminal__input-row">
+                <div className="wasm-terminal__prompt">{prompt}</div>
                 <input
                   ref={inputRef}
                   value={input}
@@ -164,26 +147,12 @@ const IndexPage = (): ReactElement => {
                   spellCheck={false}
                   autoCapitalize="off"
                   autoCorrect="off"
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#cfe3ff',
-                    font: 'inherit'
-                  }}
+                  className="wasm-terminal__input"
                 />
               </div>
             )}
           </div>
-          <div
-            style={{
-              padding: '6px 12px',
-              borderTop: '1px solid #1e2733',
-              background: '#0f141b',
-              fontSize: 12,
-              color: '#6b7c93'
-            }}>
+          <div className="wasm-terminal__footer">
             {ready ? 'Type help, clear, ls, cd, cat, echo, mkdir, touch, rm' : 'Initializing...'}
           </div>
         </div>
