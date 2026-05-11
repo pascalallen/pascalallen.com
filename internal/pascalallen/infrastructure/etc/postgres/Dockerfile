@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 postgres
+FROM --platform=linux/arm64 postgres:18
 
 #COPY ./docker-entrypoint-initdb.d/init-user-db.sh /docker-entrypoint-initdb.d/init-user-db.sh
 
