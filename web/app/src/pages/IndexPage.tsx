@@ -214,6 +214,17 @@ const IndexPage = (): ReactElement => {
             <p>
               <a
                 id="medium-go-link"
+                href="https://pascalallen.medium.com/how-to-build-an-mcp-server-in-go-50ed8a4c9ed4"
+                target="_blank"
+                rel="noreferrer">
+                How To: Build an MCP Server In Go
+              </a>
+              <br />
+              Learn how to build an MCP server in Go and install it for use with an AI client such as Claude Code.
+            </p>
+            <p>
+              <a
+                id="medium-go-link"
                 href="https://pascalallen.medium.com/go-ing-beyond-the-ordinary-discovering-the-unique-superpowers-of-the-go-language-372bfbf54445"
                 target="_blank"
                 rel="noreferrer">
