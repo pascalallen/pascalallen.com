@@ -213,7 +213,18 @@ const IndexPage = (): ReactElement => {
           <div id="publications-list" className="publications-list section-content-list">
             <p>
               <a
-                id="medium-go-link"
+                id="medium-go2-link"
+                href="https://pascalallen.medium.com/structuring-go-projects-with-clean-architecture-2c46d7e58ac3"
+                target="_blank"
+                rel="noreferrer">
+                Structuring Go Projects With Clean Architecture
+              </a>
+              <br />
+              How I structure my Go projects with a focus on Clean Architecture.
+            </p>
+            <p>
+              <a
+                id="medium-go1-link"
                 href="https://pascalallen.medium.com/how-to-build-an-mcp-server-in-go-50ed8a4c9ed4"
                 target="_blank"
                 rel="noreferrer">
