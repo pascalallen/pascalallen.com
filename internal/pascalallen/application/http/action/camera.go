@@ -25,6 +25,7 @@ func HandleCameraStream() gin.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
+		defer stdout.Close()
 
 		if err := cmd.Start(); err != nil {
 			log.Printf("camera stream: start: %s", err)
