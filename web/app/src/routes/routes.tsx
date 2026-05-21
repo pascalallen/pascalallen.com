@@ -4,6 +4,7 @@ import Path from '@domain/constants/Path';
 import IndexPage from '@pages/IndexPage';
 import LoginPage from '@pages/LoginPage';
 import TempPage from '@pages/TempPage';
+import CameraPage from '@pages/CameraPage';
 import RequiresAuthentication from './middleware/RequiresAuthentication';
 import RouteElementWrapper from './middleware/RouteElementWrapper';
 
@@ -25,6 +26,10 @@ const routes: RouteObject[] = [
         </RequiresAuthentication>
       </RouteElementWrapper>
     )
+  },
+  {
+    path: Path.CAMERA,
+    element: <CameraPage />
   }
 ];
 
