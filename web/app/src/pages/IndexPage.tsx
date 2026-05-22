@@ -213,6 +213,17 @@ const IndexPage = (): ReactElement => {
           <div id="publications-list" className="publications-list section-content-list">
             <p>
               <a
+                id="medium-rpi-link"
+                href="https://medium.com/@pascalallen/i-turned-a-35-computer-into-a-live-security-camera-with-go-f1e061dacc33"
+                target="_blank"
+                rel="noreferrer">
+                I Turned a $35 Computer Into a Live Security Camera With Go
+              </a>
+              <br />
+              No cloud, no subscription, no WebRTC. Just a Raspberry Pi, a camera module, and about 170 lines of Go.
+            </p>
+            <p>
+              <a
                 id="medium-go2-link"
                 href="https://pascalallen.medium.com/structuring-go-projects-with-clean-architecture-2c46d7e58ac3"
                 target="_blank"
