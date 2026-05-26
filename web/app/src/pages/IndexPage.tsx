@@ -213,6 +213,17 @@ const IndexPage = (): ReactElement => {
           <div id="publications-list" className="publications-list section-content-list">
             <p>
               <a
+                id="medium-es-link"
+                href="https://medium.com/@pascalallen/event-sourcing-in-go-a-full-cqrs-implementation-with-eventstoredb-and-rabbitmq-1ac73782ef3a"
+                target="_blank"
+                rel="noreferrer">
+                Event Sourcing in Go: A Full CQRS Implementation with EventStoreDB and RabbitMQ
+              </a>
+              <br />A code walkthrough of a complete Go implementation — aggregate versioning, RabbitMQ command bus,
+              EventStoreDB projections, and Wire DI.
+            </p>
+            <p>
+              <a
                 id="medium-rpi-link"
                 href="https://medium.com/@pascalallen/i-turned-a-35-computer-into-a-live-security-camera-with-go-f1e061dacc33"
                 target="_blank"
