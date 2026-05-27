@@ -420,6 +420,17 @@ const IndexPage = (): ReactElement => {
         </div>
       </section>
       <section id="golang" className="go-section">
+        <div id="background-hexagons" className="background-hexagons">
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
         <div>
           <h2>
             Go{' '}
