@@ -1,25 +1,13 @@
-html {
-  scroll-padding-top: 60px;
-}
-
 .index-page {
   display: flex;
   flex-direction: column;
 
   .navbar-container {
-    background-color: $navy;
-    left: 0;
-    padding: 12px 24px;
-    position: fixed;
-    right: 0;
-    top: 0;
-    z-index: 100;
-
     @media (max-width: $sm) {
       display: flex;
       justify-content: space-between;
       left: 8px;
-      padding: 8px;
+      position: fixed;
       right: 8px;
       top: 8px;
     }
@@ -52,12 +40,6 @@ html {
           font-size: 22px;
         }
       }
-
-      .section-links {
-        a {
-          text-transform: uppercase;
-        }
-      }
     }
 
     .hamburger {
@@ -80,7 +62,6 @@ html {
     justify-content: center;
 
     &.header {
-      padding-top: 60px;
       background: url("@assets/images/framed-nature.svg") no-repeat left;
       background-size: 125%;
 
@@ -188,15 +169,15 @@ html {
           z-index: -1;
 
           $bgDiamondColors:
-            1 $navy 20rem,
-            2 $emerald 18rem,
-            3 $malachite 16rem,
-            4 $teal 14rem,
-            5 $alabaster 12rem,
-            6 $teal 10rem,
-            7 $malachite 8rem,
-            8 $emerald 6rem,
-            9 $navy 4rem;
+                  1 $navy 20rem,
+                  2 $emerald 18rem,
+                  3 $malachite 16rem,
+                  4 $teal 14rem,
+                  5 $alabaster 12rem,
+                  6 $teal 10rem,
+                  7 $malachite 8rem,
+                  8 $emerald 6rem,
+                  9 $navy 4rem;
 
           @each $index, $color, $size in $bgDiamondColors {
             div:nth-child(9n + #{$index}) {
@@ -251,15 +232,15 @@ html {
           z-index: -1;
 
           $bgHexagonColors:
-            1 $navy 20rem,
-            2 $emerald 18rem,
-            3 $malachite 16rem,
-            4 $teal 14rem,
-            5 $alabaster 12rem,
-            6 $teal 10rem,
-            7 $malachite 8rem,
-            8 $emerald 6rem,
-            9 $navy 4rem;
+                  1 $navy 20rem,
+                  2 $emerald 18rem,
+                  3 $malachite 16rem,
+                  4 $teal 14rem,
+                  5 $alabaster 12rem,
+                  6 $teal 10rem,
+                  7 $malachite 8rem,
+                  8 $emerald 6rem,
+                  9 $navy 4rem;
 
           @each $index, $color, $size in $bgHexagonColors {
             div:nth-child(9n + #{$index}) {

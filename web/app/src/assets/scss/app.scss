@@ -4,6 +4,7 @@ body {
   background-color: $malachite;
   color: $alabaster;
   font-family: Helvetica, serif;
+  text-transform: uppercase;
 
   a {
     color: $navy;
@@ -42,10 +43,6 @@ body {
       }
     }
   }
-}
-
-h1, h2 {
-  text-transform: uppercase;
 }
 
 @import 'components/footer';
