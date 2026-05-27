@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 const bioText = "Senior software engineer in Austin, TX — 10+ years across the full stack, with a deep focus on Go, distributed systems, and domain-driven design. I build in the open, write about what I learn, and occasionally over-engineer things for fun."
 
@@ -16,7 +19,12 @@ func executeCommandLogic(cmd string) string {
 
 	switch parts[0] {
 	case "ls":
-		return "bio.txt"
+		keys := make([]string, 0, len(filesystem))
+		for k := range filesystem {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		return strings.Join(keys, "\n")
 	case "cat":
 		if len(parts) < 2 {
 			return "cat: missing file operand"
