@@ -139,6 +139,9 @@ const IndexPage = (): ReactElement => {
             <a id="navbar-npm-link" href="#npm" onClick={scrollToLocation}>
               NPM
             </a>
+            <a id="navbar-contact-link" href="#contact" onClick={scrollToLocation}>
+              Contact
+            </a>
           </div>
           <div id="social-links" className="social-links">
             <a
@@ -513,6 +516,35 @@ const IndexPage = (): ReactElement => {
           </div>
         </section>
       )}
+      <section id="contact" className="contact-section">
+        <div id="background-diamonds" className="background-diamonds">
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+        <div>
+          <h2>
+            Contact{' '}
+            <a id="contact-hashtag" href="#contact" onClick={scrollToLocation}>
+              #
+            </a>
+          </h2>
+          <div className="contact-content section-content-list">
+            <p>Want to get in touch?</p>
+            <p>
+              <a id="contact-email-link" href="mailto:pascal.allen88@gmail.com">
+                pascal.allen88@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
       <Footer />
     </div>
   );
