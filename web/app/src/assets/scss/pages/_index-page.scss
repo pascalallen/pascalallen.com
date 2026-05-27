@@ -1,13 +1,25 @@
+html {
+  scroll-padding-top: 60px;
+}
+
 .index-page {
   display: flex;
   flex-direction: column;
 
   .navbar-container {
+    background-color: $navy;
+    left: 0;
+    padding: 12px 24px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 100;
+
     @media (max-width: $sm) {
       display: flex;
       justify-content: space-between;
       left: 8px;
-      position: fixed;
+      padding: 8px;
       right: 8px;
       top: 8px;
     }
