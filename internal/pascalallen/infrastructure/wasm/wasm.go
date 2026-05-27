@@ -38,8 +38,10 @@ func typewriter(this js.Value, args []js.Value) interface{} {
 }
 
 func executeCommand(this js.Value, args []js.Value) interface{} {
-	cmd := args[0].String()
-	return executeCommandLogic(cmd)
+	if len(args) == 0 {
+		return ""
+	}
+	return executeCommandLogic(args[0].String())
 }
 
 func main() {
