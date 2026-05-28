@@ -24,7 +24,14 @@ const TerminalBio = (): ReactElement => {
     const cmd = input.trim();
     if (!cmd) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof (window as any).executeCommand !== 'function') return;
+    if (typeof (window as any).executeCommand !== 'function') {
+      setHistory(prev => [
+        ...prev,
+        { id: keyRef.current++, cmd, output: 'terminal initializing, please try again...' }
+      ]);
+      setInput('');
+      return;
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: string = (window as any).executeCommand(cmd);
     if (result === '__CLEAR__') {
@@ -57,6 +64,7 @@ const TerminalBio = (): ReactElement => {
           <input
             ref={inputRef}
             className="terminal-input"
+            aria-label="terminal command input"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
