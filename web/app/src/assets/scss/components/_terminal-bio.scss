@@ -30,7 +30,6 @@
 
     .terminal-line {
       display: flex;
-      white-space: pre-wrap;
       word-break: break-all;
     }
 
@@ -54,7 +53,6 @@
       font: inherit;
       outline: none;
       padding: 0;
-      width: 100%;
     }
   }
 }
