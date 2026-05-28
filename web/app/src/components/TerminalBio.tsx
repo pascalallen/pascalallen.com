@@ -1,6 +1,7 @@
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 
 type HistoryEntry = {
+  id: number;
   cmd: string;
   output: string;
 };
@@ -10,6 +11,7 @@ const TerminalBio = (): ReactElement => {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const keyRef = useRef(0);
 
   useEffect(() => {
     if (bodyRef.current) {
@@ -22,11 +24,13 @@ const TerminalBio = (): ReactElement => {
     const cmd = input.trim();
     if (!cmd) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (typeof (window as any).executeCommand !== 'function') return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: string = (window as any).executeCommand(cmd);
     if (result === '__CLEAR__') {
       setHistory([]);
     } else {
-      setHistory(prev => [...prev, { cmd, output: result }]);
+      setHistory(prev => [...prev, { id: keyRef.current++, cmd, output: result }]);
     }
     setInput('');
   };
@@ -39,8 +43,8 @@ const TerminalBio = (): ReactElement => {
     <div className="terminal-window">
       <div className="terminal-title-bar">bash &mdash; 80&times;24</div>
       <div className="terminal-body" ref={bodyRef} onClick={focusInput}>
-        {history.map((entry, i) => (
-          <React.Fragment key={i}>
+        {history.map(entry => (
+          <React.Fragment key={entry.id}>
             <div className="terminal-line">
               <span className="terminal-prompt">user@pascalallen:~$&nbsp;</span>
               {entry.cmd}
