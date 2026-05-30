@@ -59,8 +59,12 @@ const TerminalBio = (): ReactElement => {
             <div className="terminal-output">{entry.output}</div>
           </React.Fragment>
         ))}
-        <div className="terminal-line">
+        <div className="terminal-line terminal-active-line">
           <span className="terminal-prompt">user@pascalallen:~$&nbsp;</span>
+          <span className="terminal-input-display">
+            <span>{input}</span>
+            <span className="terminal-cursor" />
+          </span>
           <input
             ref={inputRef}
             className="terminal-input"

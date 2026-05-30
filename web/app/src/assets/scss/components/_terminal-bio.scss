@@ -45,14 +45,41 @@
       word-break: break-word;
     }
 
-    .terminal-input {
-      background: transparent;
-      border: none;
-      color: inherit;
+    .terminal-active-line {
+      position: relative;
+    }
+
+    .terminal-input-display {
       flex: 1;
+    }
+
+    .terminal-cursor {
+      animation: cursor-blink 1s step-end infinite;
+      background-color: #f0f0f0;
+      display: inline-block;
+      height: 1em;
+      vertical-align: text-bottom;
+      width: 0.55em;
+    }
+
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .terminal-input {
+      border: none;
+      cursor: text;
       font: inherit;
+      height: 100%;
+      left: 0;
+      opacity: 0;
       outline: none;
       padding: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: 1;
     }
   }
 }

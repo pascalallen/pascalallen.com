@@ -17,6 +17,7 @@ import UbuntuLogo from '@assets/images/ubuntu-logo.svg';
 import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
 import Footer from '@components/Footer';
+import TerminalBio from '@components/TerminalBio';
 
 type State = {
   repos: GitHubRepository[];
@@ -169,11 +170,7 @@ const IndexPage = (): ReactElement => {
             <span id="profession-text" />
             <span className="blink">_</span>
           </p>
-          <p className="bio">
-            Senior software engineer in Austin, TX &mdash; 10+ years across the full stack, with a deep focus on Go,
-            distributed systems, and domain-driven design. I build in the open, write about what I learn, and
-            occasionally over-engineer things for fun.
-          </p>
+          <TerminalBio />
         </div>
       </header>
       <section id="technology" className="technology-section">
