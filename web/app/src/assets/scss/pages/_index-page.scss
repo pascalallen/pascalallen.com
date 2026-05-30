@@ -82,6 +82,7 @@
         margin-bottom: 0;
         margin-top: 0;
       }
+
     }
 
     &:not(.header) {
@@ -153,6 +154,38 @@
         background: url("@assets/images/mountains.svg") no-repeat center;
       }
 
+      &.contact-section {
+        .background-diamonds {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          opacity: 40%;
+          z-index: -1;
+
+          $bgDiamondColors:
+                  1 $navy 20rem,
+                  2 $emerald 18rem,
+                  3 $malachite 16rem,
+                  4 $teal 14rem,
+                  5 $alabaster 12rem,
+                  6 $teal 10rem,
+                  7 $malachite 8rem,
+                  8 $emerald 6rem,
+                  9 $navy 4rem;
+
+          @each $index, $color, $size in $bgDiamondColors {
+            div:nth-child(9n + #{$index}) {
+              background-color: transparent;
+              border: 3px $color solid;
+              height: $size;
+              position: absolute;
+              transform: rotate(45deg);
+              width: $size;
+            }
+          }
+        }
+      }
+
       &.github-section {
         .background-rectangles {
           align-items: center;
@@ -179,6 +212,38 @@
               height: $height;
               position: absolute;
               width: $width;
+            }
+          }
+        }
+      }
+
+      &.go-section {
+        .background-hexagons {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          opacity: 40%;
+          z-index: -1;
+
+          $bgHexagonColors:
+                  1 $navy 20rem,
+                  2 $emerald 18rem,
+                  3 $malachite 16rem,
+                  4 $teal 14rem,
+                  5 $alabaster 12rem,
+                  6 $teal 10rem,
+                  7 $malachite 8rem,
+                  8 $emerald 6rem,
+                  9 $navy 4rem;
+
+          @each $index, $color, $size in $bgHexagonColors {
+            div:nth-child(9n + #{$index}) {
+              background-color: transparent;
+              border: 3px $color solid;
+              border-radius: 20%;
+              height: $size;
+              position: absolute;
+              width: $size;
             }
           }
         }

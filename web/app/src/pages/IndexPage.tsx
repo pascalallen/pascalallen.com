@@ -17,6 +17,7 @@ import UbuntuLogo from '@assets/images/ubuntu-logo.svg';
 import WebAssemblyLogo from '@assets/images/webassembly-logo.svg';
 import WebpackLogo from '@assets/images/webpack-logo.svg';
 import Footer from '@components/Footer';
+import TerminalBio from '@components/TerminalBio';
 
 type State = {
   repos: GitHubRepository[];
@@ -139,6 +140,9 @@ const IndexPage = (): ReactElement => {
             <a id="navbar-npm-link" href="#npm" onClick={scrollToLocation}>
               NPM
             </a>
+            <a id="navbar-contact-link" href="#contact" onClick={scrollToLocation}>
+              Contact
+            </a>
           </div>
           <div id="social-links" className="social-links">
             <a
@@ -166,6 +170,7 @@ const IndexPage = (): ReactElement => {
             <span id="profession-text" />
             <span className="blink">_</span>
           </p>
+          <TerminalBio />
         </div>
       </header>
       <section id="technology" className="technology-section">
@@ -412,6 +417,17 @@ const IndexPage = (): ReactElement => {
         </div>
       </section>
       <section id="golang" className="go-section">
+        <div id="background-hexagons" className="background-hexagons">
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
         <div>
           <h2>
             Go{' '}
@@ -508,6 +524,35 @@ const IndexPage = (): ReactElement => {
           </div>
         </section>
       )}
+      <section id="contact" className="contact-section">
+        <div id="background-diamonds" className="background-diamonds">
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+        <div>
+          <h2>
+            Contact{' '}
+            <a id="contact-hashtag" href="#contact" onClick={scrollToLocation}>
+              #
+            </a>
+          </h2>
+          <div className="contact-content section-content-list">
+            <p>Want to get in touch?</p>
+            <p>
+              <a id="contact-email-link" href="mailto:pascal.allen88@gmail.com">
+                pascal.allen88@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
       <Footer />
     </div>
   );
