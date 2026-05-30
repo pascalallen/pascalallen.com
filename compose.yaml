@@ -40,6 +40,14 @@ services:
       - "9990:9990"
     volumes:
       - .:/app:rw
+      - /run/udev:/run/udev:ro
+    devices:
+      - /dev/media0:/dev/media0
+      - /dev/media1:/dev/media1
+      - /dev/media2:/dev/media2
+      - /dev/media3:/dev/media3
+      - /dev/video0:/dev/video0
+    privileged: true
     networks:
       - pascalallen
 

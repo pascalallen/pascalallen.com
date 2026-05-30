@@ -1,6 +1,7 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import Path from '@domain/constants/Path';
+import CameraPage from '@pages/CameraPage';
 import IndexPage from '@pages/IndexPage';
 import LoginPage from '@pages/LoginPage';
 import TempPage from '@pages/TempPage';
@@ -25,6 +26,10 @@ const routes: RouteObject[] = [
         </RequiresAuthentication>
       </RouteElementWrapper>
     )
+  },
+  {
+    path: Path.CAMERA,
+    element: <CameraPage />
   }
 ];
 

@@ -60,5 +60,6 @@ func configureServer(container Container) {
 	router.Default()
 	router.Auth(userRepository, commandBus)
 	router.Temp(userRepository)
+	router.Camera()
 	router.Serve(":9990")
 }
