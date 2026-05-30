@@ -9,5 +9,5 @@ export default Object.freeze({
   LOGIN,
   FORBIDDEN,
   TEMP,
-  CAMERA,
+  CAMERA
 });

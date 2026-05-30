@@ -1,10 +1,10 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import Path from '@domain/constants/Path';
+import CameraPage from '@pages/CameraPage';
 import IndexPage from '@pages/IndexPage';
 import LoginPage from '@pages/LoginPage';
 import TempPage from '@pages/TempPage';
-import CameraPage from '@pages/CameraPage';
 import RequiresAuthentication from './middleware/RequiresAuthentication';
 import RouteElementWrapper from './middleware/RouteElementWrapper';
 
