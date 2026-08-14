@@ -433,6 +433,20 @@ const IndexPage = (): ReactElement => {
           <div id="golang-list" className="golang-list section-content-list">
             <p>
               <a
+                id="pgqueue-package-link"
+                href="https://pkg.go.dev/github.com/pascalallen/pgqueue"
+                target="_blank"
+                rel="noreferrer">
+                pgqueue
+              </a>{' '}
+              v1.0.0
+              <br />
+              <code>
+                pgqueue is a Go module that offers a Postgres-backed durable job queue and NOTIFY/LISTEN pub/sub.
+              </code>
+            </p>
+            <p>
+              <a
                 id="pubsub-package-link"
                 href="https://pkg.go.dev/github.com/pascalallen/pubsub"
                 target="_blank"
