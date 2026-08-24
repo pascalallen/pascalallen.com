@@ -37,10 +37,18 @@ func typewriter(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
+func executeCommand(this js.Value, args []js.Value) interface{} {
+	if len(args) == 0 {
+		return ""
+	}
+	return executeCommandLogic(args[0].String())
+}
+
 func main() {
 	c := make(chan struct{}, 3)
 
 	js.Global().Set("typewriter", js.FuncOf(typewriter))
+	js.Global().Set("executeCommand", js.FuncOf(executeCommand))
 
 	<-c
 }
