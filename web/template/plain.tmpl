@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{ template "head" .Head }}
+</head>
+<body>
+    <div class="terminal">
+        <div class="scroll">
+            <main class="output" aria-label="Plain text version">
+                <div class="entry"><div class="block block-text"><div class="line"><span class="s-heading">Plain text version</span></div><div class="line"><a class="s-accent" href="/">Open the terminal</a></div></div></div>
+                {{ .Content }}
+            </main>
+        </div>
+    </div>
+</body>
+</html>

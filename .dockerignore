@@ -1,0 +1,12 @@
+.git
+.github
+.agents
+.claude
+.env
+.env.*
+**/node_modules
+web/static/assets
+coverage.*
+tmp
+docs
+*.md

@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, revamp ]
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - run: go mod download
+      - run: go mod verify
+      - run: go build ./...
+      - name: gofmt
+        run: test -z "$(gofmt -l cmd internal)" || (gofmt -l cmd internal && exit 1)
+      - run: go vet ./...
+      - run: go test -race -cover ./...
+      - name: go mod tidy drift
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+      - name: Wire drift
+        run: |
+          go generate ./...
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git diff
+            exit 1
+          fi
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          set +e
+          vuln_out="$("$(go env GOPATH)/bin/govulncheck" ./... 2>&1)"
+          vuln_code=$?
+          set -e
+          printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"
+
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: shellcheck bin/* scripts/*
+      - run: scripts/cron-deploy.test.sh
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - run: bin/wasm
+      - run: bin/wasm-size
+      - run: bin/wasm-smoke
+      - run: bin/wasm-parity
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn test
+      - run: yarn build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: bin/e2e
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            web/app/playwright-report/
+            web/app/test-results/
+          retention-days: 14

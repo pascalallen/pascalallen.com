@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+GO_IMAGE="golang:1.26.11"
+NODE_IMAGE="node:22"
+PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v1.65.0-noble@sha256:6e3fb709361521eb27161606e6da6d2674e5e89fa16516cb37d6fdd91372273d"
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit 1
+
+CACHE="${VERIFY_CACHE:-$HOME/.cache/pascalallen-verify}"
+mkdir -p "$CACHE/go" "$CACHE/gocache" "$CACHE/yarn"
+
+if [ "${E2E_PREBUILT:-}" != "1" ]; then
+    bin/wasm
+    docker run --rm \
+        --user "$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        -e YARN_CACHE_FOLDER=/cache/yarn \
+        -v "$CACHE/yarn":/cache/yarn \
+        -v "$PWD":/app \
+        -w /app/web/app \
+        "$NODE_IMAGE" sh -c "yarn install --frozen-lockfile && yarn build"
+fi
+
+docker run --rm \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
+    -e GOPATH=/cache/go \
+    -e GOCACHE=/cache/gocache \
+    -e GOFLAGS=-buildvcs=false \
+    -e CGO_ENABLED=0 \
+    -v "$CACHE/go":/cache/go \
+    -v "$CACHE/gocache":/cache/gocache \
+    -v "$PWD":/app \
+    -w /app \
+    "$GO_IMAGE" go build -o web/app/.e2e/pascalallen ./cmd/pascalallen
+
+docker run --rm --init --ipc=host \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
+    -e CI="${CI:-}" \
+    -v "$PWD":/app \
+    -w /app/web/app \
+    "$PLAYWRIGHT_IMAGE" sh -c 'node node_modules/typescript/bin/tsc -p tsconfig.e2e.json && exec node node_modules/@playwright/test/cli.js test "$@"' e2e "$@"

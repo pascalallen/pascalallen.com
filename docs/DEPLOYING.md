@@ -1,42 +1,135 @@
 # Deploying
 
-This document describes the steps necessary for deploying to a Kubernetes cluster.
+Production is a Raspberry Pi (arm64) running Docker Compose.
 
-## Prerequisites
+## Docker Compose on the Raspberry Pi
 
-- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
-- [A provisioned Kubernetes cluster that you can connect to](https://kubernetes.io/docs/home/#set-up-a-k8s-cluster)
+Requires Docker Engine 24+ with Compose v2.20+ (`--progress quiet` is a global Compose flag from that line) and a
+64-bit (arm64) userland; `flock` from util-linux (present on Raspberry Pi OS).
 
-### Create Kubernetes Secret from `.env` file
+`compose.yaml` is the portable base: one service, port `9990` (override with `PORT`), `.env` as a required `env_file`,
+restart policy `unless-stopped`, no devices, not privileged. `compose.pi.yaml` adds the Pi-only parts: `platform:
+linux/arm64`, the build arg `REQUIRE_CAMERA=1` (the image build fails if the camera packages cannot be installed),
+privileged, `/run/udev`, `/dev/media0-3`, `/dev/video0`, and `user: "0:0"` so the camera devices are readable. The image
+itself runs as a non-root user; the Pi overlay overrides that because the container is privileged anyway.
 
-```bash
-kubectl create secret generic env-vars --from-env-file=.env
-```
-
-### Apply Services to Kubernetes Cluster
-
-```bash
-# Install Nginx Ingress Controller
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/baremetal/deploy.yaml
-
-# Install Cert-Manager
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.4/cert-manager.yaml
-
-# Wait for Cert-Manager to be ready
-kubectl wait --for=condition=Ready pods --all -n cert-manager --timeout=300s
-
-# Apply Infrastructure and Application
-kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/cert-manager \
-    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/postgres \
-    && kubectl apply -f https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml \
-    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/rabbitmq \
-    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/go
-```
-
-### Retrieve `EXTERNAL-IP`
+### One-time setup (new Pi)
 
 ```bash
-kubectl get service ingress-nginx-controller --namespace=ingress-nginx
+git clone https://github.com/pascalallen/pascalallen.com.git && cd pascalallen.com
+cp .env.example .env
 ```
 
-### Set up a DNS record pointing to the `EXTERNAL-IP`
+Fill in `.env` (`APP_BASE_URL`, `GITHUB_TOKEN`, `SLACK_DM_URL`, `GIN_MODE=release`), then start it once:
+
+```bash
+bin/up prod
+```
+
+Add the redeploy job with `crontab -e`, using the absolute path to the clone:
+
+```cron
+* * * * * /home/pi/pascalallen.com/scripts/cron-deploy >> /home/pi/pascalallen-deploy.log 2>&1
+```
+
+### Migrating an existing Pi
+
+The Pi currently runs the old `scripts/cron-deploy`, which never fetches, so merging to `main` changes nothing there.
+Do this once, on the Pi, from the clone. Every command below returns, so they can be typed in order in one terminal.
+
+First check the tree and `.env`:
+
+```bash
+cd ~/pascalallen.com
+git status
+test -f .env && echo ".env present"
+```
+
+If `git status` lists changes, look at them with `git diff`; keep what you need elsewhere (`git stash push -u -m pre-migration`
+is safe, and ignored files such as `.env` are not touched) because the next step discards them. `.env` must exist;
+copy it from `.env.example` and fill it in if not. When the tree is clean, fetch the new code. The old stack keeps
+serving while you do. Note the current commit first (it is your way back):
+
+```bash
+git rev-parse HEAD
+git fetch origin && git checkout main && git reset --hard origin/main
+```
+
+Build the new image before touching the running site. The first arm64 build is cold and can take many minutes; the old
+container keeps serving until the switch:
+
+```bash
+bin/_compose pi build
+```
+
+Then switch over (detached; `bin/up pi` without `prod` would tail the logs forever and block the terminal):
+
+```bash
+bin/down prod
+bin/up prod
+```
+
+Check it, using your `PORT` from `.env` instead of 9990 if you changed it:
+
+```bash
+bin/_compose pi ps
+curl -fsS -o /dev/null -w '%{http_code}\n' http://localhost:9990/
+crontab -l | grep cron-deploy
+```
+
+The curl must print `200` and the container must show `(healthy)` (the health check starts after about 20 seconds, so
+repeat `bin/_compose pi ps` if it still says `starting`). The crontab line must still point at `scripts/cron-deploy`
+in this clone (the path did not change). Cron needs nothing else; the new script reads `.env` itself. If the build or
+start fails, nothing has been lost: `git reset --hard <the commit printed by git rev-parse HEAD>` and `bin/up prod` restores the old setup.
+
+Optional cleanup of leftovers from the old setup (postgres, rabbitmq and the old named network). Find them first:
+
+```bash
+docker volume ls
+docker network ls
+docker ps -a
+```
+
+If an earlier compose project created volumes, they are named `<project>_<name>` after the clone directory (for example
+`pascalallencom_postgres_data`) and the network is `pascalallen`. Once the new stack is healthy (skip the network line if it does not exist or reports it is in use):
+
+```bash
+docker network rm pascalallen
+docker volume rm <the old database volume name from the list above>
+```
+
+Removing the volume is irreversible: it deletes the old database for good. Skip it if you might want that data.
+
+### What `scripts/cron-deploy` does
+
+- takes a lock so runs never overlap: `flock -n` on `.git/cron-deploy.flock` (released by the kernel on power loss or
+  crash); without `flock` it falls back to a lock directory that is taken over, with an alert, when it is older than
+  2 hours
+- runs `git fetch origin main` and exits quietly when `HEAD` already equals `origin/main`; a failing fetch alerts once and
+  stays quiet until a fetch succeeds
+- refuses to touch a working tree with local changes, and treats a missing `.env` the same way: it logs, posts one Slack
+  line per new commit, and leaves everything alone
+- otherwise checks out `main`, resets to `origin/main`, builds, restarts with `compose.yaml` plus `compose.pi.yaml`, and
+  polls `http://localhost:$PORT/` until it answers
+- a failed build or failed container start is treated as transient: the tree goes back to the running commit and the
+  commit is retried at most every 15 minutes, up to 8 attempts, with a Slack alert on attempts 1, 4 and 8. After the
+  last attempt it says how to retry: `rm .git/cron-deploy-retry`
+- a failed health check after a successful build marks the commit bad at once, rolls back to the previous commit
+  (rebuild and restart) and says how to retry: `rm .git/cron-deploy-failed` (or push a new commit)
+- posts to `SLACK_DM_URL` from `.env` on deploy, rollback, and failure; the URL is passed to curl on stdin, never echoed
+
+Tests for the decision logic run without Docker: `scripts/cron-deploy.test.sh`.
+
+### Day to day
+
+```bash
+bin/up        # build, start, follow logs (Pi overlay is picked automatically on the Pi)
+bin/up base   # force the portable base file
+bin/up pi     # force the Pi overlay
+bin/up prod   # Pi overlay, quiet, detached
+bin/down      # same selectors as bin/up
+```
+
+## Trusted proxies
+
+The visit ping rate limit is per client address. Behind a reverse proxy, set `TRUSTED_PROXIES` to a comma-separated list of the proxy CIDRs or IPs (for example `10.0.0.0/8`) so the forwarded client address is used. Left empty, no proxy is trusted: every visitor appears as the proxy address and the per-address limit collapses to one ping per hour for the whole site. A global cap of 30 notifications per hour applies regardless.

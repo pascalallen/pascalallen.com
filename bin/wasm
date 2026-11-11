@@ -1,9 +1,60 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
+TINYGO_VERSION="0.44.0"
+TINYGO_IMAGE="tinygo/tinygo:0.44.0@sha256:98126534a0653966913b803d26805ea79250a244217d921d74044cfedc1d24a2"
+PACKAGE="./internal/pascalallen/infrastructure/wasm"
+OUT="web/static/assets"
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+cd "$DIR"/.. || exit 1
 
-# compile WebAssembly module
-docker exec -w /app -e GOOS=js -e GOARCH=wasm pascalallen-go go build -o ./web/static/assets/wasm.wasm ./internal/pascalallen/infrastructure/wasm/wasm.go \
-  && docker exec -w /app pascalallen-go cp "$(docker exec -w /app pascalallen-go go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static/assets/wasm.js \
+installed_version() {
+    tinygo version 2>/dev/null | awk '{ print $3; exit }'
+}
+
+if [ "$(installed_version)" != "$TINYGO_VERSION" ]; then
+    CACHE="${VERIFY_CACHE:-$HOME/.cache/pascalallen-verify}"
+    mkdir -p "$CACHE/tinygo"
+    exec docker run --rm \
+        --user root \
+        -e WASM_OWNER="$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        -e XDG_CACHE_HOME=/cache \
+        -e GOFLAGS=-buildvcs=false \
+        -v "$CACHE/tinygo":/cache \
+        -v "$PWD":/app \
+        -w /app \
+        "$TINYGO_IMAGE" bash bin/wasm
+fi
+
+if ! command -v brotli >/dev/null 2>&1; then
+    if [ "$(id -u)" = "0" ] && command -v apt-get >/dev/null 2>&1; then
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update -qq >/dev/null
+        apt-get install -y -qq --no-install-recommends brotli >/dev/null 2>&1
+    else
+        echo "bin/wasm: brotli is required" >&2
+        exit 1
+    fi
+fi
+
+mkdir -p "$OUT"
+rm -f "$OUT"/shell.wasm "$OUT"/shell.wasm.br "$OUT"/shell.wasm.gz "$OUT"/wasm_exec.js "$OUT"/wasm_exec.js.br "$OUT"/wasm_exec.js.gz
+
+tinygo build -target wasm -opt=z -no-debug -o "$OUT/shell.wasm" "$PACKAGE"
+cp "$(tinygo env TINYGOROOT)/targets/wasm_exec.js" "$OUT/wasm_exec.js"
+
+for file in "$OUT/shell.wasm" "$OUT/wasm_exec.js"; do
+    gzip -9 -k -f "$file"
+    brotli -q 11 -k -f "$file"
+done
+
+if [ -n "${WASM_OWNER:-}" ]; then
+    chown -R "$WASM_OWNER" "$OUT"
+fi
+
+for file in "$OUT/shell.wasm" "$OUT/wasm_exec.js"; do
+    printf '%-32s raw %8d  gzip %8d  brotli %8d\n' \
+        "$file" "$(wc -c <"$file")" "$(wc -c <"$file.gz")" "$(wc -c <"$file.br")"
+done

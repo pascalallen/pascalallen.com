@@ -22,42 +22,6 @@ type JSendSuccessResponse[T any] struct {
 	Data   T      `json:"data,omitempty"`
 }
 
-func InternalServerErrorResponse(c *gin.Context, error error) {
-	c.JSON(
-		http.StatusInternalServerError,
-		JSendErrorResponse[string]{
-			Status:  "error",
-			Message: error.Error(),
-		},
-	)
-
-	return
-}
-
-func UnprocessableEntityResponse(c *gin.Context, error error) {
-	c.JSON(
-		http.StatusUnprocessableEntity,
-		JSendErrorResponse[string]{
-			Status:  "error",
-			Message: error.Error(),
-		},
-	)
-
-	return
-}
-
-func UnauthorizedResponse(c *gin.Context, error error) {
-	c.JSON(
-		http.StatusUnauthorized,
-		JSendFailResponse[string]{
-			Status: "fail",
-			Data:   error.Error(),
-		},
-	)
-
-	return
-}
-
 func BadRequestResponse(c *gin.Context, error error) {
 	c.JSON(
 		http.StatusBadRequest,
@@ -70,12 +34,87 @@ func BadRequestResponse(c *gin.Context, error error) {
 	return
 }
 
-func CreatedResponse[T interface{}](c *gin.Context, i *T) {
+func OKResponse[T interface{}](c *gin.Context, i T) {
 	c.JSON(
-		http.StatusCreated,
+		http.StatusOK,
 		JSendSuccessResponse[T]{
 			Status: "success",
-			Data:   *i,
+			Data:   i,
+		},
+	)
+
+	return
+}
+
+func NoContentResponse(c *gin.Context) {
+	c.Status(http.StatusNoContent)
+
+	return
+}
+
+func PayloadTooLargeResponse(c *gin.Context, message string) {
+	c.JSON(
+		http.StatusRequestEntityTooLarge,
+		JSendFailResponse[string]{
+			Status: "fail",
+			Data:   message,
+		},
+	)
+
+	return
+}
+
+func BadGatewayResponse(c *gin.Context, message string) {
+	c.JSON(
+		http.StatusBadGateway,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: message,
+			Code:    http.StatusBadGateway,
+		},
+	)
+
+	return
+}
+
+func ServiceUnavailableResponse(c *gin.Context, error error) {
+	c.JSON(
+		http.StatusServiceUnavailable,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: error.Error(),
+		},
+	)
+
+	return
+}
+
+func NotFoundResponse(c *gin.Context) {
+	c.JSON(
+		http.StatusNotFound,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: "not found",
+		},
+	)
+}
+
+func MethodNotAllowedResponse(c *gin.Context) {
+	c.JSON(
+		http.StatusMethodNotAllowed,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: "method not allowed",
+		},
+	)
+}
+
+func OkResponse[T interface{}](c *gin.Context, i T) {
+	c.JSON(
+		http.StatusOK,
+		JSendSuccessResponse[T]{
+			Status: "success",
+			Data:   i,
 		},
 	)
 

@@ -1,60 +1,52 @@
+const fs = require('fs');
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
-module.exports = {
-  entry: './src/app.tsx',
-  devtool: 'inline-source-map',
+class RemoveStaleCompressedPlugin {
+  apply(compiler) {
+    compiler.hooks.afterEmit.tap('RemoveStaleCompressedPlugin', compilation => {
+      for (const name of Object.keys(compilation.assets)) {
+        for (const suffix of ['.br', '.gz']) {
+          fs.rmSync(path.join(compiler.options.output.path, name + suffix), { force: true });
+        }
+      }
+    });
+  }
+}
+
+module.exports = (_env, argv) => ({
+  entry: {
+    app: './src/app.ts',
+    ...(argv.mode === 'production' ? {} : { 'dev-shell': './src/dev-shell.ts' }),
+    theme: './src/theme-boot.ts'
+  },
+  devtool: argv.mode === 'production' ? 'source-map' : 'inline-source-map',
   plugins: [
-    new MiniCssExtractPlugin({
-      filename: 'app.css',
-      chunkFilename: '[id].css',
-      ignoreOrder: false
-    })
+    new MiniCssExtractPlugin({ filename: '[name].css' }),
+    ...(argv.mode === 'production' ? [] : [new RemoveStaleCompressedPlugin()])
   ],
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
+        test: /\.ts$/,
+        use: { loader: 'ts-loader', options: { configFile: 'tsconfig.json' } },
         exclude: /node_modules/
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/inline'
-      },
-      {
-        test: /\.s[ac]ss$/i,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-              publicPath: path.resolve(__dirname, '../static/assets')
-            }
-          },
-          'css-loader',
-          'postcss-loader',
-          'sass-loader'
-        ]
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       }
     ]
   },
+  optimization: {
+    minimizer: ['...', new CssMinimizerPlugin()]
+  },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.scss'],
-    alias: {
-      '@assets': path.resolve(__dirname, 'src/assets'),
-      '@components': path.resolve(__dirname, 'src/components'),
-      '@domain': path.resolve(__dirname, 'src/domain'),
-      '@hooks': path.resolve(__dirname, 'src/hooks'),
-      '@pages': path.resolve(__dirname, 'src/pages'),
-      '@routes': path.resolve(__dirname, 'src/routes'),
-      '@services': path.resolve(__dirname, 'src/services'),
-      '@stores': path.resolve(__dirname, 'src/stores'),
-      '@types': path.resolve(__dirname, 'src/domain/types'),
-      '@utilities': path.resolve(__dirname, 'src/utilities')
-    }
+    extensions: ['.ts', '.js']
   },
   output: {
-    filename: 'app.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, '../static/assets')
   }
-};
+});

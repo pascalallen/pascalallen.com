@@ -1,0 +1,251 @@
+package pascalallen
+
+import (
+	"go/parser"
+	"go/token"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+const repoRoot = "../.."
+
+func walkFiles(t *testing.T, root string, skip []string, match func(path string) bool) []string {
+	t.Helper()
+
+	var found []string
+	err := filepath.WalkDir(filepath.Join(repoRoot, root), func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			for _, name := range skip {
+				if d.Name() == name {
+					return filepath.SkipDir
+				}
+			}
+			return nil
+		}
+		if match(path) {
+			found = append(found, path)
+		}
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	return found
+}
+
+func isDirective(text string) bool {
+	body := strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(text, "//"), "/*"))
+
+	return strings.HasPrefix(body, "go:build") || strings.HasPrefix(body, "+build") ||
+		strings.HasPrefix(body, "go:generate") || strings.HasPrefix(body, "go:embed") ||
+		strings.HasPrefix(text, "//go:")
+}
+
+var generatedMarker = regexp.MustCompile(`(?m)^// Code generated .* DO NOT EDIT\.$`)
+
+func goComments(t *testing.T, path string) []string {
+	t.Helper()
+
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+	if generatedMarker.Match(data) {
+		return nil
+	}
+	file, err := parser.ParseFile(token.NewFileSet(), path, data, parser.ParseComments)
+	require.NoError(t, err)
+
+	var found []string
+	for _, group := range file.Comments {
+		for _, c := range group.List {
+			if !isDirective(c.Text) {
+				found = append(found, path+": "+c.Text)
+			}
+		}
+	}
+
+	return found
+}
+
+func tsComments(t *testing.T, path string) []string {
+	t.Helper()
+
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+
+	return scanTSComments(path, string(data))
+}
+
+func scanTSComments(path, src string) []string {
+	var found []string
+	quote := byte(0)
+	for i := 0; i < len(src); i++ {
+		c := src[i]
+		switch {
+		case quote != 0:
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		case c == '\'' || c == '"' || c == '`':
+			quote = c
+		case c == '/' && i+1 < len(src) && src[i+1] == '/':
+			end := strings.IndexByte(src[i:], '\n')
+			if end < 0 {
+				end = len(src) - i
+			}
+			found = append(found, path+": "+src[i:i+end])
+			i += end
+		case c == '/' && i+1 < len(src) && src[i+1] == '*':
+			end := strings.Index(src[i+2:], "*/")
+			if end < 0 {
+				end = len(src) - i - 2
+			}
+			found = append(found, path+": "+src[i:i+end+4])
+			i += end + 3
+		case c == '/':
+			if regexLiteralStart(src, i) {
+				i = skipRegex(src, i)
+			}
+		}
+	}
+
+	return found
+}
+
+func regexLiteralStart(src string, i int) bool {
+	j := i - 1
+	for j >= 0 && (src[j] == ' ' || src[j] == '\t') {
+		j--
+	}
+
+	return j < 0 || strings.IndexByte("(,=:[!&|?{};", src[j]) >= 0
+}
+
+func skipRegex(src string, i int) int {
+	inClass := false
+	for j := i + 1; j < len(src) && src[j] != '\n'; j++ {
+		switch {
+		case src[j] == '\\':
+			j++
+		case src[j] == '[':
+			inClass = true
+		case src[j] == ']':
+			inClass = false
+		case src[j] == '/' && !inClass:
+			return j
+		}
+	}
+
+	return i
+}
+
+func TestNoCodeComments(t *testing.T) {
+	t.Run("Go source has no comments other than directives and generated files", func(t *testing.T) {
+		files := walkFiles(t, ".", []string{".git", "node_modules", ".claude", ".agents"}, func(path string) bool {
+			return strings.HasSuffix(path, ".go")
+		})
+		require.NotEmpty(t, files)
+
+		var found []string
+		for _, path := range files {
+			found = append(found, goComments(t, path)...)
+		}
+
+		assert.Empty(t, found)
+	})
+
+	t.Run("TypeScript and JavaScript source has no comments", func(t *testing.T) {
+		files := walkFiles(t, "web/app", []string{"node_modules", ".test-build", ".e2e", "playwright-report", "test-results"}, func(path string) bool {
+			return regexp.MustCompile(`\.(ts|mjs|cjs|js)$`).MatchString(path)
+		})
+		require.NotEmpty(t, files)
+
+		var found []string
+		for _, path := range files {
+			found = append(found, tsComments(t, path)...)
+		}
+
+		assert.Empty(t, found)
+	})
+
+	t.Run("the scanners flag a planted comment and ignore urls, strings and regexes", func(t *testing.T) {
+		assert.Len(t, scanTSComments("x.ts", "const a = 1; // note\n"), 1)
+		assert.Len(t, scanTSComments("x.ts", "/* note */ const a = 1;\n"), 1)
+		assert.Empty(t, scanTSComments("x.ts", "const a = 'https://x.y'; const b = /^https?:\\/\\//; const c = `a // b`;\n"))
+
+		file, err := parser.ParseFile(token.NewFileSet(), "x.go", "package x\n\n// planted\nvar a = 1\n", parser.ParseComments)
+		require.NoError(t, err)
+		assert.Len(t, file.Comments, 1)
+		assert.False(t, isDirective("// planted"))
+		assert.True(t, isDirective("//go:build js && wasm"))
+		assert.True(t, isDirective("//go:generate go run x"))
+		assert.True(t, generatedMarker.MatchString("// Code generated by Wire. DO NOT EDIT.\n\npackage x\n"))
+		assert.False(t, generatedMarker.MatchString("package x\n\nconst a = \"Code generated\"\n"))
+	})
+}
+
+func TestClaudeMd(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "CLAUDE.md"))
+	require.NoError(t, err)
+	text := string(data)
+
+	t.Run("it stays under 120 lines", func(t *testing.T) {
+		assert.Less(t, strings.Count(text, "\n"), 120)
+	})
+
+	t.Run("every backticked bin or scripts path in it exists", func(t *testing.T) {
+		paths := regexp.MustCompile("`((?:bin|scripts)/[A-Za-z0-9_.-]+)").FindAllStringSubmatch(text, -1)
+		require.NotEmpty(t, paths)
+
+		for _, match := range paths {
+			_, err := os.Stat(filepath.Join(repoRoot, match[1]))
+			assert.NoError(t, err, match[1])
+		}
+	})
+
+	t.Run("every bin or scripts path starting a line in a fenced block exists", func(t *testing.T) {
+		paths := fencedCommandPaths(text)
+		require.NotEmpty(t, paths)
+
+		for _, path := range paths {
+			_, err := os.Stat(filepath.Join(repoRoot, path))
+			assert.NoError(t, err, path)
+		}
+	})
+
+	t.Run("the fenced block scanner finds paths at line starts only", func(t *testing.T) {
+		src := "text bin/outside\n```bash\nbin/up prod   # x\n  scripts/a.sh arg\nnot bin/inline\n```\nbin/after\n"
+		assert.Equal(t, []string{"bin/up", "scripts/a.sh"}, fencedCommandPaths(src))
+	})
+}
+
+func fencedCommandPaths(text string) []string {
+	pattern := regexp.MustCompile(`^\s*((?:bin|scripts)/[A-Za-z0-9_.-]+)`)
+	var paths []string
+	inFence := false
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			inFence = !inFence
+			continue
+		}
+		if !inFence {
+			continue
+		}
+		if match := pattern.FindStringSubmatch(line); match != nil {
+			paths = append(paths, match[1])
+		}
+	}
+
+	return paths
+}

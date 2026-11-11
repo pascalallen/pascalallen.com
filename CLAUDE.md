@@ -1,75 +1,73 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Pointers and stable rules. Status lives in the epic issue #36 and `docs/build-log.md`, never here.
 
 ## What this is
 
-Personal site + playground for pascalallen.com: a single Go binary (Gin) that serves a React SPA, a JSON API under `/api/v1`, and a live MJPEG camera stream from a Raspberry Pi. Production is the Pi itself running Docker Compose (`scripts/cron-deploy` pulls `main` and rebuilds); the k8s manifests under `internal/pascalallen/infrastructure/etc/k8s/` are an alternate deploy path documented in `docs/DEPLOYING.md`.
+pascalallen.com: the whole site is a bash-style terminal. A pure Go shell runs natively on the server (pre-render, tests) and as WASM in the browser. One Go binary (Gin) serves it, a small JSON API under `/api/v1` and a live MJPEG camera stream from a Raspberry Pi. Production is the Pi itself running Docker Compose (`scripts/cron-deploy` redeploys `main`; see `docs/DEPLOYING.md`).
 
-## Where this repo diverges from the global defaults
+## Domain docs
 
-This predates the conventions in `~/.claude/CLAUDE.md`. Follow what's here, not the defaults, unless explicitly migrating:
-
-- **GORM, not `database/sql`**: `database.Session` wraps `*gorm.DB`; entities carry `gorm:` struct tags; schema comes from `AutoMigrate` in `cmd/pascalallen/pascalallen.go` — there is no `migrations/` dir and no golang-migrate.
-- **Async RabbitMQ buses, not synchronous in-process**: `CommandBus.Execute` publishes to the durable `commands` queue; `EventDispatcher.Dispatch` publishes to the `events` exchange. Handlers/listeners run in consumer goroutines started by `runConsumers`, so an HTTP action that executes a command returns before the handler runs. No `ctx` is threaded through handlers.
-- **Wire injector lives in `cmd/pascalallen/`** (`wire.go` → `wire_gen.go`), not `infrastructure/container/`. `Container` is a plain struct; handlers/listeners are wired by struct literal in `main.go`'s `runConsumers`, not via Wire.
-- **Frontend is React 18 + MobX + react-router v6 + ESLint 8 legacy `.eslintrc.json`**, no Bootstrap/TanStack. Don't upgrade toolchains incidentally.
-- Known layering leak: `domain/user` imports `infrastructure/database/type.GormUlid` for its ID column. Don't spread it further.
+- `GLOSSARY.md` (terms and `_Avoid_` words), `GLOSSARY-MAP.md`, `docs/adr/` (decisions), `ROADMAP.md` (order), `REVIEW.md` (review invariants), `docs/build-log.md`.
+- Path-scoped rules load from `.claude/rules/`: `shell-domain.md`, `go.md`, `web-host.md`, `wasm.md`.
 
 ## Commands
 
-Everything Go runs inside the `pascalallen-go` container via `bin/exec`; everything JS runs in a throwaway `node:lts` container via `bin/yarn` (cwd `web/app`).
+Go and Node run in throwaway containers, so no running compose stack is needed to verify.
 
 ```bash
-cp .env.example .env          # once
-bin/up                        # build + up + compile WASM + tail logs; bin/up prod = detached, quiet
-bin/down                      # bin/down prod likewise
-bin/watch                     # postgres+adminer via compose, Go via cosmtrek/air with live reload (does NOT start RabbitMQ)
-bin/wasm                      # recompile web/static/assets/wasm.{wasm,js} only
-
-bin/exec go test ./...
-bin/exec go test ./internal/pascalallen/domain/user/ -run TestRegister -v   # single package / test
-bin/exec go test ./... -covermode=count -coverprofile=coverage.out
-bin/exec go run github.com/google/wire/cmd/wire ./cmd/pascalallen           # regenerate wire_gen.go — never hand-edit
-
-bin/yarn ci                   # yarn install --frozen-lockfile
-bin/yarn build                # production webpack → web/static/assets/app.{js,css}
-bin/yarn dev | bin/yarn watch # development build / watch
-bin/yarn lint | bin/yarn lint:fix
+bin/verify          # the full gate, same steps as CI, from any worktree
+bin/e2e [args]      # build WASM, assets and the binary, then run Playwright in its pinned container (args go to playwright test)
+bin/up              # build + up + logs; base/pi/prod select the compose overlay
+bin/down            # same selectors as bin/up
+bin/exec <cmd>      # run a command in the running container (the runtime image has no Go toolchain)
+bin/yarn <args>     # yarn in web/app (node container)
 ```
 
-Site: http://localhost:9990 · Adminer: http://localhost:8888 · RabbitMQ mgmt: http://localhost:15672.
-
-CI (`.github/workflows/`) runs on PRs to `main`: `go mod verify`, `go build -C cmd/pascalallen`, `go test ./...`, plus `yarn install --frozen-lockfile`, a dev webpack build, and `yarn lint`. `web/static/assets/` is gitignored — it's a build output.
-
-**Host caveat:** `compose.yaml` runs `pascalallen-go` privileged with `/dev/media0-3` and `/dev/video0` mapped, and the `Dockerfile` is pinned to `linux/arm64` with libcamera/gstreamer/rpicam packages. `bin/up` as written targets the Pi; on a dev Mac expect to drop the `devices:` block or use `bin/watch`.
+Site: http://localhost:9990. Live checks from agents use the port in their brief, never 9990.
 
 ## Architecture
 
-Module `github.com/pascalallen/pascalallen.com`; all app code under `internal/pascalallen/{domain,application,infrastructure}`; entrypoint `cmd/pascalallen`.
+Module `github.com/pascalallen/pascalallen.com`; entrypoint `cmd/pascalallen`; app code under `internal/pascalallen/`.
 
-**Startup order** (`cmd/pascalallen/pascalallen.go`): `InitializeContainer()` (Wire: GORM session, GORM repos, seeder, AMQP conn, buses) → `AutoMigrate(Permission, Role, User)` + `Seeder.Seed()` → `runConsumers` (register command handlers + event listeners, start consuming in goroutines) → `configureServer` (Gin router, `:9990`).
+- `domain/shell`: pure Go, stdlib only. Parser, read-only virtual filesystem, command registry, completion, history. `Exec(line)` returns blocks (styled spans, links) and effects.
+- `domain/content`: `go:embed` tree that is the virtual filesystem.
+- `application`: queries (`ListRepositories`, `ListPackages`), command (`RecordVisit`), `render` (server HTML for blocks, the boot screen and `/plain`), `http` actions and responders.
+- `infrastructure`: `wasm` (bridge only), `feed` (GitHub and npm clients, TTL cache), `camera` (hub), `slack` (visit notifier), `messaging` (synchronous buses, `ctx` threaded), `container` (Wire injector), `routes` (Gin routes, JSend, headers, static files, templates in `web/template`).
+- `web/app`: thin hand-written TypeScript host, no framework. Owns the DOM, input, rendering of blocks, scrolling, themes.
+- Live commands return an effect; the host calls the API and feeds the result back. No secret ever reaches the browser.
+- Layering is strict: infrastructure imports application and domain; domain imports nothing outside itself.
 
-**Seeding** is declarative and idempotent: `infrastructure/database/seeds/auth.{permissions,roles,users}.json` are reconciled into the DB on every boot (adds/updates/removes). Edit JSON, not SQL, to change auth fixtures. IDs are ULIDs stored as `CHAR(26)`.
+Layout drift is enforced by `internal/pascalallen/architecture_test.go` and `internal/pascalallen/domain/architecture_test.go`.
 
-**Adding a command or event touches four places** — the bus deserializes by message `Type` through a hard-coded switch:
-1. Struct in `application/command/` (or `application/event/`) with `CommandName()`/`EventName()` returning `reflect.TypeOf(c).Name()`; JSON tags required since it crosses RabbitMQ.
-2. Handler in `application/command_handler/` (or listener in `application/listener/`) — type-asserts to the **pointer** type (`cmd.(*command.Foo)`).
-3. The `switch msg.Type` in `infrastructure/messaging/command_bus.go` `processCommand` (or `event_dispatcher.go`) — without this the message is logged as unknown and dropped.
-4. `RegisterHandler`/`RegisterListener` in `runConsumers`.
+## Generated files
 
-Existing chain to copy: `RegisterUser` → `UserRegistered` event → `UserRegistration` listener → `SendWelcomeEmail` command.
+- `wire_gen.go`: never hand-edit; regenerate with `go generate ./...` (denied in `.claude/settings.json`).
+- `web/static/assets/` is a build output and gitignored.
 
-**HTTP**: `infrastructure/routes/*.go` are `Router` methods that declare groups under `/api/v1` and bind closure actions from `application/http/action/` (`HandleX(deps...) gin.HandlerFunc`). Responses use the JSend helpers in `application/http/responder/`. `middleware.AuthRequired(userRepo)` parses the `Authorization: Bearer` JWT via `infrastructure/service/tokenservice` and re-fetches the user. `NoRoute` renders `web/template/index.tmpl` so the SPA owns every non-API path; `/static` serves `web/static`.
+## Host facts
 
-**Camera stream**: `action/camera_hub.go` is a process-wide singleton that lazily spawns `gst-launch-1.0 libcamerasrc … jpegenc … multipartmux` on first subscriber, fans frames out to per-client buffered channels (dropping on slow consumers), and restarts gstreamer if it exits. `GET /api/v1/camera/stream` is `multipart/x-mixed-replace`; the React `CameraPage` is just an `<img src>` pointing at it.
+- `compose.yaml` is the portable base; `compose.pi.yaml` adds the Pi parts (privileged, `/dev/media0-3`, `/dev/video0`, `platform: linux/arm64`, `REQUIRE_CAMERA=1`). `bin/up` picks the overlay on aarch64 Linux with `/dev/video0`, or via `bin/up pi`/`prod`. The multi-stage `Dockerfile` builds natively on arm64 and amd64; production redeploys through `scripts/cron-deploy` (docs/DEPLOYING.md).
+- Required env is in `.env.example`. Never read or commit `.env`.
 
-**Server → SPA config**: `action.HandleDefault` base64-encodes `{APP_BASE_URL, APP_ENV, GITHUB_TOKEN, SLACK_DM_URL}` into a hidden `#script_config` input; `web/app/src/utilities/env.ts` decodes it. Add new runtime config in both places.
+## Done means
 
-**WASM**: `infrastructure/wasm/wasm.go` (`//go:build js && wasm`) exports a `typewriter` JS global used by `index.tmpl`. It's compiled by `bin/up`/`bin/wasm`, not by `go build ./...`.
+- `bin/verify` passes on the exact tree you push, and CI is green on the PR.
+- Tests are written first, use testify, and name `t.Run` cases as sentences. Each new guard has a test that fails when the guard is removed.
+- No code comments; rationale goes in the PR body.
+- Every shell command has help text, completion and a test; shell output is data, never HTML.
+- A new CI step is added to `bin/verify` in the same PR.
+- Test an empty environment and load the app in a browser after a dependency or host change.
 
-**Frontend** (`web/app/src`): entry `app.tsx`, routes in `routes/routes.tsx` guarded by `RequiresAuthentication`/`RequiresAuthorization` wrappers; MobX `RootStore` → `AuthStore` exposed through `useStore('authStore')`; all HTTP goes through `services/ApiService.ts` (axios, JSend-typed responses, JWT refresh). `@`-aliases are declared in both `tsconfig.json` and `webpack.config.js` — add new ones to both, and to the `import/order` pathGroups in `.eslintrc.json`. Prettier: 120 cols, single quotes, no trailing commas.
+## Workflow
 
-## Required env
+GitHub issue, then branch `feature/<issue#>-<slug>`, then PR. Until the epic (#36) closes, PRs target the `revamp` integration branch and one final PR merges `revamp` into `main` (ADR 0003). The owner reviews and merges the final PR; agents never merge it. One checklist item per PR, one or two plain commits, no `Co-Authored-By` trailer. PR body: what is in and out, deviations, what was checked, `Part of #N`, last line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`. Follow-ups are filed as `needs-triage` issues.
 
-See `.env.example`. The binary `log.Fatal`s at boot without reachable `DB_*` and `RABBITMQ_*` targets; `TOKEN_SECRET` signs JWTs; `GIN_MODE` selects debug/release.
+## Agents
+
+Hub and spoke: a thin orchestrator writes briefs to `.agents/rounds/<round>/` (gitignored), launches writers in their own worktree and read-only reviewers, and owns merge order and shared files.
+
+- `site-writer` (sonnet): one item from a brief, test-first, opens the PR.
+- `site-reviewer` (opus): refute-by-default, reads `REVIEW.md`, reports only defects with a failure scenario.
+- Max 4 writers and 2 reviewers at once. After two fix passes or a new defect class, stop and report.
+- Never name private reference repos in code, docs, issues or PRs.

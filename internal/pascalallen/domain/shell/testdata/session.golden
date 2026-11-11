@@ -1,0 +1,201 @@
+$ visitor@pascalallen.com:~$ help
+<text>
+  [heading:Commands]
+    [accent:help => help]        list every command
+    [accent:man => man]         show the manual page for a command
+    [accent:ls => ls]          list directory contents
+    [accent:cd => cd]          change the working directory
+    [accent:pwd => pwd]         print the working directory
+    [accent:cat => cat]         print files
+    [accent:tree => tree]        show the directory tree
+    [accent:head => head]        print the first lines of files
+    [accent:tail => tail]        print the last lines of files
+    [accent:grep => grep]        search files for text
+    [accent:whoami => whoami]      print your user name
+    [accent:echo => echo]        print text
+    [accent:date => date]        print the date and time
+    [accent:history => history]     list recent commands
+    [accent:clear => clear]       clear the screen
+    [accent:open => open]        open a link in a new tab
+    [accent:about => about]       who Pascal is
+    [accent:resume => resume]      the full resume
+    [accent:skills => skills]      technical skills
+    [accent:experience => experience]  work history, newest first
+    [accent:projects => projects]    open-source projects
+    [accent:writing => writing]     articles and press, newest first
+    [accent:contact => contact]     email and social links
+    [accent:education => education]   education and certifications
+    [accent:repos => repos]       live list of GitHub repositories
+    [accent:packages => packages]    live list of npm packages
+    [accent:camera => camera]      live camera stream from a Raspberry Pi
+    [accent:theme => theme]       list or set the color theme
+    [accent:exit => exit]        leave the shell
+  
+  [dim:Type ][accent:man ls => man ls][dim: for details. Tab completes; tap any command to run it.]
+$ visitor@pascalallen.com:~$ ls
+<text>
+  [plain:README.md => cat ~/README.md]  [plain:about.md => cat ~/about.md]  [plain:contact.md => cat ~/contact.md]  [plain:education.md => cat ~/education.md]  [path:experience/ => ls ~/experience]  [path:projects/ => ls ~/projects]  [plain:resume.md => cat ~/resume.md]  [plain:skills.md => cat ~/skills.md]  [path:writing/ => ls ~/writing]
+$ visitor@pascalallen.com:~$ cd writing
+$ visitor@pascalallen.com:~/writing$ ls -l
+<text>
+  -r--r--r--  visitor     245  [plain:01-run-a-go-web-server-with-apple-container.md => cat ~/writing/01-run-a-go-web-server-with-apple-container.md]
+  -r--r--r--  visitor     348  [plain:02-event-sourcing-in-go.md => cat ~/writing/02-event-sourcing-in-go.md]
+  -r--r--r--  visitor     271  [plain:03-live-security-camera-with-go.md => cat ~/writing/03-live-security-camera-with-go.md]
+  -r--r--r--  visitor     211  [plain:04-structuring-go-projects-with-clean-architecture.md => cat ~/writing/04-structuring-go-projects-with-clean-architecture.md]
+  -r--r--r--  visitor     216  [plain:05-build-an-mcp-server-in-go.md => cat ~/writing/05-build-an-mcp-server-in-go.md]
+  -r--r--r--  visitor     337  [plain:06-go-ing-beyond-the-ordinary.md => cat ~/writing/06-go-ing-beyond-the-ordinary.md]
+  -r--r--r--  visitor     267  [plain:07-mastering-the-fundamentals-of-algorithms.md => cat ~/writing/07-mastering-the-fundamentals-of-algorithms.md]
+  -r--r--r--  visitor     192  [plain:08-automate-your-deployments-with-cron.md => cat ~/writing/08-automate-your-deployments-with-cron.md]
+  -r--r--r--  visitor     166  [plain:09-build-a-grpc-server-in-go.md => cat ~/writing/09-build-a-grpc-server-in-go.md]
+  -r--r--r--  visitor     269  [plain:10-developing-a-framework-for-any-project.md => cat ~/writing/10-developing-a-framework-for-any-project.md]
+  -r--r--r--  visitor     204  [plain:11-streaming-server-sent-events-with-go.md => cat ~/writing/11-streaming-server-sent-events-with-go.md]
+  -r--r--r--  visitor     221  [plain:12-dispatching-events-with-react-and-typescript.md => cat ~/writing/12-dispatching-events-with-react-and-typescript.md]
+  -r--r--r--  visitor     212  [plain:13-jwt-authentication-with-go.md => cat ~/writing/13-jwt-authentication-with-go.md]
+  -r--r--r--  visitor     188  [plain:14-compile-a-webassembly-module-from-go.md => cat ~/writing/14-compile-a-webassembly-module-from-go.md]
+  -r--r--r--  visitor     140  [plain:15-deploy-to-kubernetes.md => cat ~/writing/15-deploy-to-kubernetes.md]
+  -r--r--r--  visitor     198  [plain:16-build-a-containerized-web-app-in-go.md => cat ~/writing/16-build-a-containerized-web-app-in-go.md]
+  -r--r--r--  visitor     274  [plain:17-releasing-packages-to-github-and-npm.md => cat ~/writing/17-releasing-packages-to-github-and-npm.md]
+  -r--r--r--  visitor     127  [plain:18-scrum-simplified.md => cat ~/writing/18-scrum-simplified.md]
+  -r--r--r--  visitor     214  [plain:19-divergent-career-paths.md => cat ~/writing/19-divergent-career-paths.md]
+$ visitor@pascalallen.com:~/writing$ cat 03-live-security-camera-with-go.md
+<text>
+  [heading:I Turned a $35 Computer Into a Live Security Camera With Go]
+  
+  No cloud, no subscription, no WebRTC. Just a Raspberry Pi, a camera module, and about 170 lines of Go.
+  
+  [accent:https://medium.com/@pascalallen/i-turned-a-35-computer-into-a-live-security-camera-with-go-f1e061dacc33 -> https://medium.com/@pascalallen/i-turned-a-35-computer-into-a-live-security-camera-with-go-f1e061dacc33]
+$ visitor@pascalallen.com:~/writing$ cd ..
+$ visitor@pascalallen.com:~$ grep -i raspberry projects
+<text>
+  [path:projects/pascalallen.com.md => cat ~/projects/pascalallen.com.md][dim::3:] Personal portfolio website. This site runs on Go, WebAssembly, TypeScript, Docker and a [warning:Raspberry] Pi.
+  [path:projects/rpi-security-cam.md => cat ~/projects/rpi-security-cam.md][dim::3:] Live camera streaming on a [warning:Raspberry] Pi, served over HTTP in Go.
+$ visitor@pascalallen.com:~$ experience
+<text>
+  [heading:Experience]
+    [accent:Sectigo — Senior Software Engineer (Contract, via imagineX) => cat ~/experience/01-sectigo.md]
+  [dim:    Remote (Austin, TX) · 2026 – Present]
+    [accent:Intuit Mailchimp — Senior Software Engineer (Contract, via Tensure) => cat ~/experience/02-intuit-mailchimp.md]
+  [dim:    Remote (Austin, TX) · 2024 – 2026]
+    [accent:Monumental — Senior Software Engineer => cat ~/experience/03-monumental.md]
+  [dim:    Austin, TX · 2022 – 2024]
+    [accent:OnlineMedEd — Software Engineer II => cat ~/experience/04-onlinemeded.md]
+  [dim:    Austin, TX · 2018 – 2021]
+    [accent:Far West Capital — Lead Software Engineer => cat ~/experience/05-far-west-capital.md]
+  [dim:    Austin, TX · 2016 – 2018]
+    [accent:Crimson Drive Design — Consulting => cat ~/experience/06-crimson-drive-design.md]
+  [dim:    Austin, TX · 2015 – Present]
+  
+  [dim:Tap an entry, or run ][accent:ls ~/experience => ls ~/experience][dim: and cat a file.]
+  
+  [dim:more: ][accent:about => about]  [accent:resume => resume]  [accent:projects => projects]  [accent:writing => writing]  [accent:contact => contact]
+$ visitor@pascalallen.com:~$ cat ~/experience/01-sectigo.md
+<text>
+  [heading:Sectigo — Senior Software Engineer (Contract, via imagineX)]
+  Remote (Austin, TX) · 2026 – Present
+  
+  - Currently developing [accent:https://www.sectigo.com/qspm-quantum-ready -> https://www.sectigo.com/qspm-quantum-ready]
+  
+  Stack: GCP, Docker, Kubernetes, Terraform, Helm, Flux, Spacelift, Grafana, Elasticsearch, Node, Python, JavaScript, Claude, Copilot
+$ visitor@pascalallen.com:~$ head -n 4 resume.md
+<text>
+  [heading:Pascal Allen]
+  
+  Senior Software Engineer · Go / PHP / React / TypeScript / Postgres · Austin, TX
+  
+$ visitor@pascalallen.com:~$ tree projects
+<text>
+  [path:~/projects => ls ~/projects]
+  [dim:├── ][plain:adk-agent.md => cat ~/projects/adk-agent.md]
+  [dim:├── ][plain:es-go.md => cat ~/projects/es-go.md]
+  [dim:├── ][plain:hmac.md => cat ~/projects/hmac.md]
+  [dim:├── ][plain:mcp-server-go.md => cat ~/projects/mcp-server-go.md]
+  [dim:├── ][plain:ollama-cloud-go.md => cat ~/projects/ollama-cloud-go.md]
+  [dim:├── ][plain:pascalallen.com.md => cat ~/projects/pascalallen.com.md]
+  [dim:├── ][plain:pgmcp.md => cat ~/projects/pgmcp.md]
+  [dim:├── ][plain:pgqueue.md => cat ~/projects/pgqueue.md]
+  [dim:├── ][plain:pubsub.md => cat ~/projects/pubsub.md]
+  [dim:├── ][plain:react-event-dispatcher.md => cat ~/projects/react-event-dispatcher.md]
+  [dim:├── ][plain:react-form-components.md => cat ~/projects/react-form-components.md]
+  [dim:├── ][plain:rpi-security-cam.md => cat ~/projects/rpi-security-cam.md]
+  [dim:└── ][plain:vllm-server.md => cat ~/projects/vllm-server.md]
+  
+  0 directories, 13 files
+$ visitor@pascalallen.com:~$ man grep
+<text>
+  [heading:NAME]
+      grep - search files for text
+  
+  [heading:SYNOPSIS]
+      [bold:grep [-i] <text> [path]]
+  
+  [heading:DESCRIPTION]
+      Prints every line containing the text, searching all files below the path.
+      The text is matched literally, not as a pattern.
+      -i  ignore case
+$ visitor@pascalallen.com:~$ theme
+<text>
+  * [accent:dark => theme dark]
+    [accent:light => theme light]
+    [accent:amber => theme amber]
+    [accent:green => theme green]
+$ visitor@pascalallen.com:~$ theme green
+! theme green
+<text>
+  theme set to [success:green]
+$ visitor@pascalallen.com:~$ repos
+! fetch repos
+<text>
+  [dim:fetching repositories from GitHub...]
+$ <deliver repos>
+<text>
+  [heading:Repositories on GitHub]
+  [accent:pgqueue -> https://github.com/pascalallen/pgqueue][dim:  Go · updated 2026-08-16]
+    Postgres-backed durable job queue and NOTIFY/LISTEN pub/sub.
+  [accent:pubsub -> https://github.com/pascalallen/pubsub][dim:  Go · updated 2026-08-13]
+    In-memory pub/sub built on goroutines and channels.
+$ visitor@pascalallen.com:~$ packages
+! fetch packages
+<text>
+  [dim:fetching packages from npm...]
+$ <deliver error packages>
+<error>
+  [error:packages: could not load the list right now]
+  try again: [accent:packages => packages]
+$ visitor@pascalallen.com:~$ camera
+<media src=/api/v1/camera/stream alt=Live camera stream from a Raspberry Pi>
+  [dim:live from a Raspberry Pi; type clear to close it]
+$ visitor@pascalallen.com:~$ open contact.md
+! open https://pascalallen.com
+<text>
+  opening [accent:https://pascalallen.com -> https://pascalallen.com]
+$ visitor@pascalallen.com:~$ echo 'quoted  text' "and more" # a comment
+<text>
+  quoted  text and more
+$ visitor@pascalallen.com:~$ cd nope && echo skipped; echo next
+<error>
+  [error:cd: nope: No such file or directory]
+<text>
+  next
+$ visitor@pascalallen.com:~$ sl
+<error>
+  [error:bash: sl: command not found]
+  did you mean [accent:ls => ls]?
+$ visitor@pascalallen.com:~$ cat about.md | grep Go
+<error>
+  [error:bash: pipes are not supported in this shell]
+$ visitor@pascalallen.com:~$ echo "unterminated
+<error>
+  [error:bash: unexpected EOF while looking for matching `"']
+$ visitor@pascalallen.com:~$ history 5
+<text>
+  [dim:   20  ][accent:cd nope && echo skipped; echo next => cd nope && echo skipped; echo next]
+  [dim:   21  ][accent:sl => sl]
+  [dim:   22  ][accent:cat about.md | grep Go => cat about.md | grep Go]
+  [dim:   23  ][accent:echo "unterminated => echo "unterminated]
+  [dim:   24  ][accent:history 5 => history 5]
+$ visitor@pascalallen.com:~$ rm -rf /
+<error>
+  [error:rm: nice try. Everything here is read-only, including the root.]
+$ visitor@pascalallen.com:~$ sudo make me a sandwich
+<error>
+  [error:visitor is not in the sudoers file. This incident will be reported.]

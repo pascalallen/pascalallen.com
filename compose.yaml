@@ -1,60 +1,10 @@
 services:
-  pascalallen-postgres:
-    restart: unless-stopped
-    env_file:
-      - .env
-    build:
-      context: internal/pascalallen/infrastructure/etc/postgres
-    container_name: pascalallen-postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - dbdata:/var/lib/postgresql
-    networks:
-      - pascalallen
-
-  pascalallen-rabbitmq:
-    restart: unless-stopped
-    env_file:
-      - .env
-    build:
-      context: internal/pascalallen/infrastructure/etc/rabbitmq
-    hostname: pascalallen-rabbitmq
-    container_name: pascalallen-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./internal/pascalallen/infrastructure/etc/rabbitmq:/etc/rabbitmq
-    networks:
-      - pascalallen
-
   pascalallen-go:
     restart: unless-stopped
-    env_file:
-      - .env
+    env_file: .env
+    environment:
+      PORT: "${PORT:-9990}"
     build:
       context: .
-    container_name: pascalallen-go
     ports:
-      - "9990:9990"
-    volumes:
-      - .:/app:rw
-      - /run/udev:/run/udev:ro
-    devices:
-      - /dev/media0:/dev/media0
-      - /dev/media1:/dev/media1
-      - /dev/media2:/dev/media2
-      - /dev/media3:/dev/media3
-      - /dev/video0:/dev/video0
-    privileged: true
-    networks:
-      - pascalallen
-
-networks:
-  pascalallen:
-    name: pascalallen
-
-volumes:
-  dbdata:
-    driver: local
+      - "${PORT:-9990}:${PORT:-9990}"
