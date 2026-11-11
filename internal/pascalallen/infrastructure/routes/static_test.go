@@ -7,7 +7,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -15,6 +18,13 @@ import (
 )
 
 func staticEngine(t *testing.T, files map[string]string) *gin.Engine {
+	t.Helper()
+	engine, _ := staticEngineAt(t, files)
+
+	return engine
+}
+
+func staticEngineAt(t *testing.T, files map[string]string) (*gin.Engine, string) {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	root := filepath.Join(t.TempDir(), "static")
@@ -29,7 +39,7 @@ func staticEngine(t *testing.T, files map[string]string) *gin.Engine {
 	engine.GET("/static/*filepath", handler)
 	engine.HEAD("/static/*filepath", handler)
 
-	return engine
+	return engine, root
 }
 
 func hashOf(body string) string {
@@ -283,38 +293,134 @@ func TestAssetVersion(t *testing.T) {
 	})
 }
 
-func TestIndexAssets(t *testing.T) {
+func TestAssetIndex(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "assets"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "app.js"), []byte("abc"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "app.js.br"), []byte("zzz"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "favicon.ico"), []byte("i"), 0o644))
+	index := newAssetIndex(root)
 
-	t.Run("hashes every file keyed by its path under the root", func(t *testing.T) {
-		index := indexAssets(root)
-
-		assert.Equal(t, "ba7816bf8f01", index["assets/app.js"])
-		assert.Equal(t, hashOf("i"), index["favicon.ico"])
+	t.Run("hashes a file by its path under the root", func(t *testing.T) {
+		assert.Equal(t, "ba7816bf8f01", index.hash("assets/app.js"))
+		assert.Equal(t, hashOf("i"), index.hash("favicon.ico"))
 	})
 
-	t.Run("skips precompressed siblings", func(t *testing.T) {
-		assert.NotContains(t, indexAssets(root), "assets/app.js.br")
+	t.Run("gives no hash to precompressed siblings, directories and missing files", func(t *testing.T) {
+		assert.Empty(t, index.hash("assets/app.js.br"))
+		assert.Empty(t, index.hash("assets"))
+		assert.Empty(t, index.hash("assets/nope.js"))
+		assert.Empty(t, index.hash(""))
 	})
 
-	t.Run("a missing root gives an empty index", func(t *testing.T) {
-		assert.Empty(t, indexAssets(filepath.Join(root, "nope")))
+	t.Run("re-hashes when the file changes", func(t *testing.T) {
+		file := filepath.Join(root, "assets", "live.js")
+		require.NoError(t, os.WriteFile(file, []byte("one"), 0o644))
+		first := index.hash("assets/live.js")
+		require.NoError(t, os.WriteFile(file, []byte("two"), 0o644))
+		require.NoError(t, os.Chtimes(file, time.Now().Add(time.Hour), time.Now().Add(time.Hour)))
+
+		assert.Equal(t, hashOf("one"), first)
+		assert.Equal(t, hashOf("two"), index.hash("assets/live.js"))
+	})
+
+	t.Run("forgets a removed file", func(t *testing.T) {
+		file := filepath.Join(root, "assets", "gone.js")
+		require.NoError(t, os.WriteFile(file, []byte("x"), 0o644))
+		require.NotEmpty(t, index.hash("assets/gone.js"))
+		require.NoError(t, os.Remove(file))
+
+		assert.Empty(t, index.hash("assets/gone.js"))
 	})
 }
 
 func TestAssetURL(t *testing.T) {
-	asset := assetURL(map[string]string{"assets/app.js": "abc123"})
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "assets"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "app.js"), []byte("abc"), 0o644))
+	asset := assetURL(newAssetIndex(root))
 
 	t.Run("carries the content hash of a known asset", func(t *testing.T) {
-		assert.Equal(t, "/static/assets/app.js?v=abc123", asset("app.js"))
+		assert.Equal(t, "/static/assets/app.js?v=ba7816bf8f01", asset("app.js"))
 	})
 
 	t.Run("falls back to the bare path for an unknown asset", func(t *testing.T) {
 		assert.Equal(t, "/static/assets/app.css", asset("app.css"))
+	})
+
+	t.Run("follows a rebuilt asset without a restart", func(t *testing.T) {
+		file := filepath.Join(root, "assets", "app.js")
+		require.NoError(t, os.WriteFile(file, []byte("abd"), 0o644))
+		require.NoError(t, os.Chtimes(file, time.Now().Add(time.Hour), time.Now().Add(time.Hour)))
+
+		assert.Equal(t, "/static/assets/app.js?v="+hashOf("abd"), asset("app.js"))
+	})
+}
+
+func TestServeStaticFollowsRebuiltFiles(t *testing.T) {
+	engine, root := staticEngineAt(t, map[string]string{"assets/app.js": "one"})
+	file := filepath.Join(root, "assets", "app.js")
+	first := request(engine, http.MethodGet, "/static/assets/app.js?v="+hashOf("one"), nil)
+	require.Equal(t, "public, max-age=31536000, immutable", first.Header().Get("Cache-Control"))
+	oldTag := first.Header().Get("ETag")
+	require.NoError(t, os.WriteFile(file, []byte("two!"), 0o644))
+	later := time.Now().Add(time.Hour)
+	require.NoError(t, os.Chtimes(file, later, later))
+
+	t.Run("an old ETag gets the new bytes and a new ETag", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"If-None-Match": oldTag})
+
+		require.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "two!", rec.Body.String())
+		assert.Equal(t, `"`+hashOf("two!")+`"`, rec.Header().Get("ETag"))
+	})
+
+	t.Run("the old version is no longer immutable", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/app.js?v="+hashOf("one"), nil)
+
+		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
+	})
+
+	t.Run("the new version is immutable", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/app.js?v="+hashOf("two!"), nil)
+
+		assert.Equal(t, "public, max-age=31536000, immutable", rec.Header().Get("Cache-Control"))
+	})
+
+	t.Run("a file added after startup is served with its hash", func(t *testing.T) {
+		require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "late.js"), []byte("late"), 0o644))
+
+		rec := request(engine, http.MethodGet, "/static/assets/late.js", nil)
+
+		assert.Equal(t, `"`+hashOf("late")+`"`, rec.Header().Get("ETag"))
+	})
+
+	t.Run("a removed file is a 404", func(t *testing.T) {
+		require.NoError(t, os.Remove(file))
+
+		assert.Equal(t, http.StatusNotFound, request(engine, http.MethodGet, "/static/assets/app.js", nil).Code)
+	})
+
+	t.Run("concurrent requests during rewrites are race free", func(t *testing.T) {
+		var wg sync.WaitGroup
+		target := filepath.Join(root, "assets", "busy.js")
+		require.NoError(t, os.WriteFile(target, []byte("0"), 0o644))
+		for i := 0; i < 8; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for j := 0; j < 20; j++ {
+					request(engine, http.MethodGet, "/static/assets/busy.js", nil)
+				}
+			}()
+		}
+		for j := 1; j <= 20; j++ {
+			require.NoError(t, os.WriteFile(target, []byte(strings.Repeat("x", j)), 0o644))
+		}
+		wg.Wait()
+
+		rec := request(engine, http.MethodGet, "/static/assets/busy.js", nil)
+		assert.Equal(t, `"`+hashOf(strings.Repeat("x", 20))+`"`, rec.Header().Get("ETag"))
 	})
 }
 

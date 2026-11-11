@@ -3,7 +3,6 @@ package routes
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"io/fs"
 	"mime"
 	"net/http"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,12 +40,12 @@ func (r Router) Fileserver() {
 }
 
 func serveStatic(root string) gin.HandlerFunc {
-	index := indexAssets(root)
+	index := newAssetIndex(root)
 
 	return func(c *gin.Context) {
 		key := path.Clean("/" + c.Param("filepath"))
 		name := filepath.Join(root, filepath.FromSlash(key))
-		hash := index[strings.TrimPrefix(key, "/")]
+		hash := index.hash(strings.TrimPrefix(key, "/"))
 
 		info, err := os.Stat(name)
 		if err != nil || !info.Mode().IsRegular() {
@@ -145,32 +146,54 @@ func assetVersion(file string) string {
 	return hex.EncodeToString(sum[:])[:versionHexLength]
 }
 
-func indexAssets(root string) map[string]string {
-	index := map[string]string{}
-	_ = filepath.WalkDir(root, func(file string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !d.Type().IsRegular() {
-			return nil
-		}
-		if strings.HasSuffix(file, ".br") || strings.HasSuffix(file, ".gz") {
-			return nil
-		}
-		rel, err := filepath.Rel(root, file)
-		if err != nil {
-			return nil
-		}
-		if version := assetVersion(file); version != "" {
-			index[filepath.ToSlash(rel)] = version
-		}
-		return nil
-	})
-
-	return index
+type assetEntry struct {
+	size  int64
+	mtime time.Time
+	hash  string
 }
 
-func assetURL(index map[string]string) func(string) string {
+type assetIndex struct {
+	mu      sync.Mutex
+	root    string
+	entries map[string]assetEntry
+}
+
+func newAssetIndex(root string) *assetIndex {
+	return &assetIndex{root: root, entries: map[string]assetEntry{}}
+}
+
+func (i *assetIndex) hash(rel string) string {
+	rel = strings.TrimPrefix(path.Clean("/"+rel), "/")
+	if rel == "" || strings.HasSuffix(rel, ".br") || strings.HasSuffix(rel, ".gz") {
+		return ""
+	}
+	file := filepath.Join(i.root, filepath.FromSlash(rel))
+
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	info, err := os.Stat(file)
+	if err != nil || !info.Mode().IsRegular() {
+		delete(i.entries, rel)
+		return ""
+	}
+	if e, ok := i.entries[rel]; ok && e.size == info.Size() && e.mtime.Equal(info.ModTime()) {
+		return e.hash
+	}
+	hash := assetVersion(file)
+	if hash == "" {
+		delete(i.entries, rel)
+		return ""
+	}
+	i.entries[rel] = assetEntry{size: info.Size(), mtime: info.ModTime(), hash: hash}
+
+	return hash
+}
+
+func assetURL(index *assetIndex) func(string) string {
 	return func(name string) string {
 		url := "/static/assets/" + name
-		if hash := index["assets/"+name]; hash != "" {
+		if hash := index.hash("assets/" + name); hash != "" {
 			url += "?v=" + hash
 		}
 
