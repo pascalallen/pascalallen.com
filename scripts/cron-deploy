@@ -21,6 +21,7 @@ LOCK_DIR="$GIT_DIR_PATH/cron-deploy.lock"
 FAILED_MARK="$GIT_DIR_PATH/cron-deploy-failed"
 RETRY_MARK="$GIT_DIR_PATH/cron-deploy-retry"
 ALERTED_MARK="$GIT_DIR_PATH/cron-deploy-alerted"
+FETCH_MARK="$GIT_DIR_PATH/cron-deploy-fetch"
 
 now() {
     if [ -n "${DEPLOY_NOW:-}" ]; then
@@ -124,9 +125,13 @@ fi
 
 if ! git fetch --quiet origin "$BRANCH"; then
     log "git fetch failed"
-    notify "Deploy *failed*: git fetch origin $BRANCH failed."
+    if [ ! -f "$FETCH_MARK" ]; then
+        : >"$FETCH_MARK"
+        notify "Deploy *failed*: git fetch origin $BRANCH failed. Further fetch failures stay quiet until one succeeds."
+    fi
     exit 1
 fi
+rm -f "$FETCH_MARK"
 
 current="$(git rev-parse HEAD)"
 target="$(git rev-parse "origin/$BRANCH")"
@@ -176,9 +181,10 @@ rollback() {
         return 0
     fi
     log "rollback to ${previous:0:7} failed too"
-    notify "Deploy of ${target:0:7} *failed* and rollback to ${previous:0:7} is *unhealthy*. Manual action needed."
     return 1
 }
+
+down_hint="the site is *down*: rollback to ${previous:0:7} failed too. Check: docker compose ps, docker compose logs, and that port $PORT_VALUE is free."
 
 transient() {
     attempts=$((attempts + 1))
@@ -200,6 +206,8 @@ fi
 if ! start; then
     if rollback; then
         transient "container start failed; rolled back to ${previous:0:7}"
+    else
+        transient "container start failed; $down_hint"
     fi
     exit 1
 fi
@@ -216,5 +224,7 @@ echo "$target" >"$FAILED_MARK"
 log "health check of ${target:0:7} failed, rolling back to ${previous:0:7}"
 if rollback; then
     notify "Deploy of ${target:0:7} *failed* its health check; rolled back to ${previous:0:7}. To retry this commit: rm $FAILED_MARK"
+else
+    notify "Deploy of ${target:0:7} *failed* its health check and $down_hint To retry this commit: rm $FAILED_MARK"
 fi
 exit 1

@@ -35,28 +35,52 @@ Add the redeploy job with `crontab -e`, using the absolute path to the clone:
 ### Migrating an existing Pi
 
 The Pi currently runs the old `scripts/cron-deploy`, which never fetches, so merging to `main` changes nothing there.
-Do this once, on the Pi, from the clone:
+Do this once, on the Pi, from the clone. Every command below returns, so they can be typed in order in one terminal.
+
+First check the tree and `.env`:
 
 ```bash
 cd ~/pascalallen.com
 git status
+test -f .env && echo ".env present"
 ```
 
 If `git status` lists changes, look at them with `git diff`; keep what you need elsewhere (`git stash push -u -m pre-migration`
-is safe) because the next step discards them. When the tree is clean:
+is safe, and ignored files such as `.env` are not touched) because the next step discards them. `.env` must exist;
+copy it from `.env.example` and fill it in if not. When the tree is clean, fetch the new code. The old stack keeps
+serving while you do. Note the current commit first (it is your way back):
 
 ```bash
+git rev-parse HEAD
 git fetch origin && git checkout main && git reset --hard origin/main
+```
+
+Build the new image before touching the running site. The first arm64 build is cold and can take many minutes; the old
+container keeps serving until the switch:
+
+```bash
+bin/_compose pi build
+```
+
+Then switch over (detached; `bin/up pi` without `prod` would tail the logs forever and block the terminal):
+
+```bash
 bin/down prod
-bin/up pi
+bin/up prod
+```
+
+Check it, using your `PORT` from `.env` instead of 9990 if you changed it:
+
+```bash
+bin/_compose pi ps
 curl -fsS -o /dev/null -w '%{http_code}\n' http://localhost:9990/
-docker compose ps
 crontab -l | grep cron-deploy
 ```
 
-The curl must print `200` and the container must show `(healthy)`. The crontab line must still point at
-`scripts/cron-deploy` in this clone (the path did not change). Cron needs nothing else; the new script reads `.env`
-itself.
+The curl must print `200` and the container must show `(healthy)` (the health check starts after about 20 seconds, so
+repeat `bin/_compose pi ps` if it still says `starting`). The crontab line must still point at `scripts/cron-deploy`
+in this clone (the path did not change). Cron needs nothing else; the new script reads `.env` itself. If the build or
+start fails, nothing has been lost: `git reset --hard <the commit printed by git rev-parse HEAD>` and `bin/up prod` restores the old setup.
 
 Optional cleanup of leftovers from the old setup (postgres, rabbitmq and the old named network). Find them first:
 
@@ -67,7 +91,7 @@ docker ps -a
 ```
 
 If an earlier compose project created volumes, they are named `<project>_<name>` after the clone directory (for example
-`pascalallencom_postgres_data`) and the network is `pascalallen`. Once the new stack is healthy:
+`pascalallencom_postgres_data`) and the network is `pascalallen`. Once the new stack is healthy (skip the network line if it does not exist or reports it is in use):
 
 ```bash
 docker network rm pascalallen
@@ -81,7 +105,8 @@ Removing the volume is irreversible: it deletes the old database for good. Skip 
 - takes a lock so runs never overlap: `flock -n` on `.git/cron-deploy.flock` (released by the kernel on power loss or
   crash); without `flock` it falls back to a lock directory that is taken over, with an alert, when it is older than
   2 hours
-- runs `git fetch origin main` and exits quietly when `HEAD` already equals `origin/main`
+- runs `git fetch origin main` and exits quietly when `HEAD` already equals `origin/main`; a failing fetch alerts once and
+  stays quiet until a fetch succeeds
 - refuses to touch a working tree with local changes, and treats a missing `.env` the same way: it logs, posts one Slack
   line per new commit, and leaves everything alone
 - otherwise checks out `main`, resets to `origin/main`, builds, restarts with `compose.yaml` plus `compose.pi.yaml`, and

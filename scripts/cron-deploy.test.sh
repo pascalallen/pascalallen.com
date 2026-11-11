@@ -74,9 +74,9 @@ for arg in "$@"; do
     fi
 done
 printf 'health at %s\n' "$(git rev-parse HEAD)" >>"$STUB_LOG"
-if [ "$(git rev-parse HEAD)" = "${STUB_BAD_SHA:-none}" ]; then
-    exit 22
-fi
+case " ${STUB_BAD_SHA:-none} " in *" $(git rev-parse HEAD) "*)
+    exit 22;;
+esac
 exit 0
 EOF
 chmod +x "$WORK/shims/docker" "$WORK/shims/curl"
@@ -244,6 +244,48 @@ check "a failed container start is counted as a retry" contains "$CASE/repo/.git
 export DEPLOY_NOW=$((DEPLOY_NOW + 901))
 run
 check "a failed container start is retried and deploys" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
+
+new_case startdown
+before="$(git -C "$CASE/repo" rev-parse HEAD)"
+sha="$(push_commit two)"
+echo 2 >"$STUB_UP_FAILS"
+run
+check "a failed start with a failed rollback exits nonzero" test "$RC" -ne 0
+check "a failed start with a failed rollback records the retry state" contains "$CASE/repo/.git/cron-deploy-retry" "$sha 1"
+check "a failed start with a failed rollback says the site is down" contains "$STUB_LOG" "site is *down*"
+check "a failed start with a failed rollback says what to check" contains "$STUB_LOG" "docker compose ps"
+slacks="$(grep -c '^slack ' "$STUB_LOG")"
+builds="$(grep -c ' build$' "$STUB_LOG")"
+DEPLOY_NOW=$((DEPLOY_NOW + 60))
+run
+check "the next run inside the backoff window does nothing" test "$(grep -c ' build$' "$STUB_LOG")" -eq "$builds"
+check "the next run inside the backoff window sends nothing" test "$(grep -c '^slack ' "$STUB_LOG")" -eq "$slacks"
+check "the next run inside the backoff window exits zero" test "$RC" -eq 0
+
+new_case healthdown
+before="$(git -C "$CASE/repo" rev-parse HEAD)"
+sha="$(push_commit two)"
+export STUB_BAD_SHA="$sha $before"
+run
+check "a failed health check with a failed rollback exits nonzero" test "$RC" -ne 0
+check "a failed health check with a failed rollback says the site is down" contains "$STUB_LOG" "its health check and the site is *down*"
+check "a failed health check with a failed rollback marks the commit bad" contains "$CASE/repo/.git/cron-deploy-failed" "$sha"
+slacks="$(grep -c '^slack ' "$STUB_LOG")"
+DEPLOY_NOW=$((DEPLOY_NOW + 60))
+run
+check "the next run after a down site stays quiet" test "$(grep -c '^slack ' "$STUB_LOG")" -eq "$slacks"
+
+new_case fetchdown
+sha="$(push_commit two)"
+git -C "$CASE/repo" remote set-url origin "$CASE/missing.git"
+run
+check "an unreachable origin exits nonzero" test "$RC" -ne 0
+run
+check "an unreachable origin alerts only once" test "$(grep -c '^slack ' "$STUB_LOG")" -eq 1
+git -C "$CASE/repo" remote set-url origin "$CASE/origin.git"
+run
+check "a reachable origin deploys again" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
+check "a reachable origin clears the fetch alert marker" test ! -e "$CASE/repo/.git/cron-deploy-fetch"
 
 new_case noenv
 sha="$(push_commit two)"
