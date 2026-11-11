@@ -8,7 +8,9 @@ import (
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/feed"
 )
 
-const GitHubReposURL = "https://api.github.com/users/pascalallen/repos?sort=updated&per_page=10&type=owner"
+const maxRepositories = 10
+
+const GitHubReposURL = "https://api.github.com/users/pascalallen/repos?sort=updated&per_page=30&type=owner"
 
 type GitHubClient struct {
 	url    string
@@ -30,6 +32,8 @@ type gitHubRepository struct {
 	HTMLURL     string  `json:"html_url"`
 	Language    *string `json:"language"`
 	Stars       int     `json:"stargazers_count"`
+	Fork        bool    `json:"fork"`
+	Archived    bool    `json:"archived"`
 }
 
 func (g *GitHubClient) Repositories(ctx context.Context) ([]feed.Item, error) {
@@ -40,6 +44,12 @@ func (g *GitHubClient) Repositories(ctx context.Context) ([]feed.Item, error) {
 
 	items := make([]feed.Item, 0, len(repos))
 	for _, r := range repos {
+		if r.Fork || r.Archived {
+			continue
+		}
+		if len(items) == maxRepositories {
+			break
+		}
 		item := feed.Item{Name: r.Name, URL: r.HTMLURL}
 		if r.Description != nil {
 			item.Description = *r.Description

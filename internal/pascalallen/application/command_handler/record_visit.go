@@ -17,16 +17,19 @@ const (
 	maxFieldLength   = 200
 	defaultWindow    = time.Hour
 	defaultMaxClient = 10000
+	defaultGlobal    = 30
 )
 
 type RecordVisitHandler struct {
-	Notifier   visit.Notifier
-	Now        func() time.Time
-	Window     time.Duration
-	MaxClients int
+	Notifier    visit.Notifier
+	Now         func() time.Time
+	Window      time.Duration
+	MaxClients  int
+	GlobalLimit int
 
 	mu   sync.Mutex
 	seen map[string]time.Time
+	sent []time.Time
 }
 
 func (h *RecordVisitHandler) Handle(ctx context.Context, cmd messaging.Command) error {
@@ -56,6 +59,10 @@ func (h *RecordVisitHandler) admit(clientIP string) bool {
 	if limit == 0 {
 		limit = defaultMaxClient
 	}
+	global := h.GlobalLimit
+	if global == 0 {
+		global = defaultGlobal
+	}
 	now := h.Now()
 
 	h.mu.Lock()
@@ -80,6 +87,18 @@ func (h *RecordVisitHandler) admit(clientIP string) bool {
 		}
 	}
 
+	fresh := h.sent[:0]
+	for _, at := range h.sent {
+		if now.Sub(at) < window {
+			fresh = append(fresh, at)
+		}
+	}
+	h.sent = fresh
+	if len(h.sent) >= global {
+		return false
+	}
+
+	h.sent = append(h.sent, now)
 	h.seen[clientIP] = now
 
 	return true
@@ -87,7 +106,7 @@ func (h *RecordVisitHandler) admit(clientIP string) bool {
 
 func sanitize(s string) string {
 	stripped := strings.Map(func(r rune) rune {
-		if unicode.IsControl(r) {
+		if unicode.IsControl(r) || unicode.Is(unicode.Cf, r) || unicode.Is(unicode.Zl, r) || unicode.Is(unicode.Zp, r) {
 			return -1
 		}
 

@@ -2,6 +2,7 @@ package feed
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -68,9 +69,17 @@ func (c *Cache) Get(ctx context.Context, key string, fetch func(context.Context)
 	c.inflight[key] = pending
 	c.mu.Unlock()
 
-	items, err := fetch(context.WithoutCancel(ctx))
+	defer func() {
+		c.mu.Lock()
+		delete(c.inflight, key)
+		c.mu.Unlock()
+		close(pending.done)
+	}()
+
+	items, err := c.safeFetch(context.WithoutCancel(ctx), key, fetch)
 
 	c.mu.Lock()
+	defer c.mu.Unlock()
 	switch {
 	case err == nil:
 		c.logger.Info("feed refreshed from upstream", "key", key, "items", len(items))
@@ -84,11 +93,19 @@ func (c *Cache) Get(ctx context.Context, key string, fetch func(context.Context)
 		c.logger.Error("feed upstream failed, nothing cached", "key", key, "error", err)
 		pending.err = err
 	}
-	delete(c.inflight, key)
-	c.mu.Unlock()
-	close(pending.done)
 
 	return pending.items, pending.err
+}
+
+func (c *Cache) safeFetch(ctx context.Context, key string, fetch func(context.Context) ([]feed.Item, error)) (items []feed.Item, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			c.logger.Error("feed fetch panicked", "key", key, "panic", r)
+			items, err = nil, fmt.Errorf("feed fetch panicked: %v", r)
+		}
+	}()
+
+	return fetch(ctx)
 }
 
 func (c *Cache) wait(ctx context.Context, pending *call) ([]feed.Item, error) {

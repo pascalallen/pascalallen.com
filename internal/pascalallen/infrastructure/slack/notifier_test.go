@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -36,6 +37,39 @@ func TestNotifier(t *testing.T) {
 		assert.Equal(t, "application/json", contentType)
 		assert.Contains(t, body["text"], "en-US")
 		assert.Contains(t, body["text"], "Mozilla")
+	})
+
+	t.Run("it escapes slack markup and puts user values in code spans", func(t *testing.T) {
+		var body map[string]string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			raw, _ := io.ReadAll(r.Body)
+			_ = json.Unmarshal(raw, &body)
+		}))
+		t.Cleanup(srv.Close)
+		evil := visit.Visit{Language: "en`<!here>", UserAgent: "<https://evil.example|Reset your Slack password> <!channel> & ‮"}
+
+		require.NoError(t, NewNotifier(srv.URL, "production", nil).Notify(context.Background(), evil))
+
+		text := body["text"]
+		assert.NotContains(t, text, "<")
+		assert.NotContains(t, text, ">")
+		assert.NotContains(t, text, "‮")
+		assert.Contains(t, text, "&lt;https://evil.example|Reset your Slack password&gt; &lt;!channel&gt; &amp;")
+		assert.Contains(t, text, "ua=`&lt;https://evil.example")
+		assert.Equal(t, 4, strings.Count(text, "`"))
+	})
+
+	t.Run("it strips control and line separator characters from user values", func(t *testing.T) {
+		var body map[string]string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			raw, _ := io.ReadAll(r.Body)
+			_ = json.Unmarshal(raw, &body)
+		}))
+		t.Cleanup(srv.Close)
+
+		require.NoError(t, NewNotifier(srv.URL, "production", nil).Notify(context.Background(), visit.Visit{Language: "a\nb\x00c", UserAgent: "x\u2028y\u2029z"}))
+
+		assert.Equal(t, "pascalallen.com visit: lang=`abc` ua=`xyz`", body["text"])
 	})
 
 	t.Run("it does nothing outside production", func(t *testing.T) {
@@ -72,5 +106,23 @@ func TestNotifier(t *testing.T) {
 
 		require.Error(t, err)
 		assert.NotContains(t, err.Error(), "secret-path")
+	})
+
+	t.Run("the production client uses the non-zero default timeout", func(t *testing.T) {
+		assert.Greater(t, DefaultTimeout, time.Duration(0))
+		assert.Equal(t, DefaultTimeout, NewNotifier("https://hooks.example.test/x", "production", nil).client.Timeout)
+	})
+
+	t.Run("a notifier built with a short timeout gives up on a slow server", func(t *testing.T) {
+		release := make(chan struct{})
+		srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { <-release }))
+		t.Cleanup(srv.Close)
+		t.Cleanup(func() { close(release) })
+
+		start := time.Now()
+		err := NewNotifierWithTimeout(srv.URL, "production", 50*time.Millisecond).Notify(context.Background(), v)
+
+		require.Error(t, err)
+		assert.Less(t, time.Since(start), 2*time.Second)
 	})
 }

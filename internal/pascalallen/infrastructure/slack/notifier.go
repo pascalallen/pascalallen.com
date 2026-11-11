@@ -9,14 +9,16 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/visit"
 )
 
 const (
-	notifyTimeout = 3 * time.Second
-	userAgent     = "pascalallen-site-visit/1"
+	DefaultTimeout = 3 * time.Second
+	userAgent      = "pascalallen-site-visit/1"
 )
 
 type Notifier struct {
@@ -27,7 +29,7 @@ type Notifier struct {
 
 func NewNotifier(webhookURL string, appEnv string, client *http.Client) *Notifier {
 	if client == nil {
-		client = &http.Client{Timeout: notifyTimeout}
+		client = &http.Client{Timeout: DefaultTimeout}
 	}
 
 	return &Notifier{
@@ -37,13 +39,32 @@ func NewNotifier(webhookURL string, appEnv string, client *http.Client) *Notifie
 	}
 }
 
+func NewNotifierWithTimeout(webhookURL string, appEnv string, timeout time.Duration) *Notifier {
+	return NewNotifier(webhookURL, appEnv, &http.Client{Timeout: timeout})
+}
+
+func plain(s string) string {
+	cleaned := strings.Map(func(r rune) rune {
+		switch {
+		case unicode.IsControl(r), unicode.Is(unicode.Cf, r), unicode.Is(unicode.Zl, r), unicode.Is(unicode.Zp, r):
+			return -1
+		case r == '`':
+			return '\''
+		}
+
+		return r
+	}, s)
+
+	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace(cleaned)
+}
+
 func (n *Notifier) Notify(ctx context.Context, v visit.Visit) error {
 	if !n.enabled {
 		return nil
 	}
 
 	payload, err := json.Marshal(map[string]string{
-		"text": fmt.Sprintf("pascalallen.com visit: lang=%q ua=%q", v.Language, v.UserAgent),
+		"text": fmt.Sprintf("pascalallen.com visit: lang=`%s` ua=`%s`", plain(v.Language), plain(v.UserAgent)),
 	})
 	if err != nil {
 		return fmt.Errorf("encode slack payload: %w", err)

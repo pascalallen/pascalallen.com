@@ -119,6 +119,42 @@ func TestRecordVisitHandler(t *testing.T) {
 		assert.Equal(t, "ab[31m", n.visits[0].UserAgent)
 	})
 
+	t.Run("it strips format and line separator characters", func(t *testing.T) {
+		n := &fakeNotifier{}
+		h := newHandler(n, &fakeClock{now: start})
+
+		require.NoError(t, h.Handle(context.Background(), &command.RecordVisit{Language: "a‮b​c", UserAgent: "x y z", ClientIP: "1.1.1.1"}))
+
+		assert.Equal(t, "abc", n.visits[0].Language)
+		assert.Equal(t, "xyz", n.visits[0].UserAgent)
+	})
+
+	t.Run("it caps notifications across all clients within the window", func(t *testing.T) {
+		n := &fakeNotifier{}
+		clock := &fakeClock{now: start}
+		h := &RecordVisitHandler{Notifier: n, Now: clock.Now, GlobalLimit: 3}
+
+		for i := 0; i < 6; i++ {
+			require.NoError(t, h.Handle(context.Background(), &command.RecordVisit{ClientIP: fmt.Sprintf("10.0.0.%d", i)}))
+		}
+		assert.Len(t, n.visits, 3)
+
+		clock.now = start.Add(time.Hour)
+		require.NoError(t, h.Handle(context.Background(), &command.RecordVisit{ClientIP: "10.0.1.1"}))
+		assert.Len(t, n.visits, 4)
+	})
+
+	t.Run("it applies a default global cap of 30 per window", func(t *testing.T) {
+		n := &fakeNotifier{}
+		h := newHandler(n, &fakeClock{now: start})
+
+		for i := 0; i < 40; i++ {
+			require.NoError(t, h.Handle(context.Background(), &command.RecordVisit{ClientIP: fmt.Sprintf("10.0.0.%d", i)}))
+		}
+
+		assert.Len(t, n.visits, 30)
+	})
+
 	t.Run("it bounds the rate limit map and skips new clients when full of fresh entries", func(t *testing.T) {
 		n := &fakeNotifier{}
 		h := &RecordVisitHandler{Notifier: n, Now: (&fakeClock{now: start}).Now, MaxClients: 3}

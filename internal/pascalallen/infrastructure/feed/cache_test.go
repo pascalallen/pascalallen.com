@@ -171,6 +171,85 @@ func TestCache(t *testing.T) {
 		}
 	})
 
+	t.Run("a panicking fetch returns an error and does not wedge the key", func(t *testing.T) {
+		cache, _ := newTestCache()
+
+		_, err := cache.Get(context.Background(), "k", func(context.Context) ([]feed.Item, error) { panic("kaboom") })
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "panicked")
+
+		good := &countingFetch{items: items}
+		got, err := cache.Get(context.Background(), "k", good.fetch)
+
+		require.NoError(t, err)
+		assert.Equal(t, items, got)
+		assert.Equal(t, int32(1), good.calls.Load())
+	})
+
+	t.Run("waiters of a panicking fetch all receive an error", func(t *testing.T) {
+		cache, _ := newTestCache()
+		release := make(chan struct{})
+		started := make(chan struct{})
+		leaderErr := make(chan error, 1)
+		go func() {
+			_, err := cache.Get(context.Background(), "k", func(context.Context) ([]feed.Item, error) {
+				close(started)
+				<-release
+				panic("kaboom")
+			})
+			leaderErr <- err
+		}()
+		<-started
+		waiterErr := make(chan error, 1)
+		go func() {
+			_, err := cache.Get(context.Background(), "k", (&countingFetch{}).fetch)
+			waiterErr <- err
+		}()
+		time.Sleep(20 * time.Millisecond)
+		close(release)
+
+		assert.Error(t, <-leaderErr)
+		assert.Error(t, <-waiterErr)
+	})
+
+	t.Run("cancelling the first caller mid-flight does not fail the shared fetch", func(t *testing.T) {
+		cache, _ := newTestCache()
+		release := make(chan struct{})
+		started := make(chan struct{})
+		leaderCtx, cancelLeader := context.WithCancel(context.Background())
+		fetch := func(ctx context.Context) ([]feed.Item, error) {
+			close(started)
+			<-release
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+
+			return items, nil
+		}
+		leaderDone := make(chan struct{})
+		go func() {
+			defer close(leaderDone)
+			_, _ = cache.Get(leaderCtx, "k", fetch)
+		}()
+		<-started
+		waiterGot := make(chan []feed.Item, 1)
+		go func() {
+			got, _ := cache.Get(context.Background(), "k", (&countingFetch{}).fetch)
+			waiterGot <- got
+		}()
+		time.Sleep(20 * time.Millisecond)
+		cancelLeader()
+		close(release)
+		<-leaderDone
+
+		assert.Equal(t, items, <-waiterGot)
+		after := &countingFetch{err: errors.New("must not be called")}
+		got, err := cache.Get(context.Background(), "k", after.fetch)
+		require.NoError(t, err)
+		assert.Equal(t, items, got)
+		assert.Equal(t, int32(0), after.calls.Load())
+	})
+
 	t.Run("a waiting caller returns when its context is cancelled", func(t *testing.T) {
 		cache, _ := newTestCache()
 		release := make(chan struct{})

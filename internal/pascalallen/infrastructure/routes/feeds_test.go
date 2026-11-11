@@ -19,6 +19,7 @@ import (
 
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command_handler"
+	appmessaging "github.com/pascalallen/pascalallen.com/internal/pascalallen/application/messaging"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query_handler"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/feed"
@@ -51,6 +52,12 @@ func (n *recordingNotifier) Notify(_ context.Context, v visit.Visit) error {
 	n.visits = append(n.visits, v)
 
 	return nil
+}
+
+type wrongTypeHandler struct{}
+
+func (wrongTypeHandler) Handle(context.Context, appmessaging.Query) (any, error) {
+	return "not items", nil
 }
 
 func newFeedsRouter(repos stubRepositories, pkgs stubPackages, notifier *recordingNotifier) Router {
@@ -131,6 +138,19 @@ func TestFeedRoutes(t *testing.T) {
 		}
 	})
 
+	t.Run("a handler result of an unexpected type is a 502", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		queryBus := messaging.NewSynchronousQueryBus(logger)
+		queryBus.RegisterHandler((&query.ListRepositories{}).QueryName(), wrongTypeHandler{})
+		r := NewRouter()
+		r.Feeds(queryBus, messaging.NewSynchronousCommandBus(logger))
+
+		rec := do(r, http.MethodGet, "/api/v1/repos", "", "")
+
+		assert.Equal(t, http.StatusBadGateway, rec.Code)
+	})
+
 	t.Run("POST visits returns 204 and notifies", func(t *testing.T) {
 		n := &recordingNotifier{}
 		r := newFeedsRouter(stubRepositories{}, stubPackages{}, n)
@@ -204,5 +224,68 @@ func TestFeedRoutes(t *testing.T) {
 
 		assert.Empty(t, rec.Header().Get("Authorization"))
 		assert.Empty(t, rec.Header().Get("Set-Cookie"))
+	})
+}
+
+func TestTrustedProxies(t *testing.T) {
+	forwarded := func(r Router, remote string, clientIP string) {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/visits", strings.NewReader(`{}`))
+		req.RemoteAddr = remote
+		req.Header.Set("X-Forwarded-For", clientIP)
+		r.engine.ServeHTTP(httptest.NewRecorder(), req)
+	}
+
+	t.Run("by default the forwarded header is ignored so every visitor behind the proxy shares one address", func(t *testing.T) {
+		n := &recordingNotifier{}
+		r := newFeedsRouter(stubRepositories{}, stubPackages{}, n)
+		require.NoError(t, r.trustProxies(nil))
+
+		forwarded(r, "10.0.0.1:1", "5.5.5.5")
+		forwarded(r, "10.0.0.1:1", "6.6.6.6")
+
+		assert.Len(t, n.visits, 1)
+	})
+
+	t.Run("a configured trusted proxy lets the forwarded address identify the visitor", func(t *testing.T) {
+		n := &recordingNotifier{}
+		r := newFeedsRouter(stubRepositories{}, stubPackages{}, n)
+		require.NoError(t, r.trustProxies([]string{"10.0.0.0/8"}))
+
+		forwarded(r, "10.0.0.1:1", "5.5.5.5")
+		forwarded(r, "10.0.0.1:1", "6.6.6.6")
+		forwarded(r, "10.0.0.1:1", "6.6.6.6")
+
+		assert.Len(t, n.visits, 2)
+	})
+
+	t.Run("a forwarded header from an untrusted peer is ignored", func(t *testing.T) {
+		n := &recordingNotifier{}
+		r := newFeedsRouter(stubRepositories{}, stubPackages{}, n)
+		require.NoError(t, r.trustProxies([]string{"10.0.0.0/8"}))
+
+		forwarded(r, "203.0.113.9:1", "5.5.5.5")
+		forwarded(r, "203.0.113.9:1", "6.6.6.6")
+
+		assert.Len(t, n.visits, 1)
+	})
+
+	t.Run("it parses comma separated cidrs and addresses and skips blanks", func(t *testing.T) {
+		got, err := ParseTrustedProxies(" 10.0.0.0/8, 192.168.1.5 ,,")
+
+		require.NoError(t, err)
+		assert.Equal(t, []string{"10.0.0.0/8", "192.168.1.5"}, got)
+	})
+
+	t.Run("an empty value trusts nothing", func(t *testing.T) {
+		got, err := ParseTrustedProxies("")
+
+		require.NoError(t, err)
+		assert.Empty(t, got)
+	})
+
+	t.Run("it rejects a malformed entry", func(t *testing.T) {
+		_, err := ParseTrustedProxies("10.0.0.0/8,not-a-cidr")
+
+		assert.Error(t, err)
 	})
 }

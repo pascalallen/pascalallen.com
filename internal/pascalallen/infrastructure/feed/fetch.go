@@ -12,14 +12,18 @@ import (
 
 const (
 	userAgent       = "pascalallen-site-feed/1"
-	requestTimeout  = 5 * time.Second
+	DefaultTimeout  = 5 * time.Second
 	maxResponseSize = 1 << 20
 )
 
 var ErrResponseTooLarge = errors.New("upstream response exceeds the size cap")
 
 func NewHTTPClient() *http.Client {
-	return &http.Client{Timeout: requestTimeout}
+	return NewHTTPClientWithTimeout(DefaultTimeout)
+}
+
+func NewHTTPClientWithTimeout(timeout time.Duration) *http.Client {
+	return &http.Client{Timeout: timeout}
 }
 
 func fetchJSON(ctx context.Context, client *http.Client, url string, bearer string, out any) error {
