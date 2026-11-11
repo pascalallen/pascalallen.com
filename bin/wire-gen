@@ -5,6 +5,10 @@ TOOLS_VERSION="v0.49.0"
 
 ROOT="$(pwd)"
 WIRE_VERSION="$(awk '$1 == "github.com/google/wire" { print $2; exit }' "$ROOT/go.mod")"
+if [ -z "$WIRE_VERSION" ]; then
+    echo "bin/wire-gen: go.mod has no github.com/google/wire requirement; add it with the injector" >&2
+    exit 1
+fi
 BUILD_DIR="$(mktemp -d)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
 

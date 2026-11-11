@@ -27,9 +27,6 @@ kubectl wait --for=condition=Ready pods --all -n cert-manager --timeout=300s
 
 # Apply Infrastructure and Application
 kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/cert-manager \
-    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/postgres \
-    && kubectl apply -f https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml \
-    && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/rabbitmq \
     && kubectl apply -f internal/pascalallen/infrastructure/etc/k8s/go
 ```
 

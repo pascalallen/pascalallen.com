@@ -2,7 +2,7 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
-  entry: './src/app.tsx',
+  entry: './src/app.ts',
   devtool: 'inline-source-map',
   plugins: [
     new MiniCssExtractPlugin({
@@ -14,7 +14,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/
       },
@@ -39,19 +39,7 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.scss'],
-    alias: {
-      '@assets': path.resolve(__dirname, 'src/assets'),
-      '@components': path.resolve(__dirname, 'src/components'),
-      '@domain': path.resolve(__dirname, 'src/domain'),
-      '@hooks': path.resolve(__dirname, 'src/hooks'),
-      '@pages': path.resolve(__dirname, 'src/pages'),
-      '@routes': path.resolve(__dirname, 'src/routes'),
-      '@services': path.resolve(__dirname, 'src/services'),
-      '@stores': path.resolve(__dirname, 'src/stores'),
-      '@types': path.resolve(__dirname, 'src/domain/types'),
-      '@utilities': path.resolve(__dirname, 'src/utilities')
-    }
+    extensions: ['.ts', '.js', '.scss']
   },
   output: {
     filename: 'app.js',

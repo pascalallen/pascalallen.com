@@ -8,10 +8,6 @@ WORKDIR /app
 
 ADD . /app
 
-COPY scripts/wait-for-it.sh /usr/bin/wait-for-it.sh
-
-RUN chmod +x /usr/bin/wait-for-it.sh
-
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl \
     && curl -fsSL https://archive.raspberrypi.com/debian/raspberrypi.gpg.key \
        | gpg --dearmor -o /etc/apt/trusted.gpg.d/raspberrypi.gpg \
@@ -34,8 +30,7 @@ ENV GOCACHE=/root/.cache/go-build
 
 RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -C cmd/pascalallen -o /pascalallen
 
-EXPOSE 9990
+ARG PORT=9990
+EXPOSE ${PORT}
 
-CMD /usr/bin/wait-for-it.sh $DB_HOST:$DB_PORT \
-    && /usr/bin/wait-for-it.sh $RABBITMQ_HOST:$RABBITMQ_PORT \
-    && /pascalallen
+CMD ["/pascalallen"]
