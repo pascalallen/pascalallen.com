@@ -3,32 +3,21 @@
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 12,
-        "sourceType": "module",
-        "ecmaFeatures": {
-            "modules": true,
-            "jsx": true
-        }
+        "sourceType": "module"
     },
     "plugins": [
         "@typescript-eslint",
-        "react",
-        "react-hooks",
         "import"
     ],
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:react/recommended",
-        "plugin:react-hooks/recommended",
         "plugin:prettier/recommended"
     ],
     "rules": {
         "@typescript-eslint/no-unused-vars": "error",
         "import/no-unresolved": "error",
-        "react/prop-types": "warn",
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "warn",
         "import/order": [
             "error",
             {
@@ -46,94 +35,29 @@
                     "object",
                     "type"
                 ],
-                "newlines-between": "never",
-                "pathGroups": [
-                    {
-                        "pattern": "react",
-                        "group": "builtin",
-                        "position": "before"
-                    },
-                    {
-                        "pattern": "@types/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@domain/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@routes/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@hooks/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@stores/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@services/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@assets/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@components/**",
-                        "group": "internal",
-                        "position": "after"
-                    },
-                    {
-                        "pattern": "@pages/**",
-                        "group": "internal",
-                        "position": "after"
-                    }
-                ],
-                "pathGroupsExcludedImportTypes": [
-                    "builtin"
-                ],
-                "warnOnUnassignedImports": true
+                "newlines-between": "never"
             }
         ]
     },
     "settings": {
-        "react": {
-            "pragma": "React",
-            "version": "detect"
-        },
         "import/extensions": [
-            ".ts",
-            ".tsx"
+            ".ts"
         ],
         "import/parsers": {
             "@typescript-eslint/parser": [
-                ".ts",
-                ".tsx"
+                ".ts"
             ]
         },
         "import/resolver": {
             "node": {
                 "extensions": [
                     ".js",
-                    ".jsx",
-                    ".ts",
-                    ".tsx"
+                    ".ts"
                 ]
             },
             "typescript": {
                 "extensions": [
-                    ".ts",
-                    ".tsx"
+                    ".ts"
                 ],
                 "alwaysTryTypes": true
             }
@@ -142,10 +66,6 @@
     "env": {
         "browser": true,
         "es2021": true
-    },
-    "globals": {
-        "fetch": true,
-        "grecaptcha": true
     },
     "ignorePatterns": [
         "node_modules/"

@@ -19,10 +19,9 @@ Go and Node run in throwaway containers, so no running compose stack is needed t
 
 ```bash
 bin/verify          # the full gate, same steps as CI, from any worktree
-bin/up              # build + up + compile WASM; bin/up prod = detached
+bin/up              # build + up; bin/up prod = detached
 bin/down            # bin/down prod likewise
 bin/watch           # live reload for Go
-bin/wasm            # recompile web/static/assets/wasm.{wasm,js} only
 bin/exec go test ./...
 bin/yarn <args>     # yarn in web/app (node container)
 ```

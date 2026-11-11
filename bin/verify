@@ -60,8 +60,10 @@ run_go go test -race -cover ./...
 step "wire drift"
 if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
     run_go go generate ./...
-else
+elif [ -f cmd/pascalallen/wire.go ]; then
     run_go bin/wire-gen
+else
+    printf 'no wire injector, skipped\n'
 fi
 if [ -n "$(git status --porcelain)" ]; then
     git status --porcelain

@@ -8,10 +8,6 @@ WORKDIR /app
 
 ADD . /app
 
-COPY scripts/wait-for-it.sh /usr/bin/wait-for-it.sh
-
-RUN chmod +x /usr/bin/wait-for-it.sh
-
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl \
     && curl -fsSL https://archive.raspberrypi.com/debian/raspberrypi.gpg.key \
        | gpg --dearmor -o /etc/apt/trusted.gpg.d/raspberrypi.gpg \
@@ -36,6 +32,4 @@ RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux G
 
 EXPOSE 9990
 
-CMD /usr/bin/wait-for-it.sh $DB_HOST:$DB_PORT \
-    && /usr/bin/wait-for-it.sh $RABBITMQ_HOST:$RABBITMQ_PORT \
-    && /pascalallen
+CMD ["/pascalallen"]
