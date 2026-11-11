@@ -1,36 +1,230 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+ROOT="${DEPLOY_ROOT:-$DIR/..}"
+cd "$ROOT" || exit 1
 
-export "$(grep -v '^#' .env | xargs -d '\n')"
+BRANCH="${DEPLOY_BRANCH:-main}"
+HEALTH_ATTEMPTS="${HEALTH_ATTEMPTS:-40}"
+HEALTH_INTERVAL="${HEALTH_INTERVAL:-3}"
+RETRY_INTERVAL="${RETRY_INTERVAL:-900}"
+MAX_ATTEMPTS="${MAX_ATTEMPTS:-8}"
+LOCK_MAX_AGE="${LOCK_MAX_AGE:-7200}"
+GIT_DIR_PATH="$(git rev-parse --git-dir)"
+case "$GIT_DIR_PATH" in
+    /*) ;;
+    *) GIT_DIR_PATH="$PWD/$GIT_DIR_PATH" ;;
+esac
+LOCK_FILE="$GIT_DIR_PATH/cron-deploy.flock"
+LOCK_DIR="$GIT_DIR_PATH/cron-deploy.lock"
+FAILED_MARK="$GIT_DIR_PATH/cron-deploy-failed"
+RETRY_MARK="$GIT_DIR_PATH/cron-deploy-retry"
+ALERTED_MARK="$GIT_DIR_PATH/cron-deploy-alerted"
+FETCH_MARK="$GIT_DIR_PATH/cron-deploy-fetch"
 
-# change to main branch, if needed
-BRANCH="$(git branch --show-current)"
-if [ "$BRANCH" != "main" ]
-then
-  git checkout main -q
+now() {
+    if [ -n "${DEPLOY_NOW:-}" ]; then
+        echo "$DEPLOY_NOW"
+    else
+        date +%s
+    fi
+}
+
+log() {
+    printf '%s cron-deploy: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1"
+}
+
+env_value() {
+    [ -f .env ] || return 0
+    grep -E "^$1=" .env | tail -n 1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'\$//" || true
+}
+
+PORT_VALUE="${PORT:-$(env_value PORT)}"
+PORT_VALUE="${PORT_VALUE:-9990}"
+HEALTH_URL="${HEALTH_URL:-http://localhost:$PORT_VALUE/}"
+
+notify() {
+    local url
+    url="${SLACK_DM_URL:-$(env_value SLACK_DM_URL)}"
+    if [ -z "$url" ]; then
+        return 0
+    fi
+    printf 'url = "%s"\n' "$url" | curl -fsS -o /dev/null --max-time 10 \
+        -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"$1\"}" -K - || log "slack notification failed"
+}
+
+alert_once() {
+    if [ -f "$ALERTED_MARK" ] && [ "$(cat "$ALERTED_MARK")" = "$1" ]; then
+        return 0
+    fi
+    echo "$1" >"$ALERTED_MARK"
+    notify "$2"
+}
+
+compose() {
+    docker compose -f compose.yaml -f compose.pi.yaml "$@"
+}
+
+build() {
+    compose --progress quiet build
+}
+
+start() {
+    compose --progress quiet up -d --remove-orphans
+}
+
+healthy() {
+    local i
+    for ((i = 1; i <= HEALTH_ATTEMPTS; i++)); do
+        if curl -fsS -o /dev/null --max-time 5 "$HEALTH_URL"; then
+            return 0
+        fi
+        sleep "$HEALTH_INTERVAL"
+    done
+    return 1
+}
+
+lock_age() {
+    local started
+    started="$(cat "$LOCK_DIR/started" 2>/dev/null || echo 0)"
+    echo $(($(now) - started))
+}
+
+take_dir_lock() {
+    mkdir "$LOCK_DIR" 2>/dev/null || return 1
+    echo $$ >"$LOCK_DIR/pid"
+    now >"$LOCK_DIR/started"
+    trap 'rm -rf "$LOCK_DIR"' EXIT
+}
+
+acquire_lock() {
+    if [ -z "${DEPLOY_NO_FLOCK:-}" ] && command -v flock >/dev/null 2>&1; then
+        exec 9>"$LOCK_FILE"
+        flock -n 9
+        return
+    fi
+    if take_dir_lock; then
+        return 0
+    fi
+    local holder
+    holder="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+    if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null && [ "$(lock_age)" -lt "$LOCK_MAX_AGE" ]; then
+        return 1
+    fi
+    rm -rf "$LOCK_DIR"
+    take_dir_lock || return 1
+    notify "cron-deploy took over a stale lock (holder ${holder:-unknown})."
+}
+
+if ! acquire_lock; then
+    log "another deploy is running, exiting"
+    exit 0
 fi
 
-# check git status
-GIT_STATUS="$(git status -s)"
-if [ ! -z "$GIT_STATUS" ]
-then
-  git pull \
-    && bin/down prod \
-    && docker system prune -a -f \
-    && docker builder prune -a -f \
-    && bin/up prod \
-    && bin/yarn ci \
-    && bin/yarn build
+if ! git fetch --quiet origin "$BRANCH"; then
+    log "git fetch failed"
+    if [ ! -f "$FETCH_MARK" ]; then
+        : >"$FETCH_MARK"
+        notify "Deploy *failed*: git fetch origin $BRANCH failed. Further fetch failures stay quiet until one succeeds."
+    fi
+    exit 1
+fi
+rm -f "$FETCH_MARK"
+
+current="$(git rev-parse HEAD)"
+target="$(git rev-parse "origin/$BRANCH")"
+
+if [ "$current" = "$target" ]; then
+    exit 0
 fi
 
-# check docker status
-DOCKER_STATUS="$(docker compose ps --status running --format "{{.Name}}")"
-if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]]
-then
-  curl -H "Content-type: application/json" \
-    --data '{"channel":"D01HKH4B145","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"Deploy *_failed_*."}}]}' \
-    -X POST "$SLACK_DM_URL"
+if [ -f "$FAILED_MARK" ] && [ "$(cat "$FAILED_MARK")" = "$target" ]; then
+    exit 0
 fi
+
+attempts=0
+if [ -f "$RETRY_MARK" ]; then
+    read -r r_sha r_attempts r_time <"$RETRY_MARK" || true
+    if [ "${r_sha:-}" = "$target" ]; then
+        attempts="${r_attempts:-0}"
+        if [ "$attempts" -ge "$MAX_ATTEMPTS" ]; then
+            exit 0
+        fi
+        if [ $(($(now) - ${r_time:-0})) -lt "$RETRY_INTERVAL" ]; then
+            exit 0
+        fi
+    fi
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+    log "local changes present, not deploying ${target:0:7}"
+    alert_once "$target:dirty" "Deploy of ${target:0:7} *skipped*: the working tree on the Pi has local changes."
+    exit 1
+fi
+
+if [ ! -f .env ]; then
+    log ".env is missing, not deploying ${target:0:7}"
+    alert_once "$target:env" "Deploy of ${target:0:7} *skipped*: .env is missing on the Pi."
+    exit 1
+fi
+
+git checkout --quiet "$BRANCH"
+previous="$(git rev-parse HEAD)"
+git reset --quiet --hard "origin/$BRANCH"
+log "deploying ${previous:0:7} -> ${target:0:7}"
+
+rollback() {
+    git reset --quiet --hard "$previous"
+    if build && start && healthy; then
+        return 0
+    fi
+    log "rollback to ${previous:0:7} failed too"
+    return 1
+}
+
+down_hint="the site is *down*: rollback to ${previous:0:7} failed too. Check: docker compose ps, docker compose logs, and that port $PORT_VALUE is free."
+
+transient() {
+    attempts=$((attempts + 1))
+    echo "$target $attempts $(now)" >"$RETRY_MARK"
+    log "$1 for ${target:0:7}, attempt $attempts of $MAX_ATTEMPTS"
+    if [ "$attempts" -ge "$MAX_ATTEMPTS" ]; then
+        notify "Deploy of ${target:0:7} *gave up* after $attempts attempts ($1). To retry: rm $RETRY_MARK"
+    elif [ "$attempts" -eq 1 ] || [ $((attempts % 4)) -eq 0 ]; then
+        notify "Deploy of ${target:0:7} hit a transient failure ($1), attempt $attempts of $MAX_ATTEMPTS; retrying in $((RETRY_INTERVAL / 60)) minutes."
+    fi
+}
+
+if ! build; then
+    git reset --quiet --hard "$previous"
+    transient "build failed"
+    exit 1
+fi
+
+if ! start; then
+    if rollback; then
+        transient "container start failed; rolled back to ${previous:0:7}"
+    else
+        transient "container start failed; $down_hint"
+    fi
+    exit 1
+fi
+
+if healthy; then
+    rm -f "$FAILED_MARK" "$RETRY_MARK" "$ALERTED_MARK"
+    docker image prune -f >/dev/null 2>&1 || true
+    log "deployed ${target:0:7}"
+    notify "Deployed ${target:0:7}."
+    exit 0
+fi
+
+echo "$target" >"$FAILED_MARK"
+log "health check of ${target:0:7} failed, rolling back to ${previous:0:7}"
+if rollback; then
+    notify "Deploy of ${target:0:7} *failed* its health check; rolled back to ${previous:0:7}. To retry this commit: rm $FAILED_MARK"
+else
+    notify "Deploy of ${target:0:7} *failed* its health check and $down_hint To retry this commit: rm $FAILED_MARK"
+fi
+exit 1

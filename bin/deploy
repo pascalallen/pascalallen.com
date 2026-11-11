@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+cd "$DIR"/.. || exit 1
 
-source .env
+IMAGE="${IMAGE:-pascalallen/pascalallen-go}"
 
-docker compose -f compose.yaml build
+docker build -t "$IMAGE:latest" .
 
-docker tag "$(docker images -q pascalallencom-pascalallen-go)" pascalallen/pascalallen-go
-
-docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
-
-docker push pascalallen/pascalallen-go
+docker push "$IMAGE:latest"

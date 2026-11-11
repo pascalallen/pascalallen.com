@@ -1,12 +1,28 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+cd "$DIR"/.. || exit 1
 
-if [ "$1" == "prod" ]
-then
-  docker compose --progress quiet down --remove-orphans
-else
-  docker compose down --remove-orphans
-fi
+usage() {
+    cat <<'USAGE'
+usage: bin/down [pi|prod|base]
+
+  (none)  stop using the overlay bin/up would pick on this host
+  base    portable base compose file only
+  pi      Pi overlay
+  prod    Pi overlay, quiet
+USAGE
+}
+
+case "${1:-}" in
+    "") bin/_compose auto down --remove-orphans ;;
+    base) bin/_compose base down --remove-orphans ;;
+    pi) bin/_compose pi down --remove-orphans ;;
+    prod) bin/_compose pi --progress quiet down --remove-orphans ;;
+    -h | --help | help) usage ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac

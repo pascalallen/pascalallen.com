@@ -87,4 +87,14 @@ run_node yarn lint
 step "yarn build"
 run_node yarn build
 
+step "shellcheck bin/* scripts/*"
+if command -v shellcheck >/dev/null 2>&1; then
+    shellcheck bin/* scripts/*
+else
+    docker run --rm -v "$PWD":/mnt -w /mnt koalaman/shellcheck:stable bin/* scripts/*
+fi
+
+step "scripts/cron-deploy.test.sh"
+scripts/cron-deploy.test.sh
+
 printf '\nverify: all steps passed\n'
