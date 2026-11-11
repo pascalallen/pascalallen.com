@@ -16,6 +16,9 @@ type candidate struct {
 func (s *Shell) Complete(line string, cursor int) Completion {
 	rs := []rune(line)
 	cursor = max(0, min(cursor, len(rs)))
+	if len(rs) > maxLineRunes {
+		return Completion{Line: line, Cursor: cursor}
+	}
 	before, after := string(rs[:cursor]), string(rs[cursor:])
 	start := strings.LastIndexAny(before, " \t;&") + 1
 	head, word := before[:start], before[start:]
@@ -35,31 +38,18 @@ func (s *Shell) Complete(line string, cursor int) Completion {
 	displays := make([]string, 0, len(cands))
 	for _, c := range cands {
 		prefix = commonPrefix(prefix, c.insert)
-		displays = append(displays, c.display)
+		displays = append(displays, clean(c.display))
 	}
 	sort.Strings(displays)
-	if len(prefix) <= len(word) {
-		return Completion{Line: line, Cursor: cursor, Candidates: displays}
-	}
 	return Completion{Line: head + prefix + after, Cursor: utf8.RuneCountInString(head + prefix), Candidates: displays}
 }
 
 func (s *Shell) candidates(head, word string) []candidate {
-	segment := head
-	if i := strings.LastIndexAny(head, ";&"); i >= 0 {
-		segment = head[i+1:]
-	}
-	fields := strings.Fields(segment)
+	fields := strings.Fields(head[strings.LastIndexAny(head, ";&")+1:])
 	if len(fields) == 0 {
 		return s.commandCandidates(word)
 	}
-	if strings.HasPrefix(word, "-") {
-		return nil
-	}
-	c, ok := s.lookup(fields[0])
-	if !ok {
-		return nil
-	}
+	c, _ := s.lookup(fields[0])
 	switch c.args {
 	case argPath:
 		return s.pathCandidates(word, false)
@@ -95,11 +85,8 @@ func (s *Shell) pathCandidates(word string, dirsOnly bool) []candidate {
 	}
 	slash := strings.LastIndexByte(word, '/')
 	dirPart, base := word[:slash+1], word[slash+1:]
-	dir := s.resolve(dirPart)
-	entries, err := fs.ReadDir(s.fsys, dir)
-	if err != nil {
-		return nil
-	}
+	dir, _ := s.resolve(dirPart)
+	entries, _ := fs.ReadDir(s.fsys, dir)
 	var out []candidate
 	for _, e := range entries {
 		name := e.Name()

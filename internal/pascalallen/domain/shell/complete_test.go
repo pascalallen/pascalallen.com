@@ -41,9 +41,10 @@ var completeCases = []completeCase{
 	{name: "no match leaves the line alone", line: "cat zzz", cursor: 7, want: Completion{Line: "cat zzz", Cursor: 7}},
 	{name: "an unknown command has no argument completion", line: "nope ab", cursor: 7, want: Completion{Line: "nope ab", Cursor: 7}},
 	{name: "a command without arguments offers nothing", line: "pwd a", cursor: 5, want: Completion{Line: "pwd a", Cursor: 5}},
-	{name: "a flag offers nothing", line: "ls -", cursor: 4, want: Completion{Line: "ls -", Cursor: 4}},
+	{name: "a flag matches no file", line: "ls -", cursor: 4, want: Completion{Line: "ls -", Cursor: 4}},
 	{name: "a missing directory offers nothing", line: "cat nope/a", cursor: 10, want: Completion{Line: "cat nope/a", Cursor: 10}},
 	{name: "a cursor past the end is clamped", line: "whoa", cursor: 99, want: Completion{Line: "whoami ", Cursor: 7}},
+	{name: "a path through a file offers nothing", line: "cat about.md/", cursor: 13, want: Completion{Line: "cat about.md/", Cursor: 13}},
 	{name: "a negative cursor is clamped", line: "ls", cursor: -5, want: Completion{Line: "ls", Cursor: 0, Candidates: []string{"about", "camera", "cat", "cd", "clear", "contact", "date", "echo", "education", "exit", "experience", "grep", "head", "help", "history", "ls", "man", "open", "packages", "projects", "pwd", "repos", "resume", "skills", "tail", "theme", "tree", "whoami", "writing"}}},
 	{name: "the cursor counts runes", line: "echo é; whoa", cursor: 12, want: Completion{Line: "echo é; whoami ", Cursor: 15}},
 }

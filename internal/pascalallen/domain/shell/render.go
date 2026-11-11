@@ -88,7 +88,14 @@ func isWebURL(word string) bool {
 }
 
 func isMailto(word string) bool {
-	return strings.HasPrefix(word, "mailto:") && isEmail(word[len("mailto:"):])
+	if !strings.HasPrefix(word, "mailto:") {
+		return false
+	}
+	addr := word[len("mailto:"):]
+	if i := strings.IndexByte(addr, '?'); i >= 0 {
+		addr = addr[:i]
+	}
+	return isEmail(addr)
 }
 
 func isEmail(word string) bool {

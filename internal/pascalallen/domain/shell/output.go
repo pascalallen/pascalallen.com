@@ -1,17 +1,25 @@
 package shell
 
 import (
+	"strconv"
 	"strings"
 	"unicode"
 )
 
 type output struct {
-	blocks  []Block
-	effects []Effect
-	failed  bool
+	blocks    []Block
+	effects   []Effect
+	failed    bool
+	count     int
+	truncated bool
 }
 
 func (o *output) add(kind BlockKind, line Line) {
+	if o.count >= maxOutputLines {
+		o.truncated = true
+		return
+	}
+	o.count++
 	if n := len(o.blocks); n > 0 && o.blocks[n-1].Kind == kind {
 		o.blocks[n-1].Lines = append(o.blocks[n-1].Lines, line)
 		return
@@ -48,10 +56,16 @@ func (o *output) effect(kind EffectKind, arg string) {
 
 func (o *output) clear() {
 	o.blocks = nil
+	o.count = 0
+	o.truncated = false
 	o.effect(EffectClear, "")
 }
 
 func (o *output) result() Result {
+	if o.truncated {
+		o.count, o.truncated = 0, false
+		o.add(BlockText, Line{styled("output truncated after "+strconv.Itoa(maxOutputLines)+" lines", StyleDim)})
+	}
 	r := Result{Blocks: o.blocks, Effects: o.effects}
 	for bi := range r.Blocks {
 		b := &r.Blocks[bi]
@@ -73,9 +87,12 @@ func (o *output) result() Result {
 }
 
 func clean(s string) string {
-	s = strings.ToValidUTF8(s, "�")
+	s = strings.ToValidUTF8(s, "\uFFFD")
 	return strings.Map(func(r rune) rune {
-		if unicode.IsControl(r) {
+		switch {
+		case unicode.Is(unicode.Cf, r):
+			return -1
+		case unicode.IsControl(r) || unicode.In(r, unicode.Zl, unicode.Zp):
 			return ' '
 		}
 		return r

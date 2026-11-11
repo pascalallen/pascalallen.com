@@ -2,11 +2,20 @@ package shell
 
 import (
 	"io/fs"
+	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 const historyLimit = 200
+
+const (
+	maxLineRunes    = 4096
+	maxSteps        = 32
+	maxOutputLines  = 2000
+	maxSuggestRunes = 32
+)
 
 const defaultTheme = "dark"
 
@@ -55,6 +64,7 @@ type Shell struct {
 	cwd      string
 	prev     string
 	history  []string
+	dropped  int
 	commands []command
 	index    map[string]int
 }
@@ -99,11 +109,19 @@ func (s *Shell) Commands() []CommandInfo {
 }
 
 func (s *Shell) Exec(line string) Result {
-	s.record(line)
 	o := &output{}
+	if utf8.RuneCountInString(line) > maxLineRunes {
+		o.fail("bash: input line too long (max " + strconv.Itoa(maxLineRunes) + " characters)")
+		return o.result()
+	}
+	s.record(line)
 	steps, err := parse(line)
 	if err != nil {
 		o.fail("bash: " + err.Error())
+		return o.result()
+	}
+	if len(steps) > maxSteps {
+		o.fail("bash: too many commands on one line (max " + strconv.Itoa(maxSteps) + ")")
 		return o.result()
 	}
 	failed := false
@@ -152,18 +170,23 @@ func (s *Shell) record(line string) {
 		return
 	}
 	s.history = append(s.history, line)
-	if len(s.history) > historyLimit {
-		s.history = append([]string{}, s.history[len(s.history)-historyLimit:]...)
+	if extra := len(s.history) - historyLimit; extra > 0 {
+		s.history = append([]string{}, s.history[extra:]...)
+		s.dropped += extra
 	}
 }
 
 func (s *Shell) nearest(name string) string {
+	n := utf8.RuneCountInString(name)
+	if n > maxSuggestRunes {
+		return ""
+	}
 	best, bestDist := "", 3
 	for _, c := range s.commands {
-		if c.hidden {
+		if c.hidden || n-len(c.name) > 2 || len(c.name)-n > 2 {
 			continue
 		}
-		if d := distance(name, c.name); d < bestDist && d < len([]rune(name)) {
+		if d := distance(name, c.name); d < bestDist && d < n {
 			best, bestDist = c.name, d
 		}
 	}

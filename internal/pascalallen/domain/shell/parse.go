@@ -15,7 +15,6 @@ var (
 	errRedirect     = errors.New("redirection is not supported in this shell")
 	errBackground   = errors.New("background jobs are not supported in this shell")
 	errSubstitution = errors.New("variables and substitution are not supported in this shell")
-	errGlob         = errors.New("globbing is not supported in this shell")
 	errTrailingAnd  = errors.New("syntax error: unexpected end of line after `&&'")
 )
 
@@ -127,8 +126,6 @@ func parse(line string) ([]step, error) {
 			err = errRedirect
 		case '$', '`':
 			err = errSubstitution
-		case '*', '?':
-			err = errGlob
 		default:
 			p.inWord = true
 			p.word.WriteRune(r)

@@ -49,7 +49,10 @@ func (s *Shell) Commands() []CommandInfo
 
 - `Exec` runs one input line. It records the trimmed line in history first (blank lines are skipped, consecutive
   duplicates are collapsed, at most 200 entries are kept), then parses and runs it. It never panics; every failure
-  is an error block.
+  is an error block. Work is bounded: a line over 4096 characters (code points) is rejected with one error block and
+  is not recorded; a line with more than 32 sequenced commands is rejected with one error block; one `Exec` (and
+  one `Deliver`) returns at most 2000 output lines, followed by a dim `output truncated after 2000 lines` line.
+  `Complete` leaves a line over 4096 characters unchanged.
 - `Complete` completes the word that ends at `cursor`. `cursor` and the returned `Cursor` are offsets in Unicode
   code points (runes), clamped to the line. One match returns the completed line (commands and files get a trailing
   space, directories a trailing `/`). Several matches extend the word to their longest common prefix and return
@@ -152,9 +155,13 @@ Rules the host can rely on:
 - A `Span` with `Href` is a link: open it in a new tab. `Href` is always `http://`, `https://` or `mailto:`.
 - A `Span` with `Run` is a tappable command: on tap, echo it at the prompt and pass it to `Exec`. A span never has
   both.
-- Every `Text`, `Href`, `Run`, `Src`, `Alt` and `Arg` is valid UTF-8 with no control characters (they are replaced
-  by spaces), so a `Line` never contains a newline and can be rendered as one row of text. An empty `Line` is a
-  blank row.
+- Every `Text`, `Href`, `Run`, `Src`, `Alt` and `Arg`, and every completion candidate, is valid UTF-8 (invalid
+  bytes become U+FFFD) with no characters from the Unicode categories Cc (control), Cf (format: bidi overrides and
+  isolates, zero-width characters, U+FEFF, soft hyphen), Zl or Zp (U+2028, U+2029). Cc, Zl and Zp become spaces;
+  Cf characters are removed. The rule applies to everything that reaches a span: file content, echoed input,
+  error messages that quote input, and feed items. So a `Line` never contains a newline or a direction override
+  and can be rendered as one row of text. An empty `Line` is a blank row. `Completion.Line` is the visitor's own
+  input and is returned as typed.
 - Consecutive output of the same kind is merged into one block; text and error blocks alternate as they happen.
 - Effects are applied in order, then the blocks are appended. `Exec` already discards blocks produced before a
   `clear` in the same line, so a `clear` effect means "empty the screen, then render this result".
@@ -164,18 +171,22 @@ Rules the host can rely on:
 Words split on spaces, tabs, `\r` and `\n`. `'...'` is literal; `"..."` honours `\"`, `\\`, `\$` and `` \` ``;
 a backslash outside quotes escapes the next character. `#` at the start of a word starts a comment. `;` sequences
 commands; `&&` runs the next command only if the previous one succeeded. `~`, `.` and `..` resolve inside the
-home directory and can never climb above it; `/` and `/home/<user>` both mean home. Pipes, redirection,
-background jobs, variables, command substitution and globbing (`*`, `?`) are rejected with one error line, e.g.
-`bash: pipes are not supported in this shell`. An unterminated quote is
+home directory and can never climb above it; `/` and `/home/<user>` both mean home. A path that continues
+past a regular file (`about.md/`, `about.md/..`) is `Not a directory`, and one that continues past a missing
+name is `No such file or directory`. There is no globbing: `*`, `?` and `[` are literal, so pasted URLs such as
+`https://example.com/?q=1` work. Pipes, redirection, background jobs, variables and command substitution are
+rejected with one error line, e.g. `bash: pipes are not supported in this shell`. An unterminated quote is
 ``bash: unexpected EOF while looking for matching `"'``. Unknown commands are
 `bash: foo: command not found`, followed by `did you mean ls?` (a `Run` span) when a visible command is within
-two edits.
+two edits (transpositions count as one) and differs in length by at most two; words over 32 characters get no
+suggestion.
 
 ## Commands
 
 `help [command]`, `man <command>`, `ls [-la] [path]`, `cd [path|-]`, `pwd`, `cat <file>...`, `tree [path]`,
-`head [-n lines] <file>...`, `tail [-n lines] <file>...`, `grep [-i] <text> [path]` (literal, recursive),
-`whoami`, `echo [text]...`, `date`, `history [n]`, `clear`, `open <url|file>`, `about`, `resume`, `skills`,
+`head [-n [-]lines] <file>...` (`-n -N` drops the last N lines), `tail [-n [+]lines] <file>...` (`-n +N` starts
+at line N), `grep [-i] <text> [path]` (literal, recursive), `whoami`, `echo [text]...`, `date`, `history [n]`
+(entry numbers are absolute, so they keep counting after old entries are trimmed), `clear`, `open <url|file>`, `about`, `resume`, `skills`,
 `experience`, `projects`, `writing`, `contact`, `education`, `repos`, `packages`, `camera`, `theme [name]` (themes:
 `dark`, `light`, `amber`, `green`), `exit`; hidden: `sudo`, `vim`, `rm`, `mkdir`, `touch`, `mv` (the write
 commands answer `Read-only file system`). `man <command>` documents each one.

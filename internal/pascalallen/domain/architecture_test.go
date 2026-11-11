@@ -17,26 +17,28 @@ import (
 
 var purePackages = []string{"shell", "content"}
 
-var forbiddenImports = map[string]string{
-	"os":            "no file system or process access",
-	"net":           "no network access",
-	"net/http":      "no network access",
-	"syscall":       "no system calls",
-	"syscall/js":    "the browser bridge lives in infrastructure",
-	"unsafe":        "no unsafe memory access",
-	"reflect":       "keeps a TinyGo build possible",
-	"encoding/json": "keeps a TinyGo build possible",
-	"regexp":        "keeps a TinyGo build possible",
-	"text/template": "keeps a TinyGo build possible",
-	"html/template": "keeps a TinyGo build possible",
-	"math/rand":     "output must be deterministic",
-	"math/rand/v2":  "output must be deterministic",
-	"crypto/rand":   "output must be deterministic",
+var allowedImports = map[string]bool{
+	"embed":        true,
+	"errors":       true,
+	"io/fs":        true,
+	"sort":         true,
+	"strconv":      true,
+	"strings":      true,
+	"time":         true,
+	"unicode":      true,
+	"unicode/utf8": true,
 }
 
-type violation struct {
-	file string
-	what string
+var forbiddenTime = map[string]bool{
+	"Now":       true,
+	"Since":     true,
+	"Until":     true,
+	"After":     true,
+	"AfterFunc": true,
+	"Sleep":     true,
+	"Tick":      true,
+	"NewTimer":  true,
+	"NewTicker": true,
 }
 
 func sources(t *testing.T, dir string) []string {
@@ -55,39 +57,40 @@ func sources(t *testing.T, dir string) []string {
 	return files
 }
 
-func inspect(t *testing.T, path string) []violation {
+func inspect(t *testing.T, name, src string) []string {
 	t.Helper()
 	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, path, nil, parser.ImportsOnly|parser.SkipObjectResolution)
+	file, err := parser.ParseFile(fset, name, src, parser.SkipObjectResolution)
 	require.NoError(t, err)
-	full, err := parser.ParseFile(fset, path, nil, parser.SkipObjectResolution)
-	require.NoError(t, err)
-	var found []violation
-	timeName := ""
+	var found []string
+	timeNames := map[string]bool{}
 	for _, imp := range file.Imports {
 		p, err := strconv.Unquote(imp.Path.Value)
 		require.NoError(t, err)
-		first := strings.SplitN(p, "/", 2)[0]
-		if strings.Contains(first, ".") {
-			found = append(found, violation{path, "imports non-standard package " + p})
+		if !allowedImports[p] {
+			found = append(found, "imports "+p+", which is not on the allow-list")
 		}
-		if reason, bad := forbiddenImports[p]; bad || strings.HasPrefix(p, "net/") || strings.HasPrefix(p, "os/") {
-			found = append(found, violation{path, "imports " + p + ": " + reason})
+		local := p[strings.LastIndex(p, "/")+1:]
+		if imp.Name != nil {
+			switch imp.Name.Name {
+			case ".":
+				found = append(found, "dot-imports "+p)
+			case "_":
+				found = append(found, "blank-imports "+p)
+			}
+			local = imp.Name.Name
 		}
 		if p == "time" {
-			timeName = "time"
-			if imp.Name != nil {
-				timeName = imp.Name.Name
-			}
+			timeNames[local] = true
 		}
 	}
-	ast.Inspect(full, func(n ast.Node) bool {
+	ast.Inspect(file, func(n ast.Node) bool {
 		switch n := n.(type) {
 		case *ast.GoStmt:
-			found = append(found, violation{path, "starts a goroutine at " + fset.Position(n.Pos()).String()})
+			found = append(found, "starts a goroutine at "+fset.Position(n.Pos()).String())
 		case *ast.SelectorExpr:
-			if id, ok := n.X.(*ast.Ident); ok && timeName != "" && id.Name == timeName && (n.Sel.Name == "Now" || n.Sel.Name == "Since" || n.Sel.Name == "Until") {
-				found = append(found, violation{path, "reads the wall clock with time." + n.Sel.Name + " at " + fset.Position(n.Pos()).String()})
+			if id, ok := n.X.(*ast.Ident); ok && timeNames[id.Name] && forbiddenTime[n.Sel.Name] {
+				found = append(found, "uses time."+n.Sel.Name+" at "+fset.Position(n.Pos()).String())
 			}
 		}
 		return true
@@ -97,31 +100,62 @@ func inspect(t *testing.T, path string) []violation {
 
 func TestPurePackages(t *testing.T) {
 	for _, pkg := range purePackages {
-		t.Run(pkg+" imports only allowed standard library packages and never reads the clock", func(t *testing.T) {
+		t.Run(pkg+" imports only allow-listed standard library packages and never reads the clock", func(t *testing.T) {
 			files := sources(t, pkg)
 			require.NotEmpty(t, files)
 			for _, f := range files {
-				for _, v := range inspect(t, f) {
-					assert.Fail(t, v.file+": "+v.what)
+				src, err := os.ReadFile(f)
+				require.NoError(t, err)
+				for _, v := range inspect(t, f, string(src)) {
+					assert.Fail(t, f+": "+v)
 				}
 			}
 		})
 	}
+}
 
-	t.Run("the checker catches every forbidden construct", func(t *testing.T) {
-		dir := t.TempDir()
-		src := "package bad\n\nimport (\n\t\"os\"\n\tclock \"time\"\n\t\"github.com/x/y\"\n\t\"net/url\"\n)\n\nfunc f() {\n\tgo func() {}()\n\t_ = clock.Now()\n\t_ = os.Args\n}\n"
-		path := filepath.Join(dir, "bad.go")
-		require.NoError(t, os.WriteFile(path, []byte(src), 0o644))
-		var whats []string
-		for _, v := range inspect(t, path) {
-			whats = append(whats, v.what)
-		}
-		joined := strings.Join(whats, "\n")
-		assert.Contains(t, joined, "imports os:")
-		assert.Contains(t, joined, "imports non-standard package github.com/x/y")
-		assert.Contains(t, joined, "imports net/url")
-		assert.Contains(t, joined, "starts a goroutine")
-		assert.Contains(t, joined, "reads the wall clock with time.Now")
+func TestPurityChecker(t *testing.T) {
+	cases := []struct {
+		name string
+		src  string
+		want string
+	}{
+		{"an os import is reported", `import "os"; var _ = os.Args`, "imports os,"},
+		{"a log import is reported", `import "log"; var _ = log.Println`, "imports log,"},
+		{"a net import is reported", `import "net"; var _ net.IP`, "imports net,"},
+		{"a net/url import is reported", `import "net/url"; var _ url.URL`, "imports net/url,"},
+		{"an io/ioutil import is reported", `import "io/ioutil"; var _ = ioutil.Discard`, "imports io/ioutil,"},
+		{"a syscall import is reported", `import "syscall"; var _ = syscall.Getpid`, "imports syscall,"},
+		{"a syscall/js import is reported", `import "syscall/js"; var _ js.Value`, "imports syscall/js,"},
+		{"an unsafe import is reported", `import "unsafe"; var _ unsafe.Pointer`, "imports unsafe,"},
+		{"a runtime import is reported", `import "runtime"; var _ = runtime.GOOS`, "imports runtime,"},
+		{"a reflect import is reported", `import "reflect"; var _ reflect.Type`, "imports reflect,"},
+		{"an encoding/json import is reported", `import "encoding/json"; var _ = json.Marshal`, "imports encoding/json,"},
+		{"a math/rand import is reported", `import "math/rand"; var _ = rand.Int`, "imports math/rand,"},
+		{"a module import is reported", `import "github.com/x/y"; var _ = y.Z`, "imports github.com/x/y,"},
+		{"a dot import is reported", `import . "time"; var _ = Unix`, "dot-imports time"},
+		{"a blank import is reported", `import _ "embed"`, "blank-imports embed"},
+		{"time.Now is reported", `import "time"; var _ = time.Now`, "uses time.Now"},
+		{"an aliased time.Now is reported", `import clock "time"; var _ = clock.Now()`, "uses time.Now"},
+		{"time.Since is reported", `import "time"; var _ = time.Since`, "uses time.Since"},
+		{"time.Until is reported", `import "time"; var _ = time.Until`, "uses time.Until"},
+		{"time.After is reported", `import "time"; var _ = time.After`, "uses time.After"},
+		{"time.AfterFunc is reported", `import "time"; var _ = time.AfterFunc`, "uses time.AfterFunc"},
+		{"time.Sleep is reported", `import "time"; var _ = time.Sleep`, "uses time.Sleep"},
+		{"time.Tick is reported", `import "time"; var _ = time.Tick`, "uses time.Tick"},
+		{"time.NewTimer is reported", `import "time"; var _ = time.NewTimer`, "uses time.NewTimer"},
+		{"time.NewTicker is reported", `import "time"; var _ = time.NewTicker`, "uses time.NewTicker"},
+		{"a goroutine is reported", `func f() { go f() }`, "starts a goroutine"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			found := inspect(t, "bad.go", "package bad\n"+strings.ReplaceAll(tc.src, "; ", "\n")+"\n")
+			assert.Contains(t, strings.Join(found, "\n"), tc.want)
+		})
+	}
+
+	t.Run("allowed imports and time values pass", func(t *testing.T) {
+		src := "package ok\nimport (\n\t\"strings\"\n\t\"time\"\n)\nvar _ = strings.Fields\nvar _ = time.Unix(0, 0).Format(time.UnixDate)\nfunc now() time.Time { return time.Time{} }\n"
+		assert.Empty(t, inspect(t, "ok.go", src))
 	})
 }

@@ -93,8 +93,7 @@ func cmdLs(s *Shell, o *output, args []string) {
 	if len(rest) == 1 {
 		arg = rest[0]
 	}
-	p := s.resolve(arg)
-	info, problem := s.stat(p)
+	p, info, problem := s.locate(arg)
 	if problem != "" {
 		o.fail("ls: cannot access '" + arg + "': " + problem)
 		return
@@ -149,17 +148,14 @@ func longEntry(s *Shell, p string, info fs.FileInfo) []Span {
 }
 
 func cmdCd(s *Shell, o *output, args []string) {
-	target, label := ".", "~"
+	arg, label := "~", "~"
 	if len(args) == 1 {
-		label = args[0]
-		switch args[0] {
-		case "-":
-			target = s.prev
-		default:
-			target = s.resolve(args[0])
+		arg, label = args[0], args[0]
+		if arg == "-" {
+			arg = "~/" + s.prev
 		}
 	}
-	info, problem := s.stat(target)
+	target, info, problem := s.locate(arg)
 	if problem == "" && !info.IsDir() {
 		problem = problemNotDir
 	}
@@ -194,8 +190,7 @@ func cmdTree(s *Shell, o *output, args []string) {
 	if len(args) == 1 {
 		arg = args[0]
 	}
-	p := s.resolve(arg)
-	info, problem := s.stat(p)
+	p, info, problem := s.locate(arg)
 	if problem == "" && !info.IsDir() {
 		problem = problemNotDir
 	}
@@ -210,10 +205,7 @@ func cmdTree(s *Shell, o *output, args []string) {
 }
 
 func (s *Shell) walkTree(o *output, p, prefix string) (int, int) {
-	entries, err := fs.ReadDir(s.fsys, p)
-	if err != nil {
-		return 0, 0
-	}
+	entries, _ := fs.ReadDir(s.fsys, p)
 	dirs, files := 0, 0
 	for i, e := range entries {
 		branch, indent := "├── ", "│   "
@@ -234,7 +226,7 @@ func (s *Shell) walkTree(o *output, p, prefix string) (int, int) {
 
 func headTail(name string, fromEnd bool) func(s *Shell, o *output, args []string) {
 	return func(s *Shell, o *output, args []string) {
-		n := 10
+		n, sign := 10, byte(0)
 		var files []string
 		for i := 0; i < len(args); i++ {
 			a := args[i]
@@ -258,12 +250,12 @@ func headTail(name string, fromEnd bool) func(s *Shell, o *output, args []string
 				files = append(files, a)
 				continue
 			}
-			v, err := strconv.Atoi(value)
-			if err != nil || v < 0 {
+			v, vsign, ok := parseCount(value)
+			if !ok {
 				o.fail(name + ": invalid number of lines: '" + value + "'")
 				return
 			}
-			n = v
+			n, sign = v, vsign
 		}
 		if len(files) == 0 {
 			o.fail(name + ": missing file operand")
@@ -282,13 +274,33 @@ func headTail(name string, fromEnd bool) func(s *Shell, o *output, args []string
 				o.line(styled("==> "+f+" <==", StyleBold))
 			}
 			lines := renderText(text)
-			if fromEnd {
+			switch {
+			case fromEnd && sign == '+':
+				o.lines(lines[min(len(lines), max(n, 1)-1):])
+			case fromEnd:
 				o.lines(lines[max(0, len(lines)-n):])
-			} else {
+			case sign == '-':
+				o.lines(lines[:max(0, len(lines)-n)])
+			default:
 				o.lines(lines[:min(n, len(lines))])
 			}
 		}
 	}
+}
+
+func parseCount(value string) (int, byte, bool) {
+	sign := byte(0)
+	if value != "" && (value[0] == '+' || value[0] == '-') {
+		sign, value = value[0], value[1:]
+	}
+	if strings.ContainsAny(value, "+-") {
+		return 0, 0, false
+	}
+	v, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, 0, false
+	}
+	return v, sign, true
 }
 
 func cmdGrep(s *Shell, o *output, args []string) {
@@ -309,8 +321,8 @@ func cmdGrep(s *Shell, o *output, args []string) {
 	if len(rest) == 2 {
 		arg = rest[1]
 	}
-	root := s.resolve(arg)
-	if _, problem := s.stat(root); problem != "" {
+	root, _, problem := s.locate(arg)
+	if problem != "" {
 		o.fail("grep: " + arg + ": " + problem)
 		return
 	}
@@ -320,10 +332,7 @@ func cmdGrep(s *Shell, o *output, args []string) {
 		needle = strings.ToLower(pattern)
 	}
 	found := false
-	_ = fs.WalkDir(s.fsys, root, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return nil
-		}
+	_ = fs.WalkDir(s.fsys, root, func(p string, _ fs.DirEntry, _ error) error {
 		data, err := fs.ReadFile(s.fsys, p)
 		if err != nil {
 			return nil
@@ -396,7 +405,7 @@ func cmdHistory(s *Shell, o *output, args []string) {
 		n = min(v, n)
 	}
 	for i := len(s.history) - n; i < len(s.history); i++ {
-		num := strconv.Itoa(i + 1)
+		num := strconv.Itoa(s.dropped + i + 1)
 		o.line(styled(strings.Repeat(" ", max(0, 5-len(num)))+num+"  ", StyleDim), runSpan(s.history[i], s.history[i]))
 	}
 }
@@ -464,9 +473,6 @@ func listing(dir, title string, detail bool) func(s *Shell, o *output, args []st
 		}
 		o.line(styled(title, StyleHeading))
 		for _, e := range entries {
-			if e.IsDir() {
-				continue
-			}
 			p := dir + "/" + e.Name()
 			data, err := fs.ReadFile(s.fsys, p)
 			if err != nil {

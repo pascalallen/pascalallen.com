@@ -79,20 +79,37 @@ func TestPathConfinement(t *testing.T) {
 		s := newTestShell()
 		s.cwd = "writing"
 		for in, want := range map[string]string{
-			"":                    "writing",
-			".":                   "writing",
-			"..":                  ".",
-			"../..":               ".",
-			"../../../projects":   "projects",
-			"~":                   ".",
-			"~/..":                ".",
-			"/":                   ".",
-			"/home/visitor/x":     "x",
-			"/home/visitorx":      "home/visitorx",
-			"a/./b//c/../d":       "writing/a/b/d",
-			"~/../../../etc/x/..": "etc",
+			"":                              "writing",
+			".":                             "writing",
+			"..":                            ".",
+			"../..":                         ".",
+			"../../../projects":             "projects",
+			"~":                             ".",
+			"~/..":                          ".",
+			"/":                             ".",
+			"/home/visitor/x":               "x",
+			"/home/visitor":                 ".",
+			"~/../../../projects/pgmcp.md":  "projects/pgmcp.md",
+			"..//./projects/../experience/": "experience",
 		} {
-			assert.Equal(t, want, s.resolve(in), in)
+			got, problem := s.resolve(in)
+			assert.Equal(t, want, got, in)
+			assert.Empty(t, problem, in)
+		}
+	})
+
+	t.Run("resolve refuses to descend through a file or a missing directory", func(t *testing.T) {
+		s := newTestShell()
+		for in, want := range map[string]string{
+			"about.md/":        problemNotDir,
+			"about.md/..":      problemNotDir,
+			"~/about.md/x":     problemNotDir,
+			"nope/":            problemMissing,
+			"nope/../about.md": problemMissing,
+			"/home/visitorx/a": problemMissing,
+		} {
+			_, problem := s.resolve(in)
+			assert.Equal(t, want, problem, in)
 		}
 	})
 }
@@ -227,6 +244,10 @@ func TestBoot(t *testing.T) {
 	t.Run("still boots without an about file", func(t *testing.T) {
 		r := New(fstest.MapFS{}).Boot()
 		assert.Contains(t, runs(r), "help")
+		lines := strings.Split(resultText(r), "\n")
+		require.Len(t, lines, 4)
+		assert.Equal(t, "", lines[1])
+		assert.True(t, strings.HasPrefix(lines[2], "help  about"))
 	})
 }
 
@@ -302,8 +323,15 @@ func TestRendering(t *testing.T) {
 	})
 
 	t.Run("words that only look like links stay plain", func(t *testing.T) {
-		for _, w := range []string{"https://", "@pascalallen/pkg", "a@b", "a@b.", "x@y@z.com", "javascript:alert(1)", "ftp://x.test"} {
+		for _, w := range []string{"https://", "@pascalallen/pkg", "@b.co", "a@b", "a@b.", "x@y@z.com", "javascript:alert(1)", "ftp://x.test"} {
 			assert.Equal(t, Line{{Text: w}}, linkify(w, StylePlain), w)
+		}
+	})
+
+	t.Run("email detection rejects malformed addresses", func(t *testing.T) {
+		assert.True(t, isEmail("me@b.test"))
+		for _, w := range []string{"@b.co", "a@.co", "a@b.", "a@bco", "a!b@c.de", "a b@c.de", "a@b@c.de"} {
+			assert.False(t, isEmail(w), w)
 		}
 	})
 
@@ -319,6 +347,8 @@ func TestRendering(t *testing.T) {
 		title, sub := summarize("# One\n# Two\n\n  first  \nsecond\n")
 		assert.Equal(t, "One Two", title)
 		assert.Equal(t, "first", sub)
+		_, sub = summarize("# One\n\n# Two\nbody\n")
+		assert.Equal(t, "body", sub)
 		title, sub = summarize("no heading\n")
 		assert.Equal(t, "", title)
 		assert.Equal(t, "no heading", sub)
@@ -384,8 +414,8 @@ func assertClean(t *testing.T, r Result) {
 			t.Fatalf("invalid utf-8 in %q", s)
 		}
 		for _, c := range s {
-			if unicode.IsControl(c) {
-				t.Fatalf("control character %U in %q", c, s)
+			if unicode.In(c, unicode.Cc, unicode.Cf, unicode.Zl, unicode.Zp) {
+				t.Fatalf("unsafe character %U in %q", c, s)
 			}
 		}
 	}
@@ -423,11 +453,15 @@ func FuzzExec(f *testing.F) {
 	for _, l := range seedLines() {
 		f.Add(l)
 	}
+	for _, l := range unsafeSeeds {
+		f.Add("echo " + l)
+	}
 	f.Fuzz(func(t *testing.T, line string) {
 		s := newTestShell()
 		assertClean(t, s.Exec(line))
 		assertClean(t, s.Exec("history"))
 		assertClean(t, s.Exec("cat "+line))
+		assertClean(t, s.Deliver(FeedRepos, []FeedItem{{Name: line, Description: line, URL: line, Meta: line}}))
 		p := s.Prompt()
 		assert.True(t, strings.HasPrefix(p, "visitor@pascalallen.com:~"))
 		assert.True(t, strings.HasSuffix(p, "$"))
@@ -443,6 +477,9 @@ func FuzzComplete(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, line string, cursor int) {
 		c := newTestShell().Complete(line, cursor)
+		for _, cand := range c.Candidates {
+			assertClean(t, Result{Blocks: []Block{{Lines: []Line{{{Text: cand}}}}}})
+		}
 		n := utf8.RuneCountInString(c.Line)
 		if c.Cursor < 0 || c.Cursor > n {
 			t.Fatalf("cursor %d outside line of %d runes", c.Cursor, n)

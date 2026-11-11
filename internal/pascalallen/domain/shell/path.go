@@ -16,7 +16,7 @@ func (s *Shell) home() string {
 	return "/home/" + s.user
 }
 
-func (s *Shell) resolve(arg string) string {
+func (s *Shell) resolve(arg string) (string, string) {
 	var segs []string
 	switch {
 	case arg == "~" || strings.HasPrefix(arg, "~/"):
@@ -29,7 +29,16 @@ func (s *Shell) resolve(arg string) string {
 			segs = strings.Split(s.cwd, "/")
 		}
 	}
-	for _, part := range strings.Split(arg, "/") {
+	for i, part := range strings.Split(arg, "/") {
+		if i > 0 && len(segs) > 0 {
+			info, problem := s.stat(strings.Join(segs, "/"))
+			if problem == "" && !info.IsDir() {
+				problem = problemNotDir
+			}
+			if problem != "" {
+				return "", problem
+			}
+		}
 		switch part {
 		case "", ".":
 		case "..":
@@ -41,9 +50,21 @@ func (s *Shell) resolve(arg string) string {
 		}
 	}
 	if len(segs) == 0 {
-		return "."
+		return ".", ""
 	}
-	return strings.Join(segs, "/")
+	return strings.Join(segs, "/"), ""
+}
+
+func (s *Shell) locate(arg string) (string, fs.FileInfo, string) {
+	p, problem := s.resolve(arg)
+	if problem != "" {
+		return "", nil, problem
+	}
+	info, problem := s.stat(p)
+	if problem != "" {
+		return "", nil, problem
+	}
+	return p, info, ""
 }
 
 func (s *Shell) stat(p string) (fs.FileInfo, string) {
@@ -55,8 +76,7 @@ func (s *Shell) stat(p string) (fs.FileInfo, string) {
 }
 
 func (s *Shell) read(arg string) (string, string) {
-	p := s.resolve(arg)
-	info, problem := s.stat(p)
+	p, info, problem := s.locate(arg)
 	if problem != "" {
 		return "", problem
 	}
