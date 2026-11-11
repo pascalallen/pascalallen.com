@@ -70,6 +70,49 @@ func BadRequestResponse(c *gin.Context, error error) {
 	return
 }
 
+func OKResponse[T interface{}](c *gin.Context, i T) {
+	c.JSON(
+		http.StatusOK,
+		JSendSuccessResponse[T]{
+			Status: "success",
+			Data:   i,
+		},
+	)
+
+	return
+}
+
+func NoContentResponse(c *gin.Context) {
+	c.Status(http.StatusNoContent)
+
+	return
+}
+
+func PayloadTooLargeResponse(c *gin.Context, message string) {
+	c.JSON(
+		http.StatusRequestEntityTooLarge,
+		JSendFailResponse[string]{
+			Status: "fail",
+			Data:   message,
+		},
+	)
+
+	return
+}
+
+func BadGatewayResponse(c *gin.Context, message string) {
+	c.JSON(
+		http.StatusBadGateway,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: message,
+			Code:    http.StatusBadGateway,
+		},
+	)
+
+	return
+}
+
 func CreatedResponse[T interface{}](c *gin.Context, i *T) {
 	c.JSON(
 		http.StatusCreated,
