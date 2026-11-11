@@ -4,25 +4,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pascal Allen - pascalallen.com</title>
-    <meta name="description" content="pascalallen.com is a containerized web application built with Kubernetes, Docker, RabbitMQ, Postgres, Go, React, TypeScript, Sass, Webpack, and WebAssembly. This ongoing project is designed, developed, deployed, and maintained by myself, Pascal Allen.">
+    <meta name="description" content="Pascal Allen, software engineer. The terminal at pascalallen.com is coming online.">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="manifest" href="/static/site.webmanifest">
     <link href="/static/assets/app.css" rel="stylesheet" type="text/css">
-    <script src="https://kit.fontawesome.com/b05f5595ec.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div id="root"></div>
+    <main>
+        <h1>Pascal Allen</h1>
+        <p id="status">terminal coming online</p>
+    </main>
     <input id="script_config" type="hidden" value="{{ .environment }}" />
     <script type="text/javascript" src="/static/assets/app.js"></script>
-    <script src="/static/assets/wasm.js"></script>
-    <script>
-        const go = new Go();
-        WebAssembly.instantiateStreaming(fetch("/static/assets/wasm.wasm"), go.importObject).then((result) => {
-            go.run(result.instance);
-            typewriter("profession-text", "Computer Scientist", 40);
-        });
-    </script>
 </body>
 </html>

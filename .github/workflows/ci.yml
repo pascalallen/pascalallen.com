@@ -28,8 +28,10 @@ jobs:
         run: |
           if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
             go generate ./...
-          else
+          elif [ -f cmd/pascalallen/wire.go ]; then
             bin/wire-gen
+          else
+            echo "no wire injector, skipped"
           fi
           if [ -n "$(git status --porcelain)" ]; then
             git status --porcelain
@@ -44,6 +46,14 @@ jobs:
           vuln_code=$?
           set -e
           printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"
+
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: shellcheck bin/* scripts/*
+      - run: scripts/cron-deploy.test.sh
 
   frontend:
     runs-on: ubuntu-latest

@@ -15,7 +15,6 @@
       "Bash(bin/vulncheck *)",
       "Bash(bin/up)",
       "Bash(bin/down)",
-      "Bash(bin/wasm)",
       "Bash(bin/exec go test *)",
       "Bash(bin/exec go build *)",
       "Bash(bin/exec go vet *)",

@@ -19,11 +19,9 @@ Go and Node run in throwaway containers, so no running compose stack is needed t
 
 ```bash
 bin/verify          # the full gate, same steps as CI, from any worktree
-bin/up              # build + up + compile WASM; bin/up prod = detached
-bin/down            # bin/down prod likewise
-bin/watch           # live reload for Go
-bin/wasm            # recompile web/static/assets/wasm.{wasm,js} only
-bin/exec go test ./...
+bin/up              # build + up + logs; base/pi/prod select the compose overlay
+bin/down            # same selectors as bin/up
+bin/exec <cmd>      # run a command in the running container (the runtime image has no Go toolchain)
 bin/yarn <args>     # yarn in web/app (node container)
 ```
 
@@ -50,7 +48,7 @@ Layout drift is enforced by an architecture test once item 3 lands; until then `
 
 ## Host facts
 
-- `compose.yaml` runs `pascalallen-go` privileged with `/dev/media0-3` and `/dev/video0` mapped and the `Dockerfile` is pinned to `linux/arm64` with libcamera and gstreamer. `bin/up` as written targets the Pi; on a Mac drop the `devices:` block or use `bin/watch`. The revamp moves the Pi bits to an overlay (#42).
+- `compose.yaml` is the portable base; `compose.pi.yaml` adds the Pi parts (privileged, `/dev/media0-3`, `/dev/video0`, `platform: linux/arm64`, `REQUIRE_CAMERA=1`). `bin/up` picks the overlay on aarch64 Linux with `/dev/video0`, or via `bin/up pi`/`prod`. The multi-stage `Dockerfile` builds natively on arm64 and amd64; production redeploys through `scripts/cron-deploy` (docs/DEPLOYING.md).
 - Required env is in `.env.example`. Never read or commit `.env`.
 
 ## Done means

@@ -74,14 +74,12 @@ cp .env.example .env
 ### Bring Up Environment
 
 ```bash
-bin/up <prod>
-``` 
-
-or (to watch for backend changes)
-
-```bash
-bin/watch
+bin/up
 ```
+
+`bin/up` builds the image and follows the logs. It uses the portable base compose file on a Mac and the Pi overlay
+(`compose.pi.yaml`, privileged with the camera devices) on a Raspberry Pi. Force one with `bin/up base`, `bin/up pi`, or
+`bin/up prod` (Pi overlay, quiet, detached). Set `PORT` to change the port. Rebuild with `bin/up` after code changes.
 
 You will find the site running at [http://localhost:9990/](http://localhost:9990/)
 
@@ -106,7 +104,7 @@ bin/yarn watch
 ### Take Down Environment
 
 ```bash
-bin/down <prod>
+bin/down
 ```
 
 ## Testing

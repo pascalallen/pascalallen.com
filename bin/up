@@ -1,19 +1,48 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+cd "$DIR"/.. || exit 1
 
-if [ "$1" == "prod" ]
-then
-    docker compose -f compose.yaml --progress quiet build \
-      && docker compose -f compose.yaml --progress quiet up -d \
-      && docker exec -d -w /app -e GOOS=js -e GOARCH=wasm pascalallen-go go build -o ./web/static/assets/wasm.wasm ./internal/pascalallen/infrastructure/wasm/wasm.go \
-      && docker exec -d -w /app pascalallen-go cp "$(docker exec -w /app pascalallen-go go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static/assets/wasm.js
-else
-    docker compose build \
-      && docker compose up -d \
-      && docker exec -d -w /app -e GOOS=js -e GOARCH=wasm pascalallen-go go build -o ./web/static/assets/wasm.wasm ./internal/pascalallen/infrastructure/wasm/wasm.go \
-      && docker exec -d -w /app pascalallen-go cp "$(docker exec -w /app pascalallen-go go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static/assets/wasm.js \
-      && docker compose logs -f
-fi
+usage() {
+    cat <<'USAGE'
+usage: bin/up [pi|prod|base]
+
+  (none)  build and start, then follow logs; the Pi overlay is used when
+          /dev/video0 exists on aarch64 Linux, otherwise the portable base
+  base    force the portable base compose file (no devices, not privileged)
+  pi      force the Pi overlay (privileged, camera devices), follow logs
+  prod    Pi overlay, quiet, detached
+
+PORT overrides the host and container port (default 9990).
+USAGE
+}
+
+case "${1:-}" in
+    "")
+        bin/_compose auto build
+        bin/_compose auto up -d --remove-orphans
+        bin/_compose auto logs -f
+        ;;
+    base)
+        bin/_compose base build
+        bin/_compose base up -d --remove-orphans
+        bin/_compose base logs -f
+        ;;
+    pi)
+        bin/_compose pi build
+        bin/_compose pi up -d --remove-orphans
+        bin/_compose pi logs -f
+        ;;
+    prod)
+        bin/_compose pi --progress quiet build
+        bin/_compose pi --progress quiet up -d --remove-orphans
+        ;;
+    -h | --help | help)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac

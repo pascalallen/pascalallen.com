@@ -1,5 +1,12 @@
-.agents/
-.claude/worktrees/
-.claude/settings.local.json
-CLAUDE.local.md
+.git
+.github
+.agents
+.claude
+.env
+.env.*
+**/node_modules
+web/static/assets
 coverage.*
+tmp
+docs
+*.md

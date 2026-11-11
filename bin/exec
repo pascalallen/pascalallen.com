@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+cd "$DIR"/.. || exit 1
 
-docker compose exec pascalallen-go "$@"
+exec bin/_compose auto exec pascalallen-go "$@"

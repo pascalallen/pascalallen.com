@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit 1
+
+mode="${1:?usage: bin/_compose <auto|base|pi> <docker compose args...>}"
+shift
+
+if [ "$mode" = "auto" ]; then
+    if [ -e /dev/video0 ] && [ "$(uname -s)" = "Linux" ] && [ "$(uname -m)" = "aarch64" ]; then
+        mode="pi"
+    else
+        mode="base"
+    fi
+fi
+
+if [ ! -f .env ]; then
+    echo "bin/_compose: .env is missing; run: cp .env.example .env" >&2
+    exit 1
+fi
+
+files=(-f compose.yaml)
+if [ "$mode" = "pi" ]; then
+    files+=(-f compose.pi.yaml)
+fi
+
+exec docker compose "${files[@]}" "$@"

@@ -1,0 +1,17 @@
+services:
+  pascalallen-go:
+    platform: linux/arm64
+    build:
+      context: .
+      args:
+        REQUIRE_CAMERA: "1"
+    user: "0:0"
+    privileged: true
+    volumes:
+      - /run/udev:/run/udev:ro
+    devices:
+      - /dev/media0:/dev/media0
+      - /dev/media1:/dev/media1
+      - /dev/media2:/dev/media2
+      - /dev/media3:/dev/media3
+      - /dev/video0:/dev/video0
