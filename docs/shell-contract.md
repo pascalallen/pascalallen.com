@@ -157,9 +157,10 @@ Rules the host can rely on:
   both.
 - Every `Text`, `Href`, `Run`, `Src`, `Alt` and `Arg`, and every completion candidate, is valid UTF-8 (invalid
   bytes become U+FFFD) with no characters from the Unicode categories Cc (control), Cf (format: bidi overrides and
-  isolates, zero-width characters, U+FEFF, soft hyphen), Zl or Zp (U+2028, U+2029). Cc, Zl and Zp become spaces;
-  Cf characters are removed. The rule applies to everything that reaches a span: file content, echoed input,
-  error messages that quote input, and feed items. So a `Line` never contains a newline or a direction override
+  isolates, zero-width space, U+FEFF, soft hyphen), Zl or Zp (U+2028, U+2029). Cc, Zl and Zp become spaces;
+  Cf characters are removed, except U+200C (zero width non-joiner) and U+200D (zero width joiner), which are kept
+  because emoji sequences and Persian text need them. The rule applies to everything that reaches a span: file
+  content, echoed input, error messages that quote input, and feed items. So a `Line` never contains a newline or a direction override
   and can be rendered as one row of text. An empty `Line` is a blank row. `Completion.Line` is the visitor's own
   input and is returned as typed.
 - Consecutive output of the same kind is merged into one block; text and error blocks alternate as they happen.

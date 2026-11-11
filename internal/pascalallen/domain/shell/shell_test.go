@@ -414,7 +414,7 @@ func assertClean(t *testing.T, r Result) {
 			t.Fatalf("invalid utf-8 in %q", s)
 		}
 		for _, c := range s {
-			if unicode.In(c, unicode.Cc, unicode.Cf, unicode.Zl, unicode.Zp) {
+			if c != 0x200C && c != 0x200D && unicode.In(c, unicode.Cc, unicode.Cf, unicode.Zl, unicode.Zp) {
 				t.Fatalf("unsafe character %U in %q", c, s)
 			}
 		}

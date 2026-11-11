@@ -90,6 +90,8 @@ func clean(s string) string {
 	s = strings.ToValidUTF8(s, "\uFFFD")
 	return strings.Map(func(r rune) rune {
 		switch {
+		case r == '\u200C' || r == '\u200D':
+			return r
 		case unicode.Is(unicode.Cf, r):
 			return -1
 		case unicode.IsControl(r) || unicode.In(r, unicode.Zl, unicode.Zp):

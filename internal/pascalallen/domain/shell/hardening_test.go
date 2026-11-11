@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,7 +29,7 @@ func TestSanitiserRule(t *testing.T) {
 	t.Run("format characters are removed and separators become spaces", func(t *testing.T) {
 		assert.Equal(t, "ab", clean("a\u202Eb"))
 		assert.Equal(t, "abcde", clean("a\u2066b\u2067c\u2068d\u2069e"))
-		assert.Equal(t, "abcdef", clean("a\u200Bb\u200Cc\u200Dd\u200Ee\u200Ff"))
+		assert.Equal(t, "ab\u200Cc\u200Ddef", clean("a\u200Bb\u200Cc\u200Dd\u200Ee\u200Ff"))
 		assert.Equal(t, "bom", clean("\uFEFFbom"))
 		assert.Equal(t, "line sep para", clean("line\u2028sep\u2029para"))
 		assert.Equal(t, "bell esc [2J", clean("bell\x07esc\x1b[2J"))
@@ -124,6 +125,62 @@ func TestLimits(t *testing.T) {
 		line := "echo " + strings.Repeat("a", maxLineRunes) + "; whoa"
 		c := newTestShell().Complete(line, len(line))
 		assert.Equal(t, Completion{Line: line, Cursor: len(line)}, c)
+	})
+}
+
+func TestFormatCharacters(t *testing.T) {
+	t.Run("zero width joiner and non-joiner survive", func(t *testing.T) {
+		in := "\U0001F468\u200D\U0001F469\u200D\U0001F467 \u0646\u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u0645"
+		r := newTestShell().Exec("echo " + in)
+		assert.Equal(t, in, resultText(r))
+	})
+
+	t.Run("other format characters are still removed", func(t *testing.T) {
+		for _, c := range []rune{0x202A, 0x202B, 0x202C, 0x202D, 0x202E, 0x2066, 0x2067, 0x2068, 0x2069, 0x200B, 0x200E, 0x200F, 0x061C, 0xFEFF, 0x2060, 0x2061, 0x2062, 0x2063, 0x2064, 0x00AD, 0xE0001} {
+			r := newTestShell().Exec("echo a" + string(c) + "b")
+			assert.Equal(t, "ab", resultText(r), "%U", c)
+		}
+	})
+
+	t.Run("line and paragraph separators become spaces", func(t *testing.T) {
+		assert.Equal(t, "a b c", clean("a\u2028b\u2029c"))
+	})
+}
+
+func TestLimitBoundaries(t *testing.T) {
+	t.Run("a line of exactly the rune limit is accepted and one more is rejected", func(t *testing.T) {
+		at := "echo " + strings.Repeat("\u00e9", maxLineRunes-5)
+		require.Equal(t, maxLineRunes, utf8.RuneCountInString(at))
+		require.Greater(t, len(at), maxLineRunes)
+		assert.Empty(t, errorText(newTestShell().Exec(at)))
+		over := at + "\u00e9"
+		assert.Contains(t, errorText(newTestShell().Exec(over)), "input line too long")
+	})
+
+	t.Run("exactly the output line cap is not truncated and one more is", func(t *testing.T) {
+		o := &output{}
+		for i := 0; i < maxOutputLines; i++ {
+			o.line(plain("x"))
+		}
+		assert.Len(t, strings.Split(resultText(o.result()), "\n"), maxOutputLines)
+		o = &output{}
+		for i := 0; i <= maxOutputLines; i++ {
+			o.line(plain("x"))
+		}
+		assert.Len(t, strings.Split(resultText(o.result()), "\n"), maxOutputLines+1)
+	})
+
+	t.Run("clear resets the output cap within one line", func(t *testing.T) {
+		line := strings.Repeat("cat resume.md;", maxOutputLines/200+1) + "clear;echo small"
+		r := newTestShell().Exec(line)
+		assert.Equal(t, "small", resultText(r))
+	})
+
+	t.Run("tail from a zero or one line start prints the whole file", func(t *testing.T) {
+		s := newTestShell()
+		want := resultText(s.Exec("cat about.md"))
+		assert.Equal(t, want, resultText(s.Exec("tail -n +0 about.md")))
+		assert.Equal(t, want, resultText(s.Exec("tail -n +1 about.md")))
 	})
 }
 
