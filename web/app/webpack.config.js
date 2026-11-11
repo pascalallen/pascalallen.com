@@ -1,48 +1,35 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
-module.exports = {
-  entry: './src/app.ts',
-  devtool: 'inline-source-map',
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: 'app.css',
-      chunkFilename: '[id].css',
-      ignoreOrder: false
-    })
-  ],
+module.exports = (_env, argv) => ({
+  entry: {
+    'app': './src/app.ts',
+    'dev-shell': './src/dev-shell.ts'
+  },
+  devtool: argv.mode === 'production' ? 'source-map' : 'inline-source-map',
+  plugins: [new MiniCssExtractPlugin({ filename: '[name].css' })],
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: 'ts-loader',
+        use: { loader: 'ts-loader', options: { configFile: 'tsconfig.json' } },
         exclude: /node_modules/
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/inline'
-      },
-      {
-        test: /\.s[ac]ss$/i,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-              publicPath: path.resolve(__dirname, '../static/assets')
-            }
-          },
-          'css-loader',
-          'postcss-loader',
-          'sass-loader'
-        ]
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       }
     ]
   },
+  optimization: {
+    minimizer: ['...', new CssMinimizerPlugin()]
+  },
   resolve: {
-    extensions: ['.ts', '.js', '.scss']
+    extensions: ['.ts', '.js']
   },
   output: {
-    filename: 'app.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, '../static/assets')
   }
-};
+});
