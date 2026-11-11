@@ -7,6 +7,11 @@
 .idea
 .env
 .DS_Store
-coverage.out
-coverage.html
+coverage.*
 docs/superpowers/
+
+# agents
+.agents/
+.claude/worktrees/
+.claude/settings.local.json
+CLAUDE.local.md
