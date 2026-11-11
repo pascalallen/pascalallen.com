@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+GO_IMAGE="golang:1.26.11"
+NODE_IMAGE="node:22"
+PACKAGE="./internal/pascalallen/infrastructure/wasm"
+SMOKE="internal/pascalallen/infrastructure/wasm/smoke.cjs"
+DUMP="internal/pascalallen/infrastructure/wasm/dump.cjs"
+OUT="web/static/assets"
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit 1
+
+for file in "$OUT/shell.wasm" "$OUT/wasm_exec.js"; do
+    if [ ! -f "$file" ]; then
+        echo "bin/wasm-parity: $file is missing; run bin/wasm" >&2
+        exit 1
+    fi
+done
+
+REF="$(mktemp -d)"
+trap 'rm -rf "$REF"' EXIT
+chmod 755 "$REF"
+
+if command -v go >/dev/null 2>&1; then
+    GOOS=js GOARCH=wasm go build -trimpath -o "$REF/ref.wasm" "$PACKAGE"
+    cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" "$REF/ref_exec.js"
+else
+    docker run --rm \
+        --user "$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        -e GOCACHE=/tmp/gocache \
+        -e GOPATH=/tmp/gopath \
+        -e GOFLAGS=-buildvcs=false \
+        -e GOOS=js \
+        -e GOARCH=wasm \
+        -v "$PWD":/app \
+        -v "$REF":/ref \
+        -w /app \
+        "$GO_IMAGE" sh -c 'go build -trimpath -o /ref/ref.wasm '"$PACKAGE"' && cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" /ref/ref_exec.js'
+fi
+
+run_node() {
+    if command -v node >/dev/null 2>&1; then
+        node "$@"
+    else
+        docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD":/app \
+            -v "$REF":/ref \
+            -w /app \
+            "$NODE_IMAGE" node "$@"
+    fi
+}
+
+if command -v node >/dev/null 2>&1; then
+    ref_dir="$REF"
+else
+    ref_dir="/ref"
+fi
+
+run_node "$SMOKE" "$ref_dir/ref.wasm" "$ref_dir/ref_exec.js"
+run_node "$DUMP" "$OUT/shell.wasm" "$OUT/wasm_exec.js" >"$REF/built.json"
+run_node "$DUMP" "$ref_dir/ref.wasm" "$ref_dir/ref_exec.js" >"$REF/reference.json"
+
+if ! cmp -s "$REF/built.json" "$REF/reference.json"; then
+    echo "bin/wasm-parity: the built module and the standard Go reference build disagree" >&2
+    diff "$REF/reference.json" "$REF/built.json" | head -40 >&2 || true
+    exit 1
+fi
+
+printf 'wasm parity: %s lines of session output identical to the standard Go build\n' "$(wc -l <"$REF/built.json" | tr -d ' ')"

@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func HandleDefault() gin.HandlerFunc {
+func HandleDefault(wasmVersion string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		env := map[string]string{
 			"APP_BASE_URL": os.Getenv("APP_BASE_URL"),
@@ -18,6 +18,7 @@ func HandleDefault() gin.HandlerFunc {
 
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"environment": base64.StdEncoding.EncodeToString(envBytes),
+			"wasmVersion": wasmVersion,
 		})
 	}
 }

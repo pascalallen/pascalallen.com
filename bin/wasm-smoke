@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+NODE_IMAGE="node:22"
+SMOKE="internal/pascalallen/infrastructure/wasm/smoke.cjs"
+OUT="web/static/assets"
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit 1
+
+for file in "$OUT/shell.wasm" "$OUT/wasm_exec.js"; do
+    if [ ! -f "$file" ]; then
+        echo "bin/wasm-smoke: $file is missing; run bin/wasm" >&2
+        exit 1
+    fi
+done
+
+if command -v node >/dev/null 2>&1; then
+    node "$SMOKE" "$OUT/shell.wasm" "$OUT/wasm_exec.js"
+else
+    docker run --rm \
+        --user "$(id -u):$(id -g)" \
+        -v "$PWD":/app \
+        -w /app \
+        "$NODE_IMAGE" node "$SMOKE" "$OUT/shell.wasm" "$OUT/wasm_exec.js"
+fi
