@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net"
 	"os"
@@ -43,5 +44,6 @@ func (r Router) Config() {
 		log.Fatal(err)
 	}
 
+	r.engine.SetFuncMap(template.FuncMap{"asset": assetURL(newAssetIndex(staticRoot))})
 	r.engine.LoadHTMLGlob("web/template/*")
 }

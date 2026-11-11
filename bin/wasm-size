@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BUDGET="${WASM_BUDGET_BYTES:-409600}"
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"/.. || exit 1
+
+FILE="web/static/assets/shell.wasm.br"
+if [ ! -f "$FILE" ]; then
+    echo "bin/wasm-size: $FILE is missing; run bin/wasm" >&2
+    exit 1
+fi
+
+size="$(wc -c <"$FILE" | tr -d ' ')"
+if [ "$size" -gt "$BUDGET" ]; then
+    echo "bin/wasm-size: $FILE is $size bytes, over the $BUDGET byte budget" >&2
+    exit 1
+fi
+
+printf '%s is %s bytes, within the %s byte budget\n' "$FILE" "$size" "$BUDGET"

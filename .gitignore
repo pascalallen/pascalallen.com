@@ -16,3 +16,4 @@ docs/superpowers/
 .claude/settings.local.json
 CLAUDE.local.md
 /tmp/
+/web/app/.test-build/

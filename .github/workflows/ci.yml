@@ -55,6 +55,20 @@ jobs:
       - run: shellcheck bin/* scripts/*
       - run: scripts/cron-deploy.test.sh
 
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - run: bin/wasm
+      - run: bin/wasm-size
+      - run: bin/wasm-smoke
+      - run: bin/wasm-parity
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -69,4 +83,5 @@ jobs:
 
       - run: yarn install --frozen-lockfile
       - run: yarn lint
+      - run: yarn test
       - run: yarn build

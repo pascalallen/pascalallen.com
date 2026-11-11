@@ -7,19 +7,20 @@ COPY internal ./internal
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 go build -trimpath -o /out/pascalallen ./cmd/pascalallen
 
-FROM golang:1.26 AS wasm-build
+FROM tinygo/tinygo:0.44.0@sha256:98126534a0653966913b803d26805ea79250a244217d921d74044cfedc1d24a2 AS wasm-build
+USER root
 WORKDIR /src
-COPY . .
-RUN mkdir -p /out/assets \
-    && if [ -f bin/wasm ] && grep -qv '^[[:space:]]*\(#.*\)\?$' bin/wasm; then \
-         bash bin/wasm \
-         && if [ -d web/static/assets ]; then cp -r web/static/assets/. /out/assets/; fi; \
-       fi
+COPY go.mod go.sum ./
+COPY bin/wasm ./bin/wasm
+COPY cmd ./cmd
+COPY internal ./internal
+ENV GOFLAGS=-buildvcs=false
+RUN bash bin/wasm
 
 FROM node:22 AS web-build
 WORKDIR /src
 COPY web ./web
-COPY --from=wasm-build /out/assets/ ./web/static/assets/
+COPY --from=wasm-build /src/web/static/assets/ ./web/static/assets/
 WORKDIR /src/web/app
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn yarn install --frozen-lockfile
 RUN yarn build
