@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "webpack --config webpack.config.js --mode production && node budget.mjs",
+    "build": "webpack --config webpack.config.js --mode production && node compress.mjs && node budget.mjs",
     "ci": "yarn install --frozen-lockfile",
     "dev": "webpack --config webpack.config.js --mode development",
     "watch": "webpack --config webpack.config.js --mode development --watch",

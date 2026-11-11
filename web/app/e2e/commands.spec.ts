@@ -122,3 +122,30 @@ test('markup typed into echo stays text', async ({ page }) => {
   await expect(lastEntry(page).locator('.block')).toContainText('<img src=x onerror=alert(1)>');
   await expect(page.locator('#output img')).toHaveCount(0);
 });
+
+test('a modified click on a run link opens it in a new tab and does not run the command here', async ({
+  page,
+  context
+}) => {
+  await open(page);
+  const link = page.locator('#output .entry-boot a.run[data-run="about"]');
+
+  const opened = context.waitForEvent('page');
+  await link.click({ modifiers: ['ControlOrMeta'] });
+  const tab = await opened;
+
+  expect(new URL(tab.url()).hash).toBe('#about');
+  await expect(page.locator('#output > .entry')).toHaveCount(1);
+  await expect(page).not.toHaveURL(/#about/);
+  await tab.close();
+});
+
+test('a shift click on a chip is left to the browser', async ({ page, context }) => {
+  await open(page);
+
+  const opened = context.waitForEvent('page');
+  await page.locator('.chips .chip[data-run="help"]').click({ modifiers: ['Shift'] });
+  await opened;
+
+  await expect(page.locator('#output > .entry')).toHaveCount(1);
+});

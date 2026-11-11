@@ -19,11 +19,12 @@ HTML.
    anything else gets `no-cache` and an ETag derived from the hash, so revalidation is cheap. The page template has
    an `asset` function: `{{ asset "shell.wasm" }}` renders `/static/assets/shell.wasm?v=<hash>` (without the query if
    the file is absent), and `.wasmVersion` holds the module hash (empty when absent). The page template passes both
-   URLs to the host as `data-wasm-src` and `data-runtime-src` on `#terminal`, and preloads the module with
-   `<link rel="preload" as="fetch" type="application/wasm" crossorigin>`, which matches the credentials mode of the
-   host's `fetch`. Chromium reuses the preload; WebKit does not reuse `as="fetch"` preloads and requests the module
-   a second time (served from the HTTP cache, since the versioned URL is immutable).
-
+   URLs to the host as `data-wasm-src` and `data-runtime-src` on `#terminal`. The page does not preload the module: a
+   `<link rel="preload" as="fetch">` is requested a second time by WebKit, which does not reuse it for the host's
+   `fetch`, so the module would transfer twice. Instead `loadShell` starts the module `fetch` synchronously when it is
+   called (the top of app start), in parallel with the runtime script request, and streams that single response into
+   `WebAssembly.instantiateStreaming`; when streaming is refused (a wrong content type or no support) the same response is read as a buffer, so the module is never requested twice.
+   The e2e suite asserts exactly one `shell.wasm` request per page load in Chromium and WebKit.
 One `Shell` exists per module instance, built over the embedded content with the real clock, user `visitor`, host
 `pascalallen.com` and the `dark` theme. A `theme` command returns a `theme` effect that the host applies and persists
 itself; on ready the host calls `setTheme` with the stored theme so the shell's `theme` listing agrees with the page.

@@ -38,8 +38,8 @@ nothing from a `Result` is ever parsed as HTML.
 
 Head, in order: `theme.js` (a blocking script, no `defer`, under 512 bytes gzipped, that only sets `data-theme` on
 `<html>` from the stored theme so a reload never paints the default theme first; it is in the shared head, so `/plain`
-gets it too), the stylesheet `app.css`, a `<link rel="preload" href="<data-wasm-src>" as="fetch"
-type="application/wasm" crossorigin>` for the module, and `app.js` with `defer`. All are same origin and go through the
+gets it too), the stylesheet `app.css`, and `app.js` with `defer`. There is no preload for the module: the host starts its `fetch`
+at the top of app start (a preload is fetched twice by WebKit). All are same origin and go through the
 `asset` helper. The host loads `wasm_exec.js` itself from `data-runtime-src` (it fetches the file, requires a
 JavaScript content type, then injects a `<script>`), so a missing or HTML-served runtime puts the terminal in the
 `failed` state instead of logging a syntax error. Do not add a static `wasm_exec.js` tag.
@@ -72,7 +72,11 @@ Each command is one entry. The boot screen is an entry with no echo line.
 - **Failure state**: when the shell cannot load, `#terminal` gets `data-state="failed"`, `#input` is disabled and the
   host appends an entry with one `block block-error` whose line reads `The terminal could not start. Read the plain
   text version.`: `s-warning` spans around `<a class="s-accent" href="/plain">plain text version</a>` (same tab, no
-  `target`). The pre-rendered boot screen stays above it.
+  `target`). The pre-rendered boot screen stays above it. In this state the host does not intercept run anchors or
+  chips: it sets their `href` to `/plain`, so a tap navigates to the plain text version; host-rendered run buttons
+  are disabled with a `title` that says so.
+- **Modifier clicks**: a click on a run anchor with Cmd, Ctrl, Shift or Alt held, or with a non-primary button, is
+  not intercepted, so the browser opens `/#<command>` as it would any link.
 - **Camera**: a result with a `media` block whose `src` is `/api/v1/camera/stream` is not rendered until the host
   has read `/api/v1/camera/status`. When `data.available` is `true` the result renders as usual; otherwise (false, an
   HTTP error, a timeout or a network failure) the entry gets one `block block-error` with the `s-error` line
@@ -96,7 +100,7 @@ Each command is one entry. The boot screen is an entry with no echo line.
 - Styles: `plain`, `bold`, `dim`, `accent`, `success`, `warning`, `error`, `heading`, `path`. Anything else
   becomes `s-plain`. A span with both `Href` and `Run` cannot happen; the host checks `Href` first.
 - **Gap spans**: a span whose text is two or more spaces and nothing else gets an extra class `gap`
-  (`s-plain gap`). On narrow screens CSS turns gaps into row breaks so column output stacks.
+  (`s-plain gap`). They stay inline at every width, so rows of commands and `ls` columns wrap like words; no CSS stacks them.
 - Classes are emitted in exactly the order shown (`run s-accent`, `s-plain gap`).
 - **Link schemes**: `http:`, `https:`, `mailto:` only, checked by parsing the URL (the host uses `new URL(href)`,
   no base, and writes `url.href` back, so `https://example.com` becomes `https://example.com/`). The server

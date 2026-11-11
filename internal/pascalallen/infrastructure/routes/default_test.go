@@ -54,10 +54,11 @@ func TestDefaultPageAssets(t *testing.T) {
 		assert.NotRegexp(t, `<script[^>]+wasm_exec\.js`, body)
 	})
 
-	t.Run("the module is preloaded with the URL and credentials mode the host fetches it with", func(t *testing.T) {
-		module := versioned(t, body, "data-wasm-src", "shell.wasm")
+	t.Run("the module is not preloaded because the host starts its fetch itself", func(t *testing.T) {
+		versioned(t, body, "data-wasm-src", "shell.wasm")
 
-		assert.Contains(t, head, `<link rel="preload" href="`+module+`" as="fetch" type="application/wasm" crossorigin>`)
+		assert.NotContains(t, head, `rel="preload"`)
+		assert.NotContains(t, head, `<link href="/static/assets/shell.wasm`)
 	})
 
 	t.Run("the theme script blocks in the head before the stylesheet", func(t *testing.T) {

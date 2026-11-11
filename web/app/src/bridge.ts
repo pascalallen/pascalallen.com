@@ -150,15 +150,15 @@ export const installShell = (shell: Shell, win: Window = window): void => {
   w.__shellReady?.();
 };
 
-const instantiate = async (src: string, go: GoRuntime, fetchImpl: typeof fetch): Promise<WebAssembly.Instance> => {
+const instantiate = async (pending: Promise<Response>, go: GoRuntime, src: string): Promise<WebAssembly.Instance> => {
+  const response = await pending;
+  if (!response.ok) {
+    throw new Error(`shell module: HTTP ${response.status} for ${src}`);
+  }
   try {
-    const streamed = await WebAssembly.instantiateStreaming(fetchImpl(src), go.importObject);
+    const streamed = await WebAssembly.instantiateStreaming(Promise.resolve(response), go.importObject);
     return streamed.instance;
   } catch {
-    const response = await fetchImpl(src);
-    if (!response.ok) {
-      throw new Error(`shell module: HTTP ${response.status}`);
-    }
     const compiled = await WebAssembly.instantiate(await response.arrayBuffer(), go.importObject);
     return compiled.instance;
   }
@@ -192,6 +192,10 @@ export const loadShell = (options: LoadOptions): Promise<Shell> => {
   const w = win as unknown as ShellWindow;
   const fetchImpl: typeof fetch = options.fetchImpl ?? ((input, init) => win.fetch(input, init));
 
+  const pendingModule: Promise<Response> | null =
+    options.devShellSrc === undefined ? new Promise<Response>(accept => accept(fetchImpl(options.wasmSrc))) : null;
+  pendingModule?.catch(() => undefined);
+
   return new Promise<Shell>((resolve, reject) => {
     const timer = win.setTimeout(() => reject(new Error('shell module: timed out')), options.timeoutMs ?? 30000);
     const fail = (error: unknown): void => {
@@ -223,7 +227,10 @@ export const loadShell = (options: LoadOptions): Promise<Shell> => {
           throw new Error('shell module: Go runtime missing');
         }
         const go = new Go();
-        return instantiate(options.wasmSrc, go, fetchImpl).then(instance => go.run(instance));
+        if (pendingModule === null) {
+          throw new Error('shell module: not requested');
+        }
+        return instantiate(pendingModule, go, options.wasmSrc).then(instance => go.run(instance));
       })
       .then(() => fail(new Error('shell module: exited')))
       .catch(fail);

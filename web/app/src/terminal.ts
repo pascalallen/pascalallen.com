@@ -273,6 +273,11 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
     const target = event.target as Element | null;
     const runEl = target?.closest?.('[data-run]');
     if (runEl) {
+      const mouse = event as MouseEvent;
+      const modified = mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.altKey || mouse.button !== 0;
+      if (runEl.tagName === 'A' && (failed || modified)) {
+        return;
+      }
       event.preventDefault();
       run(runEl.getAttribute('data-run') ?? '', true);
       if (pointer !== 'touch') {
@@ -325,6 +330,11 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
       failed = true;
       root.setAttribute('data-state', 'failed');
       input.disabled = true;
+      doc.querySelectorAll('a[data-run]').forEach(el => el.setAttribute('href', '/plain'));
+      doc.querySelectorAll('button[data-run]').forEach(el => {
+        el.setAttribute('disabled', '');
+        el.setAttribute('title', 'The terminal could not start. Use the plain text version.');
+      });
       const entry = renderEntry(doc);
       entry.append(failureNotice(doc));
       output.append(entry);

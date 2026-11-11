@@ -160,6 +160,48 @@ describe('running a command', () => {
     assert.deepEqual(execs(s), ['exec:about']);
   });
 
+  it('leaves a modifier click on a run link to the browser', async () => {
+    const prerendered =
+      '<div class="entry entry-boot" data-prerendered=""><div class="block block-text"><div class="line"><a class="run s-accent" href="/#about" data-run="about">about</a></div></div></div>';
+    const s = setup({ output: prerendered });
+    await s.ready;
+    const link = s.output.querySelector('a[data-run]') as HTMLElement;
+    for (const init of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+      const event = new s.jsdom.window.MouseEvent('click', { bubbles: true, cancelable: true, ...init });
+      link.dispatchEvent(event);
+
+      assert.equal(event.defaultPrevented, false, JSON.stringify(init));
+    }
+    assert.deepEqual(execs(s), []);
+  });
+
+  it('still runs a modifier click on a run button', async () => {
+    const s = setup();
+    await s.ready;
+    const button = s.output.querySelector('[data-run="help"]') as HTMLElement;
+    button.dispatchEvent(new s.jsdom.window.MouseEvent('click', { bubbles: true, cancelable: true, shiftKey: true }));
+
+    assert.deepEqual(execs(s), ['exec:help']);
+  });
+
+  it('points run links and chips at the plain page and disables run buttons when the shell cannot load', async () => {
+    const prerendered =
+      '<div class="entry entry-boot" data-prerendered=""><div class="block block-text"><div class="line"><a class="run s-accent" href="/#about" data-run="about">about</a><button type="button" class="run" data-run="help">help</button></div></div></div>';
+    const s = setup({ output: prerendered, shell: Promise.reject(new Error('no module')) });
+    await s.ready;
+
+    const chip = s.doc.querySelector('.chips a.chip[data-run]') as HTMLElement;
+    assert.equal(chip.getAttribute('href'), '/plain');
+    const link = s.output.querySelector('a[data-run]') as HTMLElement;
+    assert.equal(link.getAttribute('href'), '/plain');
+    const event = new s.jsdom.window.MouseEvent('click', { bubbles: true, cancelable: true });
+    link.dispatchEvent(event);
+    assert.equal(event.defaultPrevented, false);
+    const button = s.output.querySelector('button[data-run]') as HTMLButtonElement;
+    assert.equal(button.disabled, true);
+    assert.match(button.getAttribute('title') ?? '', /plain text version/);
+  });
+
   it('empties the log on a clear effect', async () => {
     const s = setup();
     await s.ready;

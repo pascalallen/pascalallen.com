@@ -140,4 +140,25 @@ test.describe('when the shell cannot load', () => {
     await notice.locator('a[href="/plain"]').click();
     await expect(page).toHaveURL(/\/plain$/);
   });
+
+  test('a tapped chip or run link lands on the plain page instead of doing nothing', async ({ page }) => {
+    await page.route('**/shell.wasm*', route => route.abort());
+
+    await page.goto('/');
+    await expect(page.locator('#terminal')).toHaveAttribute('data-state', 'failed');
+    await page.locator('.chips .chip[data-run="about"]').click();
+
+    await expect(page).toHaveURL(/\/plain$/);
+    await expect(page.locator('main')).toContainText('Plain text version');
+  });
+
+  test('a run link in the boot screen lands on the plain page', async ({ page }) => {
+    await page.route('**/shell.wasm*', route => route.abort());
+
+    await page.goto('/');
+    await expect(page.locator('#terminal')).toHaveAttribute('data-state', 'failed');
+    await page.locator('#output .entry-boot a.run[data-run="projects"]').click();
+
+    await expect(page).toHaveURL(/\/plain$/);
+  });
 });

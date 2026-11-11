@@ -191,6 +191,44 @@ describe('runtime script loading', () => {
   });
 });
 
+describe('module fetch', () => {
+  const recording = (type: string): { fetchImpl: typeof fetch; urls: string[] } => {
+    const urls: string[] = [];
+    const fetchImpl = (async (url: string) => {
+      urls.push(String(url));
+      return String(url).endsWith('.wasm')
+        ? new Response(emptyModule, { status: 200, headers: { 'Content-Type': type } })
+        : new Response('window.Go = window.Go;', { status: 200, headers: { 'Content-Type': 'text/javascript' } });
+    }) as unknown as typeof fetch;
+    return { fetchImpl, urls };
+  };
+
+  it('starts fetching the module before the runtime is loaded', () => {
+    const win = dom().window as unknown as Window;
+    const { fetchImpl, urls } = recording('application/wasm');
+
+    loadShell({
+      wasmSrc: '/static/assets/shell.wasm',
+      runtimeSrc: '/static/assets/wasm_exec.js',
+      win,
+      fetchImpl,
+      timeoutMs: 20
+    }).catch(() => undefined);
+
+    assert.deepEqual(urls, ['/static/assets/shell.wasm', '/static/assets/wasm_exec.js']);
+  });
+
+  it('requests the module exactly once even when streaming is refused', async () => {
+    const win = dom().window as unknown as Window;
+    goRuntime(win, () => installShell(createFakeShell(), win));
+    const { fetchImpl, urls } = recording('text/plain');
+
+    await loadShell({ wasmSrc: '/static/assets/shell.wasm', win, fetchImpl });
+
+    assert.deepEqual(urls, ['/static/assets/shell.wasm']);
+  });
+});
+
 describe('theme sync', () => {
   it('forwards the stored theme to a module that exposes setTheme', () => {
     const seen: string[] = [];
