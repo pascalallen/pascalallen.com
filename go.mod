@@ -6,6 +6,7 @@ toolchain go1.26.11
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/google/wire v0.7.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.12.1
 )
