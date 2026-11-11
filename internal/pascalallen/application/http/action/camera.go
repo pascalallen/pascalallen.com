@@ -47,7 +47,11 @@ func HandleCameraStream(stream camera.Stream) gin.HandlerFunc {
 			case <-ctx.Done():
 				log.Printf("camera stream: client disconnected")
 				return
-			case chunk := <-ch:
+			case chunk, open := <-ch:
+				if !open {
+					log.Printf("camera stream: source ended")
+					return
+				}
 				if _, err := c.Writer.Write(chunk); err != nil {
 					log.Printf("camera stream: write error: %s", err)
 					return

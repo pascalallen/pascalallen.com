@@ -66,6 +66,26 @@ func TestCameraRoutes(t *testing.T) {
 		assert.JSONEq(t, `{"status":"success","data":{"available":true}}`, rec.Body.String())
 	})
 
+	t.Run("the stream ends when the hub closes the subscription", func(t *testing.T) {
+		frames := make(chan []byte)
+		released := make(chan struct{})
+		r := cameraRouter(stubStream{frames: frames, available: true, released: released})
+		rec := httptest.NewRecorder()
+		done := make(chan struct{})
+
+		go func() {
+			r.engine.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/camera/stream", nil))
+			close(done)
+		}()
+		close(frames)
+
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Fatal("handler did not return after the source ended")
+		}
+	})
+
 	t.Run("the stream writes frames as multipart and releases on client disconnect", func(t *testing.T) {
 		frames := make(chan []byte, 1)
 		released := make(chan struct{})
