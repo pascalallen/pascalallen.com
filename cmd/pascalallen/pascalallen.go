@@ -7,10 +7,10 @@ import (
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command_handler"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query_handler"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/render"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/content"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/camera"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/container"
-	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/render"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/routes"
 	"os"
 	"time"
@@ -32,17 +32,15 @@ func main() {
 		Now:      time.Now,
 	})
 
-	router := routes.NewRouter()
-
-	router.Config()
-	router.Headers()
-	router.Fileserver()
-	router.Default(render.NewPage(content.FS(), render.ConfigFromEnv()))
-	router.Camera(camera.NewHub(camera.Config{
-		Source: camera.GStreamerSource,
-		Check:  camera.GStreamerAvailable,
-	}))
-	router.Feeds(c.QueryBus, c.CommandBus)
+	router := routes.Assemble(routes.Deps{
+		Page: render.NewPage(content.FS(), render.ConfigFromEnv()),
+		Camera: camera.NewHub(camera.Config{
+			Source: camera.GStreamerSource,
+			Check:  camera.GStreamerAvailable,
+		}),
+		QueryBus:   c.QueryBus,
+		CommandBus: c.CommandBus,
+	})
 	router.Serve(":" + port())
 }
 

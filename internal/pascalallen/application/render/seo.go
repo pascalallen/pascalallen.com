@@ -19,12 +19,17 @@ func readProfile(fsys fs.FS) profile {
 	if data, err := fs.ReadFile(fsys, "about.md"); err == nil {
 		var prose []string
 		tagline := false
+		paragraphDone := false
 		for _, line := range strings.Split(string(data), "\n") {
 			line = strings.TrimSpace(line)
 			switch {
 			case strings.HasPrefix(line, "# "):
 				p.Name = strings.TrimSpace(strings.TrimPrefix(line, "# "))
 			case line == "":
+				if len(prose) > 0 {
+					paragraphDone = true
+				}
+			case paragraphDone:
 			case !tagline:
 				tagline = true
 				title, _, _ := strings.Cut(line, " · ")
@@ -92,7 +97,7 @@ func truncate(s string, limit int) string {
 	if len(r) <= limit {
 		return s
 	}
-	cut := string(r[:limit])
+	cut := string(r[:limit-1])
 	if i := strings.LastIndex(cut, " "); i > 0 {
 		cut = cut[:i]
 	}

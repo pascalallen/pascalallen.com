@@ -1,15 +1,18 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"html"
 	"io/fs"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -136,38 +139,122 @@ func publicationURLs(t *testing.T) []string {
 	return urls
 }
 
+func assertSecurityHeaders(t *testing.T, h http.Header, label string) {
+	t.Helper()
+
+	assert.Equal(t, "nosniff", h.Get("X-Content-Type-Options"), label)
+	assert.Equal(t, "strict-origin-when-cross-origin", h.Get("Referrer-Policy"), label)
+	assert.Equal(t, "camera=(), microphone=(), geolocation=()", h.Get("Permissions-Policy"), label)
+	csp := h.Get("Content-Security-Policy")
+	for _, directive := range []string{
+		"default-src 'self'",
+		"script-src 'self' 'wasm-unsafe-eval'",
+		"img-src 'self' data:",
+		"connect-src 'self'",
+		"style-src 'self'",
+		"base-uri 'none'",
+		"frame-ancestors 'none'",
+		"form-action 'self'",
+	} {
+		assert.Contains(t, csp, directive, label)
+	}
+	assert.NotContains(t, csp, "unsafe-inline", label)
+}
+
 func TestSecurityHeaders(t *testing.T) {
 	r := seoRouter(t)
 
-	want := map[string]string{
-		"X-Content-Type-Options": "nosniff",
-		"Referrer-Policy":        "strict-origin-when-cross-origin",
-		"Permissions-Policy":     "camera=(), microphone=(), geolocation=()",
-	}
-
-	for _, path := range []string{"/", "/plain", "/robots.txt", "/static/favicon.ico", "/api/v1/camera/status", "/no/such/path"} {
+	for _, path := range []string{"/", "/plain", "/plain/", "/robots.txt", "/sitemap.xml", "/static/favicon.ico", "/api/v1/camera/status", "/api/v1/nope", "/no/such/path"} {
 		t.Run("the headers are present on "+path, func(t *testing.T) {
-			h := get(r, path).Header()
-
-			for k, v := range want {
-				assert.Equal(t, v, h.Get(k), k)
-			}
-			csp := h.Get("Content-Security-Policy")
-			for _, directive := range []string{
-				"default-src 'self'",
-				"script-src 'self' 'wasm-unsafe-eval'",
-				"img-src 'self' data:",
-				"connect-src 'self'",
-				"style-src 'self'",
-				"base-uri 'none'",
-				"frame-ancestors 'none'",
-				"form-action 'self'",
-			} {
-				assert.Contains(t, csp, directive, path)
-			}
-			assert.NotContains(t, csp, "unsafe-inline")
+			assertSecurityHeaders(t, get(r, path).Header(), path)
 		})
 	}
+
+	t.Run("the headers are present on a 405", func(t *testing.T) {
+		assertSecurityHeaders(t, do(r, http.MethodPost, "/plain", "", "").Header(), "POST /plain")
+	})
+
+	t.Run("the headers are present on the camera stream", func(t *testing.T) {
+		frames := make(chan []byte, 1)
+		stream := assembledRouter(t, stubStream{frames: frames, available: true, released: make(chan struct{})})
+		ctx, cancel := context.WithCancel(t.Context())
+		rec := httptest.NewRecorder()
+		done := make(chan struct{})
+		go func() {
+			stream.engine.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/camera/stream", nil).WithContext(ctx))
+			close(done)
+		}()
+		frames <- []byte("--frame\r\nchunk")
+		assert.Eventually(t, func() bool { return len(frames) == 0 }, 2*time.Second, 5*time.Millisecond)
+		cancel()
+		<-done
+
+		assertSecurityHeaders(t, rec.Header(), "camera stream")
+		assert.Equal(t, "multipart/x-mixed-replace; boundary=frame", rec.Header().Get("Content-Type"))
+		assert.Contains(t, rec.Body.String(), "chunk")
+	})
+}
+
+func TestMethods(t *testing.T) {
+	r := seoRouter(t)
+
+	for path, contentType := range map[string]string{
+		"/":             "text/html",
+		"/plain":        "text/html",
+		"/robots.txt":   "text/plain",
+		"/sitemap.xml":  "application/xml",
+		"/no/such/path": "text/html",
+	} {
+		t.Run("HEAD "+path+" answers with the headers and no body", func(t *testing.T) {
+			rec := do(r, http.MethodHead, path, "", "")
+
+			require.Equal(t, http.StatusOK, rec.Code)
+			assert.Empty(t, rec.Body.String())
+			assert.Contains(t, rec.Header().Get("Content-Type"), contentType)
+			assertSecurityHeaders(t, rec.Header(), path)
+		})
+	}
+
+	for _, tc := range []struct{ method, path string }{
+		{http.MethodPost, "/"},
+		{http.MethodPost, "/plain"},
+		{http.MethodPut, "/robots.txt"},
+		{http.MethodDelete, "/sitemap.xml"},
+		{http.MethodPost, "/no/such/path"},
+	} {
+		t.Run(tc.method+" "+tc.path+" is a plain 405 with an Allow header", func(t *testing.T) {
+			rec := do(r, tc.method, tc.path, "", "")
+
+			require.Equal(t, http.StatusMethodNotAllowed, rec.Code)
+			assert.Equal(t, "GET, HEAD", rec.Header().Get("Allow"))
+			assert.NotContains(t, rec.Body.String(), "<html")
+			assert.Contains(t, rec.Header().Get("Content-Type"), "text/plain")
+		})
+	}
+
+	t.Run("a wrong method under the api is a JSend 405", func(t *testing.T) {
+		rec := do(r, http.MethodDelete, "/api/v1/repos", "", "")
+
+		require.Equal(t, http.StatusMethodNotAllowed, rec.Code)
+		assert.JSONEq(t, `{"status":"error","message":"method not allowed"}`, rec.Body.String())
+	})
+
+	t.Run("an unknown api path is a JSON 404 and not the page", func(t *testing.T) {
+		for _, path := range []string{"/api/v1/nope", "/api/zzz", "/api"} {
+			rec := get(r, path)
+
+			require.Equal(t, http.StatusNotFound, rec.Code, path)
+			assert.Contains(t, rec.Header().Get("Content-Type"), "application/json")
+			assert.JSONEq(t, `{"status":"error","message":"not found"}`, rec.Body.String(), path)
+		}
+	})
+
+	t.Run("a trailing slash is not redirected", func(t *testing.T) {
+		rec := get(r, "/plain/")
+
+		assert.NotEqual(t, http.StatusMovedPermanently, rec.Code)
+		assert.Empty(t, rec.Header().Get("Location"))
+	})
 }
 
 func TestRobotsAndSitemap(t *testing.T) {

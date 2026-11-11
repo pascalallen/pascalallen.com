@@ -2,8 +2,11 @@ package routes
 
 import (
 	"encoding/base64"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"testing"
 
@@ -11,23 +14,32 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/render"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/camera"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/content"
-	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/render"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/messaging"
 )
+
+func assembledRouter(t *testing.T, stream camera.Stream) Router {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+	if _, err := os.Stat("web/template"); err != nil {
+		t.Chdir("../../../..")
+	}
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+	return Assemble(Deps{
+		Page:       render.NewPage(content.FS(), render.ConfigFromEnv()),
+		Camera:     stream,
+		QueryBus:   messaging.NewSynchronousQueryBus(logger),
+		CommandBus: messaging.NewSynchronousCommandBus(logger),
+	})
+}
 
 func newTestRouter(t *testing.T) Router {
 	t.Helper()
-	gin.SetMode(gin.TestMode)
-	t.Chdir("../../../..")
 
-	r := NewRouter()
-	r.Config()
-	r.Headers()
-	r.Fileserver()
-	r.Default(render.NewPage(content.FS(), render.ConfigFromEnv()))
-	r.Camera(stubStream{})
-
-	return r
+	return assembledRouter(t, stubStream{})
 }
 
 func get(r Router, path string) *httptest.ResponseRecorder {

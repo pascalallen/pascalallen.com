@@ -67,7 +67,7 @@ func TestSpans(t *testing.T) {
 	})
 
 	t.Run("refused schemes keep the text and drop the link", func(t *testing.T) {
-		for _, href := range []string{"javascript:alert(1)", "data:text/html,x", "ftp://example.com", "https:", "mailto:", "//example.com", "/relative", "JaVaScRiPt:alert(1)"} {
+		for _, href := range []string{"javascript:alert(1)", "data:text/html,x", "ftp://example.com", "https:", "http://[::1", "mailto:", "//example.com", "/relative", "JaVaScRiPt:alert(1)"} {
 			out := render(textBlock(shell.Span{Text: "label", Href: href}))
 
 			assert.NotContains(t, out, "<a ", href)
@@ -115,7 +115,7 @@ func TestBlocks(t *testing.T) {
 		ok := render(shell.Block{Kind: shell.BlockMedia, Src: "/api/v1/camera/stream?x=1", Alt: `a "cam"`})
 		assert.Contains(t, ok, `<img class="media" src="/api/v1/camera/stream?x=1" alt="a &#34;cam&#34;">`)
 
-		for _, src := range []string{"https://evil.example/x.png", "//evil.example/x.png", "javascript:alert(1)", "relative.png"} {
+		for _, src := range []string{"https://evil.example/x.png", "//evil.example/x.png", "///evil.example/x", "/\\evil.example/x", "\\\\evil.example/x", "\\evil", "\t/ok.png", "\n/ok.png", " /ok.png", "/a\tb.png", "/a\nb.png", "/a\x7fb.png", "/%zz", "/", "", "javascript:alert(1)", "relative.png"} {
 			out := render(shell.Block{Kind: shell.BlockMedia, Src: src, Lines: []shell.Line{{{Text: "caption"}}}})
 			assert.NotContains(t, out, "<img", src)
 			assert.Contains(t, out, "caption", src)
@@ -228,6 +228,32 @@ func decodeEnv(encoded string) (map[string]any, error) {
 	}
 	var out map[string]any
 	return out, json.Unmarshal(raw, &out)
+}
+
+func TestDescription(t *testing.T) {
+	long := strings.Repeat("alpha beta gamma delta ", 12)
+	fsys := fstest.MapFS{"about.md": {Data: []byte("# Name\n\nTitle · Go\n\n" + long + "\nsecond line of the first paragraph\n\nSECOND-PARAGRAPH\n")}}
+
+	t.Run("it is the first paragraph cut on a word boundary within 160 characters", func(t *testing.T) {
+		d := NewPage(fsys, Config{}).Index("/").Head.Description
+
+		assert.NotContains(t, d, "SECOND-PARAGRAPH")
+		assert.LessOrEqual(t, len([]rune(d)), 160)
+		assert.True(t, strings.HasSuffix(d, "…"))
+		assert.True(t, strings.HasSuffix(strings.TrimSuffix(d, "…"), "alpha") || strings.HasSuffix(strings.TrimSuffix(d, "…"), "beta") || strings.HasSuffix(strings.TrimSuffix(d, "…"), "gamma") || strings.HasSuffix(strings.TrimSuffix(d, "…"), "delta"))
+	})
+
+	t.Run("a single very long word is cut within the limit including the ellipsis", func(t *testing.T) {
+		one := fstest.MapFS{"about.md": {Data: []byte("# N\n\nT · Go\n\n" + strings.Repeat("x", 400) + "\n")}}
+
+		assert.Equal(t, 160, len([]rune(NewPage(one, Config{}).Index("/").Head.Description)))
+	})
+
+	t.Run("a short first paragraph is kept whole and later paragraphs are ignored", func(t *testing.T) {
+		short := fstest.MapFS{"about.md": {Data: []byte("# N\n\nT · Go\n\nOne line\nand two.\n\nLater.\n")}}
+
+		assert.Equal(t, "One line and two.", NewPage(short, Config{}).Index("/").Head.Description)
+	})
 }
 
 func TestPage(t *testing.T) {

@@ -103,8 +103,11 @@ func safeHref(raw string) (string, bool) {
 }
 
 func safeMediaSrc(raw string) (string, bool) {
+	if len(raw) < 2 || raw[0] != '/' || raw[1] == '/' || raw[1] == '\\' {
+		return "", false
+	}
 	u, err := url.Parse(raw)
-	if err != nil || u.Scheme != "" || u.Host != "" || !strings.HasPrefix(u.Path, "/") || strings.HasPrefix(u.Path, "//") {
+	if err != nil || u.Host != "" {
 		return "", false
 	}
 	out := u.EscapedPath()
