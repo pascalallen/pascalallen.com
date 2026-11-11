@@ -2,25 +2,11 @@ services:
   pascalallen-go:
     restart: unless-stopped
     env_file:
-      - .env
+      - path: .env
+        required: false
+    environment:
+      PORT: "${PORT:-9990}"
     build:
       context: .
-    container_name: pascalallen-go
     ports:
       - "${PORT:-9990}:${PORT:-9990}"
-    volumes:
-      - .:/app:rw
-      - /run/udev:/run/udev:ro
-    devices:
-      - /dev/media0:/dev/media0
-      - /dev/media1:/dev/media1
-      - /dev/media2:/dev/media2
-      - /dev/media3:/dev/media3
-      - /dev/video0:/dev/video0
-    privileged: true
-    networks:
-      - pascalallen
-
-networks:
-  pascalallen:
-    name: pascalallen

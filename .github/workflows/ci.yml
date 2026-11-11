@@ -47,6 +47,14 @@ jobs:
           set -e
           printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"
 
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: shellcheck bin/* scripts/*
+      - run: scripts/cron-deploy.test.sh
+
   frontend:
     runs-on: ubuntu-latest
     defaults:

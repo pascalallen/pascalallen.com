@@ -1,36 +1,130 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# change to the project root
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"/.. || exit
+ROOT="${DEPLOY_ROOT:-$DIR/..}"
+cd "$ROOT" || exit 1
 
-export "$(grep -v '^#' .env | xargs -d '\n')"
+BRANCH="${DEPLOY_BRANCH:-main}"
+HEALTH_ATTEMPTS="${HEALTH_ATTEMPTS:-40}"
+HEALTH_INTERVAL="${HEALTH_INTERVAL:-3}"
+GIT_DIR_PATH="$(git rev-parse --git-dir)"
+LOCK="$GIT_DIR_PATH/cron-deploy.lock"
+FAILED_MARK="$GIT_DIR_PATH/cron-deploy-failed"
+ALERTED_MARK="$GIT_DIR_PATH/cron-deploy-alerted"
 
-# change to main branch, if needed
-BRANCH="$(git branch --show-current)"
-if [ "$BRANCH" != "main" ]
-then
-  git checkout main -q
+log() {
+    printf '%s cron-deploy: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1"
+}
+
+env_value() {
+    [ -f .env ] || return 0
+    grep -E "^$1=" .env | tail -n 1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'\$//" || true
+}
+
+PORT_VALUE="${PORT:-$(env_value PORT)}"
+PORT_VALUE="${PORT_VALUE:-9990}"
+HEALTH_URL="${HEALTH_URL:-http://localhost:$PORT_VALUE/}"
+
+notify() {
+    local url
+    url="${SLACK_DM_URL:-$(env_value SLACK_DM_URL)}"
+    if [ -z "$url" ]; then
+        return 0
+    fi
+    printf 'url = "%s"\n' "$url" | curl -fsS -o /dev/null --max-time 10 \
+        -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"$1\"}" -K - || log "slack notification failed"
+}
+
+compose() {
+    docker compose -f compose.yaml -f compose.pi.yaml "$@"
+}
+
+release() {
+    compose --progress quiet build && compose --progress quiet up -d --remove-orphans
+}
+
+healthy() {
+    local i
+    for ((i = 1; i <= HEALTH_ATTEMPTS; i++)); do
+        if curl -fsS -o /dev/null --max-time 5 "$HEALTH_URL"; then
+            return 0
+        fi
+        sleep "$HEALTH_INTERVAL"
+    done
+    return 1
+}
+
+acquire_lock() {
+    if mkdir "$LOCK" 2>/dev/null; then
+        echo $$ >"$LOCK/pid"
+        return 0
+    fi
+    local holder
+    holder="$(cat "$LOCK/pid" 2>/dev/null || true)"
+    if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null; then
+        return 1
+    fi
+    rm -rf "$LOCK"
+    mkdir "$LOCK" 2>/dev/null || return 1
+    echo $$ >"$LOCK/pid"
+}
+
+if ! acquire_lock; then
+    log "another deploy is running, exiting"
+    exit 0
+fi
+trap 'rm -rf "$LOCK"' EXIT
+
+if ! git fetch --quiet origin "$BRANCH"; then
+    log "git fetch failed"
+    notify "Deploy *failed*: git fetch origin $BRANCH failed."
+    exit 1
 fi
 
-# check git status
-GIT_STATUS="$(git status -s)"
-if [ ! -z "$GIT_STATUS" ]
-then
-  git pull \
-    && bin/down prod \
-    && docker system prune -a -f \
-    && docker builder prune -a -f \
-    && bin/up prod \
-    && bin/yarn ci \
-    && bin/yarn build
+current="$(git rev-parse HEAD)"
+target="$(git rev-parse "origin/$BRANCH")"
+
+if [ "$current" = "$target" ]; then
+    exit 0
 fi
 
-# check docker status
-DOCKER_STATUS="$(docker compose ps --status running --format "{{.Name}}")"
-if [[ "$DOCKER_STATUS" != *"pascalallen-go"* ]]
-then
-  curl -H "Content-type: application/json" \
-    --data '{"channel":"D01HKH4B145","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"Deploy *_failed_*."}}]}' \
-    -X POST "$SLACK_DM_URL"
+if [ -f "$FAILED_MARK" ] && [ "$(cat "$FAILED_MARK")" = "$target" ]; then
+    exit 0
 fi
+
+if [ -n "$(git status --porcelain)" ]; then
+    log "local changes present, not deploying ${target:0:7}"
+    if [ ! -f "$ALERTED_MARK" ] || [ "$(cat "$ALERTED_MARK")" != "$target" ]; then
+        echo "$target" >"$ALERTED_MARK"
+        notify "Deploy of ${target:0:7} *skipped*: the working tree on the Pi has local changes."
+    fi
+    exit 1
+fi
+
+git checkout --quiet "$BRANCH"
+previous="$(git rev-parse HEAD)"
+git reset --quiet --hard "origin/$BRANCH"
+log "deploying ${previous:0:7} -> ${target:0:7}"
+
+if release && healthy; then
+    rm -f "$FAILED_MARK" "$ALERTED_MARK"
+    docker image prune -f >/dev/null 2>&1 || true
+    log "deployed ${target:0:7}"
+    notify "Deployed ${target:0:7}."
+    exit 0
+fi
+
+echo "$target" >"$FAILED_MARK"
+log "deploy of ${target:0:7} failed, rolling back to ${previous:0:7}"
+git reset --quiet --hard "$previous"
+
+if release && healthy; then
+    notify "Deploy of ${target:0:7} *failed*; rolled back to ${previous:0:7}."
+    exit 1
+fi
+
+log "rollback to ${previous:0:7} failed too"
+notify "Deploy of ${target:0:7} *failed* and rollback to ${previous:0:7} is *unhealthy*. Manual action needed."
+exit 1
