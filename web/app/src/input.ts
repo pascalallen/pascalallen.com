@@ -22,6 +22,8 @@ export const attachEditor = (input: HTMLInputElement, hooks: EditorHooks): Edito
   let index: number | null = null;
   let draft = '';
   let escaped = false;
+  let composing = false;
+  let justComposed = false;
 
   const set = (value: string, cursor = value.length): void => {
     input.value = value;
@@ -89,18 +91,26 @@ export const attachEditor = (input: HTMLInputElement, hooks: EditorHooks): Edito
       case 'k':
         set(value.slice(0, at));
         return true;
-      case 'w': {
-        const before = value.slice(0, at).replace(/\S*\s*$/, '');
-        set(before + value.slice(at), before.length);
-        return true;
-      }
       default:
         return false;
     }
   };
 
+  input.addEventListener('compositionstart', () => {
+    composing = true;
+    justComposed = false;
+  });
+
+  input.addEventListener('compositionend', () => {
+    composing = false;
+    justComposed = true;
+    setTimeout(() => {
+      justComposed = false;
+    }, 0);
+  });
+
   input.addEventListener('keydown', event => {
-    if (event.isComposing) {
+    if (event.isComposing || composing || justComposed || event.keyCode === 229) {
       return;
     }
     const afterEscape = escaped;

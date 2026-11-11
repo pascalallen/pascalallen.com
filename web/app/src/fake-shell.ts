@@ -219,6 +219,7 @@ export const createFakeShell = (): Shell => {
     complete,
     prompt: () => 'visitor@pascalallen.com:~$',
     history: () => [...history],
+    setTheme: () => undefined,
     commands: () => visible.map(c => ({ ...c })),
     deliver: (feed: string, items: FeedItem[]) =>
       result([

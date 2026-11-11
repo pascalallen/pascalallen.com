@@ -86,7 +86,8 @@ describe('boot', () => {
     await s.ready;
 
     assert.equal(s.doc.getElementById('terminal')?.getAttribute('data-state'), 'failed');
-    assert.match(s.output.textContent ?? '', /could not load/);
+    assert.match(s.output.textContent ?? '', /terminal is unavailable/);
+    assert.match(s.output.textContent ?? '', /content is below/);
   });
 
   it('marks the terminal ready once the shell resolves', async () => {
@@ -300,7 +301,7 @@ describe('line editing', () => {
     assert.equal(s.input.value, 'who');
   });
 
-  it('supports Ctrl-A, Ctrl-E, Ctrl-U, Ctrl-K and Ctrl-W', async () => {
+  it('supports Ctrl-A, Ctrl-E, Ctrl-U and Ctrl-K', async () => {
     const s = setup();
     await s.ready;
 
@@ -319,10 +320,16 @@ describe('line editing', () => {
     key(s.jsdom, s.input, 'u', { ctrlKey: true });
     assert.equal(s.input.value, 'about.md');
     assert.equal(s.input.selectionStart, 0);
+  });
 
+  it('leaves Ctrl-W to the browser', async () => {
+    const s = setup();
+    await s.ready;
     type(s, 'cat about.md');
-    key(s.jsdom, s.input, 'w', { ctrlKey: true });
-    assert.equal(s.input.value, 'cat ');
+    const event = key(s.jsdom, s.input, 'w', { ctrlKey: true });
+
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(s.input.value, 'cat about.md');
   });
 });
 
@@ -344,6 +351,39 @@ describe('before the shell is ready', () => {
 
     assert.deepEqual(execs(s), ['exec:whoami', 'exec:echo hi']);
     assert.equal(s.output.querySelectorAll('.echo').length, 2);
+  });
+});
+
+describe('theme sync', () => {
+  it('tells the shell the stored theme once it is ready', async () => {
+    const storage = memoryStorage();
+    storage.setItem('theme', 'amber');
+    const s = setup({ extra: { storage: () => storage } });
+    await s.ready;
+
+    assert.ok(s.shell.calls.includes('setTheme:amber'));
+  });
+
+  it('does not call setTheme when no theme is stored', async () => {
+    const s = setup();
+    await s.ready;
+
+    assert.equal(
+      s.shell.calls.some(c => c.startsWith('setTheme:')),
+      false
+    );
+  });
+
+  it('ignores a stored theme that is not a known theme', async () => {
+    const storage = memoryStorage();
+    storage.setItem('theme', 'neon');
+    const s = setup({ extra: { storage: () => storage } });
+    await s.ready;
+
+    assert.equal(
+      s.shell.calls.some(c => c.startsWith('setTheme:')),
+      false
+    );
   });
 });
 
@@ -417,6 +457,117 @@ describe('deep links', () => {
     assert.equal(fetched, false);
   });
 
+  const themeOf = (s: Setup): string | null => s.doc.documentElement.getAttribute('data-theme');
+
+  const prefilled = async (hash: string, value: string): Promise<void> => {
+    const storage = memoryStorage();
+    const s = setup({ hash, extra: { storage: () => storage } });
+    await s.ready;
+
+    assert.deepEqual(execs(s), [], hash);
+    assert.equal(themeOf(s), null, hash);
+    assert.equal(storage.getItem('theme'), null, hash);
+    assert.equal(s.input.value, value, hash);
+    assert.equal(s.output.querySelectorAll('.entry-boot').length, 1, hash);
+  };
+
+  it('only pre-fills theme, changing and storing nothing', async () => {
+    await prefilled('#theme%20amber', 'theme amber');
+  });
+
+  it('only pre-fills clear and leaves the boot screen', async () => {
+    await prefilled('#clear', 'clear');
+  });
+
+  it('only pre-fills a read-only command chained with and', async () => {
+    await prefilled('#help%20%26%26%20theme%20amber', 'help && theme amber');
+  });
+
+  it('only pre-fills a read-only command chained with a semicolon', async () => {
+    await prefilled('#help%3Btheme%20amber', 'help;theme amber');
+  });
+
+  it('only pre-fills a read-only command chained with a pipe', async () => {
+    await prefilled('#help%20%7C%20theme%20amber', 'help | theme amber');
+  });
+
+  it('does not run a line containing a newline', async () => {
+    const s = setup({ hash: '#help%0Atheme' });
+    await s.ready;
+
+    assert.deepEqual(execs(s), []);
+    assert.equal(s.doc.documentElement.getAttribute('data-theme'), null);
+  });
+
+  it('only pre-fills an unknown first word', async () => {
+    await prefilled('#frobnicate', 'frobnicate');
+  });
+
+  it('only pre-fills history, echo and exit', async () => {
+    for (const command of ['history', 'echo hi', 'exit']) {
+      await prefilled(`#${encodeURIComponent(command)}`, command);
+    }
+  });
+
+  it('runs every read-only command', async () => {
+    for (const command of ['man help', 'ls', 'cd projects', 'pwd', 'whoami', 'date', 'skills', 'education']) {
+      const s = setup({ hash: `#${encodeURIComponent(command)}` });
+      await s.ready;
+
+      assert.deepEqual(execs(s), [`exec:${command}`], command);
+    }
+  });
+
+  it('ignores theme and clear effects from a deep-linked run', async () => {
+    const base = createFakeShell();
+    const shell = spyShell({
+      ...base,
+      exec: line =>
+        line === 'help'
+          ? {
+              blocks: [],
+              effects: [
+                { kind: 'theme', arg: 'amber' },
+                { kind: 'clear', arg: '' }
+              ]
+            }
+          : base.exec(line)
+    });
+    const storage = memoryStorage();
+    const s = setup({ hash: '#help', shell: Promise.resolve(shell), extra: { storage: () => storage } });
+    await s.ready;
+
+    assert.equal(themeOf(s), null);
+    assert.equal(storage.getItem('theme'), null);
+    assert.equal(s.output.querySelectorAll('.entry-boot').length, 1);
+  });
+
+  it('keeps a read-only command in the hash after a user run', async () => {
+    const s = setup();
+    await s.ready;
+    enter(s, 'ls');
+
+    assert.equal(s.jsdom.window.location.hash, '#ls');
+  });
+
+  it('keeps theme out of the hash when typed by hand', async () => {
+    const s = setup();
+    await s.ready;
+    enter(s, 'theme amber');
+
+    assert.equal(themeOf(s), 'amber');
+    assert.equal(s.jsdom.window.location.hash, '');
+  });
+
+  it('clears an earlier hash when a non-read-only command is typed', async () => {
+    const s = setup();
+    await s.ready;
+    enter(s, 'ls');
+    enter(s, 'theme amber');
+
+    assert.equal(s.jsdom.window.location.hash, '');
+  });
+
   it('ignores a malformed hash', async () => {
     const s = setup({ hash: '#%E0%A4%A' });
     await s.ready;
@@ -433,5 +584,59 @@ describe('focus', () => {
     (s.doc.getElementById('scroll') as HTMLElement).click();
 
     assert.equal(s.doc.activeElement, s.input);
+  });
+});
+
+describe('input method composition', () => {
+  const fire = (s: Setup, type: string): void => {
+    s.input.dispatchEvent(new s.jsdom.window.CompositionEvent(type, { bubbles: true }));
+  };
+
+  it('ignores Enter while a composition is active', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'ni');
+    fire(s, 'compositionstart');
+    key(s.jsdom, s.input, 'Enter');
+
+    assert.deepEqual(execs(s), []);
+    assert.equal(s.input.value, 'ni');
+  });
+
+  it('ignores the Enter that confirms a composition right after compositionend', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'ni');
+    fire(s, 'compositionstart');
+    fire(s, 'compositionend');
+    key(s.jsdom, s.input, 'Enter');
+
+    assert.deepEqual(execs(s), []);
+    assert.equal(s.input.value, 'ni');
+  });
+
+  it('accepts Enter once the tick after compositionend has passed', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'help');
+    fire(s, 'compositionstart');
+    fire(s, 'compositionend');
+    await tick(5);
+    key(s.jsdom, s.input, 'Enter');
+
+    assert.deepEqual(execs(s), ['exec:help']);
+  });
+
+  it('ignores Enter, Tab and arrows reported with keyCode 229', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'he');
+    for (const name of ['Enter', 'Tab', 'ArrowUp', 'ArrowDown']) {
+      const event = key(s.jsdom, s.input, name, { keyCode: 229 });
+      assert.equal(event.defaultPrevented, false, name);
+    }
+
+    assert.deepEqual(execs(s), []);
+    assert.equal(s.input.value, 'he');
   });
 });

@@ -49,6 +49,7 @@ export interface Shell {
   complete(line: string, cursor: number): Completion;
   prompt(): string;
   history(): string[];
+  setTheme(name: string): void;
   commands(): CommandInfo[];
   deliver(feed: string, items: FeedItem[]): Result;
   deliverError(feed: string): Result;
@@ -67,6 +68,7 @@ interface ShellWindow {
 
 export interface LoadOptions {
   wasmSrc: string;
+  runtimeSrc?: string;
   devShellSrc?: string;
   timeoutMs?: number;
   win?: Window;
@@ -129,6 +131,9 @@ export const wrap = (value: unknown): Shell => {
     complete: (line, cursor) => toCompletion(call(raw, 'complete', line, cursor), line, cursor),
     prompt: () => str(call(raw, 'prompt')),
     history: () => list(call(raw, 'history')).map(str),
+    setTheme: name => {
+      call(raw, 'setTheme', name);
+    },
     commands: () =>
       list(call(raw, 'commands')).map(item => {
         const c = record(item);
@@ -169,6 +174,19 @@ const injectScript = (win: Window, src: string): Promise<void> =>
     win.document.head.appendChild(script);
   });
 
+const JS_TYPE = /(java|ecma)script/i;
+
+const loadRuntime = async (win: Window, src: string, fetchImpl: typeof fetch): Promise<void> => {
+  const response = await fetchImpl(src);
+  if (!response.ok) {
+    throw new Error(`shell runtime: HTTP ${response.status}`);
+  }
+  if (!JS_TYPE.test(response.headers.get('Content-Type') ?? '')) {
+    throw new Error('shell runtime: not a script');
+  }
+  await injectScript(win, src);
+};
+
 export const loadShell = (options: LoadOptions): Promise<Shell> => {
   const win = options.win ?? window;
   const w = win as unknown as ShellWindow;
@@ -194,14 +212,19 @@ export const loadShell = (options: LoadOptions): Promise<Shell> => {
       return;
     }
 
-    const Go = w.Go;
-    if (typeof Go !== 'function') {
-      fail(new Error('shell module: Go runtime missing'));
-      return;
-    }
-    const go = new Go();
-    instantiate(options.wasmSrc, go, fetchImpl)
-      .then(instance => go.run(instance))
+    const ensureRuntime =
+      typeof w.Go === 'function' || options.runtimeSrc === undefined
+        ? Promise.resolve()
+        : loadRuntime(win, options.runtimeSrc, fetchImpl);
+    ensureRuntime
+      .then(() => {
+        const Go = w.Go;
+        if (typeof Go !== 'function') {
+          throw new Error('shell module: Go runtime missing');
+        }
+        const go = new Go();
+        return instantiate(options.wasmSrc, go, fetchImpl).then(instance => go.run(instance));
+      })
       .then(() => fail(new Error('shell module: exited')))
       .catch(fail);
   });

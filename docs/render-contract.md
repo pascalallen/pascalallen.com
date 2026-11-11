@@ -35,7 +35,9 @@ nothing from a `Result` is ever parsed as HTML.
 | `#input` | yes | The real input. Do not wrap it in a `<form>` (Enter must not submit). |
 | `.chips > a.chip[data-run]` | no | Tappable commands. `href="/#<command>"` so they work as deep links before the host loads. |
 
-Scripts: `wasm_exec.js` then `app.js`, both `defer`, both same origin; stylesheet `app.css`.
+Scripts: `app.js` only, `defer`, same origin; stylesheet `app.css`. The host loads `wasm_exec.js` itself (it fetches
+the file, requires a JavaScript content type, then injects a `<script>`), so a missing or HTML-served runtime puts the
+terminal in the `failed` state instead of logging a syntax error. Do not add a static `wasm_exec.js` tag.
 
 ## Entries
 
@@ -56,8 +58,15 @@ Each command is one entry. The boot screen is an entry with no echo line.
   existing children and does not call `boot()`. Otherwise it renders `boot()` into `<div class="entry entry-boot">`
   without the attribute. Put the attribute on the boot entry, not on `#output`.
 - The echo line is one text node `" "` between `.prompt` and `.cmd`.
-- The host adds `class="reveal"` and an inline `--i` custom property to lines it renders for the entrance
-  animation; the server must not emit either.
+- **Entrance animation**: for each entry it renders (including the boot entry and results delivered later by a feed),
+  the host adds `class="reveal"` to the `.entry` element and sets the custom property `--i` (via the CSSOM, to the
+  zero-based index) on each of the first 24 `.block > .line` elements of that entry, counting in document order across
+  the entry's blocks; the echo line is not under a `.block` and gets no `--i`. Server-rendered markup must not include
+  `reveal` or `--i`: pre-rendered content must be visible without JS or animation, and the host never adds either to
+  adopted `data-prerendered` entries.
+- **Failure state**: when the shell cannot load, `#terminal` gets `data-state="failed"` and the host appends an entry
+  with one `block block-error` holding a `s-warning` line saying the terminal is unavailable and the content is below.
+  `clear` (typed by the visitor) removes every child of `#output`, pre-rendered ones included.
 
 ## Blocks, lines, spans
 
@@ -90,10 +99,14 @@ Each command is one entry. The boot screen is an entry with no echo line.
 
 ## Deep links
 
-`/#<encodeURIComponent(line)>`. The host runs the line on load only when its first word is in `commands()` minus
-`open`, `repos`, `packages`, `camera`, and the line contains none of `;`, `&`, `|`, `<`, `>`, `$`, a backtick, a
-backslash, CR or LF. Anything
-else is placed in the input for the visitor to confirm. A run updates the hash with `history.replaceState`.
+`/#<encodeURIComponent(line)>`. A strict allow-list: the host runs the line on load only when it is a single command,
+made only of letters, digits, spaces and `. _ / ~ @ : = , + -` (so no `;`, `&`, `|`, `<`, `>`, `$`, backtick,
+backslash, quote, tab, CR or LF), whose first word is one of `help`, `man`, `ls`, `cd`, `pwd`, `cat`, `tree`, `head`,
+`tail`, `grep`, `whoami`, `date`, `about`, `resume`, `skills`, `experience`, `projects`, `writing`, `contact`,
+`education`. Everything else, including unknown words, `theme`, `clear`, `history`, `echo`, `open`, `repos`,
+`packages`, `camera` and `exit`, is only placed in the input for the visitor to confirm. Effects (`theme`, `clear`,
+`open`, `fetch`) of a link-run are ignored; they apply only to a visitor-initiated run. A visitor-initiated run
+updates the hash with `history.replaceState` only for allow-listed commands; any other command removes the hash.
 
 ## Content-Security-Policy
 

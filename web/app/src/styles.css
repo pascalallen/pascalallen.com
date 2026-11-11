@@ -332,6 +332,12 @@ a:focus-visible,
   caret-shape: block;
 }
 
+@media (pointer: coarse) {
+  .prompt-line {
+    font-size: max(16px, 1em);
+  }
+}
+
 .chips {
   display: flex;
   align-items: center;

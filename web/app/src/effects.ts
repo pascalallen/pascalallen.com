@@ -49,6 +49,11 @@ export const initialTheme = (storage: StorageAccess, prefersLight: boolean): str
   return prefersLight ? 'light' : 'dark';
 };
 
+export const readTheme = (storage: StorageAccess): string | null => {
+  const stored = read(storage, THEME_KEY);
+  return stored !== null && THEMES.includes(stored) ? stored : null;
+};
+
 export const openUrl = (url: string, open: OpenImpl): boolean => {
   const href = safeHref(url);
   if (href === null) {

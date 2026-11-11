@@ -1,5 +1,5 @@
 import type { Result, Shell } from './bridge';
-import { applyTheme, fetchFeed, OpenImpl, openUrl, StorageAccess } from './effects';
+import { applyTheme, fetchFeed, OpenImpl, openUrl, readTheme, StorageAccess } from './effects';
 import { attachEditor } from './input';
 import { renderEcho, renderEntry, renderResult } from './render';
 
@@ -16,9 +16,35 @@ export interface Terminal {
   ready: Promise<void>;
 }
 
-const LINK_ONLY = new Set(['open', 'repos', 'packages', 'camera']);
+const READ_ONLY = new Set([
+  'help',
+  'man',
+  'ls',
+  'cd',
+  'pwd',
+  'cat',
+  'tree',
+  'head',
+  'tail',
+  'grep',
+  'whoami',
+  'date',
+  'about',
+  'resume',
+  'skills',
+  'experience',
+  'projects',
+  'writing',
+  'contact',
+  'education'
+]);
 
-const CHAINING = /[;&|<>`$\\\n\r]/;
+const SIMPLE_LINE = /^[A-Za-z0-9 ._/~@:=,+-]+$/;
+
+const isReadOnly = (line: string): boolean => {
+  const trimmed = line.trim();
+  return SIMPLE_LINE.test(trimmed) && READ_ONLY.has(trimmed.split(/\s+/)[0]);
+};
 
 const REVEAL_LINES = 24;
 
@@ -111,9 +137,11 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
     for (const effect of result.effects) {
       switch (effect.kind) {
         case 'clear':
-          output.replaceChildren();
-          target = renderEntry(doc);
-          output.append(target);
+          if (user) {
+            output.replaceChildren();
+            target = renderEntry(doc);
+            output.append(target);
+          }
           break;
         case 'open':
           if (user) {
@@ -121,7 +149,9 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
           }
           break;
         case 'theme':
-          applyTheme(doc, effect.arg, storage);
+          if (user) {
+            applyTheme(doc, effect.arg, storage);
+          }
           break;
         case 'fetch':
           if (user) {
@@ -136,7 +166,8 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
     }
     prompt.textContent = shell.prompt();
     if (user && line.trim() !== '') {
-      win.history.replaceState(null, '', `${win.location.pathname}${win.location.search}#${encodeURIComponent(line)}`);
+      const base = `${win.location.pathname}${win.location.search}`;
+      win.history.replaceState(null, '', isReadOnly(line) ? `${base}#${encodeURIComponent(line)}` : base);
     }
     follow(true);
   };
@@ -168,7 +199,7 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
     hasSelection: () => (win.getSelection()?.toString() ?? '') !== ''
   });
 
-  const deepLink = (sh: Shell): void => {
+  const deepLink = (): void => {
     const raw = win.location.hash.slice(1);
     let line: string;
     try {
@@ -179,10 +210,7 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
     if (line === '') {
       return;
     }
-    const allowed = new Set(sh.commands().map(c => c.name));
-    LINK_ONLY.forEach(name => allowed.delete(name));
-    const first = line.split(/\s+/)[0];
-    if (allowed.has(first) && !CHAINING.test(line)) {
+    if (isReadOnly(line)) {
       run(line, false);
     } else if (input.value === '') {
       editor.set(line);
@@ -237,7 +265,11 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
         append(entry, sh.boot());
       }
       prompt.textContent = sh.prompt();
-      deepLink(sh);
+      const stored = readTheme(storage);
+      if (stored !== null) {
+        sh.setTheme(stored);
+      }
+      deepLink();
       for (const line of queue.splice(0)) {
         run(line, true);
       }
@@ -251,7 +283,7 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
         blocks: [
           {
             kind: 'error',
-            lines: [[plain('the interactive shell could not load; reload the page to try again', 'warning')]],
+            lines: [[plain('the terminal is unavailable; the content is below in plain view', 'warning')]],
             src: '',
             alt: ''
           }

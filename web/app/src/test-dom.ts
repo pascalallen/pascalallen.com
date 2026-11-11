@@ -57,6 +57,10 @@ export const spyShell = (base: Shell = createFakeShell()): Spy => {
     complete: (line, cursor) => base.complete(line, cursor),
     prompt: () => base.prompt(),
     history: () => base.history(),
+    setTheme: name => {
+      calls.push(`setTheme:${name}`);
+      base.setTheme(name);
+    },
     commands: () => base.commands(),
     deliver: (feed, items) => {
       calls.push(`deliver:${feed}:${items.map(i => i.name).join(',')}`);
