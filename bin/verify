@@ -4,7 +4,7 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"/.. || exit 1
 
-GO_IMAGE="golang:1.26"
+GO_IMAGE="golang:1.26.11"
 NODE_IMAGE="node:22"
 CACHE="${VERIFY_CACHE:-$HOME/.cache/pascalallen-verify}"
 mkdir -p "$CACHE/go" "$CACHE/gocache" "$CACHE/yarn"
@@ -61,12 +61,20 @@ step "wire drift"
 if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
     run_go go generate ./...
 else
-    run_go go run github.com/google/wire/cmd/wire@v0.7.0 ./cmd/pascalallen
+    run_go go run github.com/google/wire/cmd/wire ./cmd/pascalallen
 fi
-git diff --exit-code -- '*wire_gen.go'
+if [ -n "$(git status --porcelain)" ]; then
+    git status --porcelain
+    git diff
+    exit 1
+fi
 
 step "govulncheck ./..."
-run_go go run golang.org/x/vuln/cmd/govulncheck@latest ./... || printf 'govulncheck: findings reported, non-blocking until #38 removes github.com/golang-jwt/jwt\n'
+set +e
+vuln_out="$(run_go go run golang.org/x/vuln/cmd/govulncheck@latest ./... 2>&1)"
+vuln_code=$?
+set -e
+printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"
 
 step "yarn install --frozen-lockfile"
 run_node yarn install --frozen-lockfile

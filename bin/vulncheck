@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+ALLOWED="GO-2025-3553"
+code="${1:?usage: bin/vulncheck <govulncheck exit code> < govulncheck output}"
+out="$(cat)"
+printf '%s\n' "$out"
+
+if [ "$code" -eq 0 ]; then
+    exit 0
+fi
+
+if [ "$code" -ne 3 ]; then
+    printf '\nvulncheck: govulncheck exited with %s\n' "$code"
+    exit 1
+fi
+
+found="$(printf '%s\n' "$out" | grep -o -E '^Vulnerability #[0-9]+: GO-[0-9]+-[0-9]+' | grep -o -E 'GO-[0-9]+-[0-9]+' | sort -u)"
+unexpected="$(printf '%s\n' "$found" | grep -v -x -F "$ALLOWED" | grep -v '^$' || true)"
+
+if [ -n "$unexpected" ]; then
+    printf '\nvulncheck: unexpected findings:\n%s\n' "$unexpected"
+    exit 1
+fi
+
+if [ -z "$found" ]; then
+    printf '\nvulncheck: exit 3 without a parsable finding\n'
+    exit 1
+fi
+
+printf '\nvulncheck: only %s reported; tolerated until #38 removes github.com/golang-jwt/jwt\n' "$ALLOWED"

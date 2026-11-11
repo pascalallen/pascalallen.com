@@ -29,12 +29,20 @@ jobs:
           if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
             go generate ./...
           else
-            go run github.com/google/wire/cmd/wire@v0.7.0 ./cmd/pascalallen
+            go run github.com/google/wire/cmd/wire ./cmd/pascalallen
           fi
-          git diff --exit-code -- '*wire_gen.go'
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git diff
+            exit 1
+          fi
       - name: govulncheck
-        continue-on-error: true
-        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+        run: |
+          set +e
+          vuln_out="$(go run golang.org/x/vuln/cmd/govulncheck@latest ./... 2>&1)"
+          vuln_code=$?
+          set -e
+          printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"
 
   frontend:
     runs-on: ubuntu-latest

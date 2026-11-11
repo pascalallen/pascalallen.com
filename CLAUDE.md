@@ -4,7 +4,7 @@ Pointers and stable rules. Status lives in the epic issue #36 and `docs/build-lo
 
 ## What this is
 
-pascalallen.com: the whole site is a bash-style terminal. A pure Go shell runs natively on the server (pre-render, tests) and as WASM in the browser. One Go binary (Gin) serves it, a small JSON API under `/api/v1` and a live MJPEG camera stream from a Raspberry Pi. Production is the Pi itself running Docker Compose (`scripts/cron-deploy` pulls `main` and rebuilds); k8s manifests are an alternate path in `docs/DEPLOYING.md`.
+pascalallen.com: the whole site is a bash-style terminal. A pure Go shell runs natively on the server (pre-render, tests) and as WASM in the browser. One Go binary (Gin) serves it, a small JSON API under `/api/v1` and a live MJPEG camera stream from a Raspberry Pi. Production is the Pi itself running Docker Compose (`scripts/cron-deploy` is the intended deploy path, repaired by #42); k8s manifests are an alternate path in `docs/DEPLOYING.md`.
 
 The code under the old layout (GORM, Postgres, RabbitMQ, auth, the React SPA) is removed by #38. Do not extend it.
 
