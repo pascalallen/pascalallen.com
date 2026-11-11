@@ -175,6 +175,7 @@ body {
 
 .line {
   min-height: calc(var(--lh) * 1em);
+  max-width: 80ch;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

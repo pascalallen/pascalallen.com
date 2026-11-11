@@ -1,7 +1,6 @@
 # README
 
-This is Pascal Allen's home directory, served as a read-only terminal.
-Everything on the site is a plain text file you can list, read and search.
+This is Pascal Allen's home directory, served as a read-only terminal. Everything on the site is a plain text file you can list, read and search.
 
 Getting around
   help               list every command
@@ -16,8 +15,7 @@ Shortcuts
   theme <name>       dark, light, amber or green
 
 Tips
-  Tab completes commands and paths. Up and Down walk your history.
-  Tap any underlined command to run it. Links open in a new tab.
+  Tab completes commands and paths. Up and Down walk your history. Tap any underlined command to run it. Links open in a new tab.
 
 This site runs on
   Go, WebAssembly, TypeScript, Docker, Raspberry Pi

@@ -56,6 +56,33 @@ test.describe('a 390x844 touch screen reading the boot screen', () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 
+  test('the about paragraph is one line element that fills the column on every row but the last', async ({ page }) => {
+    await open(page);
+    await run(page, 'about');
+    const paragraph = lastEntry(page).locator('.block > .line', { hasText: 'Full-stack software engineer' });
+    await expect(paragraph).toHaveCount(1);
+    const measured = await paragraph.evaluate(line => {
+      const text = line.textContent ?? '';
+      const range = document.createRange();
+      range.selectNodeContents(line);
+      const rows = new Map<number, { left: number; right: number }>();
+      for (const rect of range.getClientRects()) {
+        if (rect.width === 0) continue;
+        const key = Math.round(rect.top / 4);
+        const row = rows.get(key) ?? { left: rect.left, right: rect.right };
+        rows.set(key, { left: Math.min(row.left, rect.left), right: Math.max(row.right, rect.right) });
+      }
+      const box = line.getBoundingClientRect();
+      const widths = [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([, row]) => row.right - row.left);
+      return { newline: text.includes('\n'), column: box.width, widths };
+    });
+    expect(measured.newline).toBe(false);
+    expect(measured.widths.length).toBeGreaterThan(2);
+    for (const width of measured.widths.slice(0, -1)) {
+      expect(width).toBeGreaterThanOrEqual(measured.column / 2);
+    }
+  });
+
   test('the more row and ls output wrap inline', async ({ page }) => {
     await open(page);
     await run(page, 'about');
