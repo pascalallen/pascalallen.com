@@ -1,43 +1,34 @@
 package routes
 
 import (
-	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func pageRouter(t *testing.T, module string) Router {
-	t.Helper()
-	gin.SetMode(gin.TestMode)
-	engine := gin.New()
-	engine.SetHTMLTemplate(template.Must(template.New("index.tmpl").Parse("version=[{{ .wasmVersion }}]")))
-	r := Router{engine: engine}
-	r.defaultFor(module)
+var versionedAsset = regexp.MustCompile(`(?:src|href|data-wasm-src)="(/static/assets/[^"?]+)\?v=([0-9a-f]{12})"`)
 
-	return r
-}
+func TestDefaultPageAssets(t *testing.T) {
+	t.Run("the page references the host assets through the asset helper", func(t *testing.T) {
+		t.Chdir("../../../..")
+		require.NoError(t, os.MkdirAll("web/static/assets", 0o755))
+		module := filepath.Join("web", "static", "assets", "shell.wasm")
+		if _, err := os.Stat(module); err != nil {
+			require.NoError(t, os.WriteFile(module, []byte("abc"), 0o644))
+			t.Cleanup(func() { _ = os.Remove(module) })
+		}
 
-func TestDefaultPageWasmVersion(t *testing.T) {
-	t.Run("exposes the content hash of the module to the template", func(t *testing.T) {
-		module := filepath.Join(t.TempDir(), "shell.wasm")
-		require.NoError(t, os.WriteFile(module, []byte("abc"), 0o644))
-
-		rec := get(pageRouter(t, module), "/anything")
+		rec := get(newTestRouter(t), "/anything")
 
 		require.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "version=[ba7816bf8f01]", rec.Body.String())
-	})
-
-	t.Run("renders with an empty version when the module is absent", func(t *testing.T) {
-		rec := get(pageRouter(t, filepath.Join(t.TempDir(), "missing.wasm")), "/anything")
-
-		require.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "version=[]", rec.Body.String())
+		body := rec.Body.String()
+		assert.Contains(t, body, `data-wasm-src="/static/assets/shell.wasm?v=`)
+		assert.NotContains(t, body, "wasm_exec.js")
+		assert.True(t, versionedAsset.MatchString(body))
 	})
 }

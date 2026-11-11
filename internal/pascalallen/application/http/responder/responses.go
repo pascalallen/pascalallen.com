@@ -137,6 +137,26 @@ func ServiceUnavailableResponse(c *gin.Context, error error) {
 	return
 }
 
+func NotFoundResponse(c *gin.Context) {
+	c.JSON(
+		http.StatusNotFound,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: "not found",
+		},
+	)
+}
+
+func MethodNotAllowedResponse(c *gin.Context) {
+	c.JSON(
+		http.StatusMethodNotAllowed,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: "method not allowed",
+		},
+	)
+}
+
 func OkResponse[T interface{}](c *gin.Context, i T) {
 	c.JSON(
 		http.StatusOK,

@@ -1,26 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
-    <title>Pascal Allen - pascalallen.com</title>
-    <meta name="description" content="Pascal Allen, software engineer. The terminal at pascalallen.com is coming online.">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-    <link rel="manifest" href="/static/site.webmanifest">
-    <link href="/static/assets/app.css" rel="stylesheet" type="text/css">
-    <script src="/static/assets/app.js" defer></script>
+{{ template "head" .Head }}
+    <script src="{{ asset "app.js" }}" defer></script>
 </head>
 <body>
-    <div class="terminal" id="terminal" data-state="loading" data-wasm-src="/static/assets/shell.wasm">
+    <div class="terminal" id="terminal" data-state="loading" data-wasm-src="{{ asset "shell.wasm" }}">
         <div class="scroll" id="scroll">
-            <div class="output" id="output" role="log" aria-live="polite" aria-label="Terminal output"></div>
+            <div class="output" id="output" role="log" aria-live="polite" aria-label="Terminal output">{{ .Boot }}</div>
             <div class="prompt-line">
-                <label class="prompt" id="prompt" for="input">visitor@pascalallen.com:~$</label>
+                <label class="prompt" id="prompt" for="input">{{ .Prompt }}</label>
                 <input class="input" id="input" type="text" name="command" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
             </div>
+            <noscript><p class="line">JavaScript is off, so the prompt is inactive. Read the <a href="/plain">plain text version</a>.</p></noscript>
         </div>
         <nav class="chips" aria-label="Commands">
             <a class="chip" href="/#help" data-run="help">help</a>
@@ -31,8 +23,9 @@
             <a class="chip" href="/#contact" data-run="contact">contact</a>
             <a class="chip" href="/#theme" data-run="theme">theme</a>
             <a class="chip" href="/#clear" data-run="clear">clear</a>
+            <a class="chip" href="/plain" rel="alternate">plain text version</a>
         </nav>
     </div>
-    <input id="script_config" type="hidden" value="{{ .environment }}" />
+    <input id="script_config" type="hidden" value="{{ .Environment }}" />
 </body>
 </html>

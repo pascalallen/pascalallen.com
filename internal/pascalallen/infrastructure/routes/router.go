@@ -12,9 +12,12 @@ type Router struct {
 }
 
 func NewRouter() Router {
-	return Router{
-		engine: gin.Default(),
-	}
+	engine := gin.Default()
+	engine.RedirectTrailingSlash = false
+	engine.RedirectFixedPath = false
+	engine.HandleMethodNotAllowed = true
+
+	return Router{engine: engine}
 }
 
 func (r Router) Serve(port string) {
