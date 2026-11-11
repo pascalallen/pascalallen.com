@@ -87,6 +87,18 @@ run_node yarn lint
 step "yarn build"
 run_node yarn build
 
+step "bin/wasm"
+bin/wasm
+
+step "bin/wasm-size"
+bin/wasm-size
+
+step "bin/wasm-smoke"
+bin/wasm-smoke
+
+step "bin/wasm-parity"
+bin/wasm-parity
+
 step "shellcheck bin/* scripts/*"
 if command -v shellcheck >/dev/null 2>&1; then
     shellcheck bin/* scripts/*
