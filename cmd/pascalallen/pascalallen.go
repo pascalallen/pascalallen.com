@@ -7,6 +7,7 @@ import (
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command_handler"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query_handler"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/camera"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/container"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/routes"
 	"os"
@@ -34,7 +35,10 @@ func main() {
 	router.Config()
 	router.Fileserver()
 	router.Default()
-	router.Camera()
+	router.Camera(camera.NewHub(camera.Config{
+		Source: camera.GStreamerSource,
+		Check:  camera.GStreamerAvailable,
+	}))
 	router.Feeds(c.QueryBus, c.CommandBus)
 	router.Serve(":" + port())
 }

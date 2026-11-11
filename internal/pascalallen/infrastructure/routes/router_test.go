@@ -19,7 +19,7 @@ func newTestRouter(t *testing.T) Router {
 	r.Config()
 	r.Fileserver()
 	r.Default()
-	r.Camera()
+	r.Camera(stubStream{})
 
 	return r
 }

@@ -124,3 +124,27 @@ func CreatedResponse[T interface{}](c *gin.Context, i *T) {
 
 	return
 }
+
+func ServiceUnavailableResponse(c *gin.Context, error error) {
+	c.JSON(
+		http.StatusServiceUnavailable,
+		JSendErrorResponse[string]{
+			Status:  "error",
+			Message: error.Error(),
+		},
+	)
+
+	return
+}
+
+func OkResponse[T interface{}](c *gin.Context, i T) {
+	c.JSON(
+		http.StatusOK,
+		JSendSuccessResponse[T]{
+			Status: "success",
+			Data:   i,
+		},
+	)
+
+	return
+}
