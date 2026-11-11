@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"html/template"
 	"io/fs"
-	"os"
 	"strings"
 
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/shell"
@@ -18,10 +17,6 @@ type Config struct {
 	BaseURL     string
 	Env         string
 	AssetHashes map[string]string
-}
-
-func ConfigFromEnv() Config {
-	return Config{BaseURL: os.Getenv("APP_BASE_URL"), Env: os.Getenv("APP_ENV")}
 }
 
 type Page struct {

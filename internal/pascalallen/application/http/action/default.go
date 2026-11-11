@@ -80,18 +80,7 @@ func HandleNotFound(page *render.Page) gin.HandlerFunc {
 	index := HandleDefault(page)
 
 	return func(c *gin.Context) {
-		method := c.Request.Method
-		api := isAPIPath(c.Request.URL.Path)
-		if method != http.MethodGet && method != http.MethodHead {
-			c.Header("Allow", allowedMethods)
-			if api {
-				responder.MethodNotAllowedResponse(c)
-				return
-			}
-			c.Data(http.StatusMethodNotAllowed, "text/plain; charset=utf-8", []byte("method not allowed\n"))
-			return
-		}
-		if api {
+		if isAPIPath(c.Request.URL.Path) {
 			if isHead(c) {
 				headOnly(c, http.StatusNotFound, "application/json; charset=utf-8")
 				return
@@ -99,6 +88,22 @@ func HandleNotFound(page *render.Page) gin.HandlerFunc {
 			responder.NotFoundResponse(c)
 			return
 		}
+		method := c.Request.Method
+		if method != http.MethodGet && method != http.MethodHead {
+			c.Header("Allow", allowedMethods)
+			c.Data(http.StatusMethodNotAllowed, "text/plain; charset=utf-8", []byte("method not allowed\n"))
+			return
+		}
 		index(c)
+	}
+}
+
+func HandleMethodNotAllowed() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if isAPIPath(c.Request.URL.Path) {
+			responder.MethodNotAllowedResponse(c)
+			return
+		}
+		c.Data(http.StatusMethodNotAllowed, "text/plain; charset=utf-8", []byte("method not allowed\n"))
 	}
 }

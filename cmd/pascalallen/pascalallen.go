@@ -33,7 +33,7 @@ func main() {
 	})
 
 	router := routes.Assemble(routes.Deps{
-		Page: render.NewPage(content.FS(), render.ConfigFromEnv()),
+		Page: render.NewPage(content.FS(), render.Config{BaseURL: os.Getenv("APP_BASE_URL"), Env: os.Getenv("APP_ENV")}),
 		Camera: camera.NewHub(camera.Config{
 			Source: camera.GStreamerSource,
 			Check:  camera.GStreamerAvailable,

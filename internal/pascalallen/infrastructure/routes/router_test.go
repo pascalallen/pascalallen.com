@@ -29,7 +29,7 @@ func assembledRouter(t *testing.T, stream camera.Stream) Router {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
 	return Assemble(Deps{
-		Page:       render.NewPage(content.FS(), render.ConfigFromEnv()),
+		Page:       render.NewPage(content.FS(), render.Config{BaseURL: os.Getenv("APP_BASE_URL"), Env: os.Getenv("APP_ENV")}),
 		Camera:     stream,
 		QueryBus:   messaging.NewSynchronousQueryBus(logger),
 		CommandBus: messaging.NewSynchronousCommandBus(logger),

@@ -283,6 +283,48 @@ func TestRobotsAndSitemap(t *testing.T) {
 	})
 }
 
+func TestMethodMatrix(t *testing.T) {
+	r := seoRouter(t)
+
+	for _, tc := range []struct {
+		method, path string
+		status       int
+		allow        string
+		contentType  string
+	}{
+		{http.MethodPut, "/api/v1/visits", http.StatusMethodNotAllowed, "POST", "application/json"},
+		{http.MethodGet, "/api/v1/visits", http.StatusMethodNotAllowed, "POST", "application/json"},
+		{http.MethodOptions, "/api/v1/repos", http.StatusMethodNotAllowed, "GET, HEAD", "application/json"},
+		{http.MethodDelete, "/api/v1/packages", http.StatusMethodNotAllowed, "GET, HEAD", "application/json"},
+		{http.MethodPost, "/api/v1/camera/status", http.StatusMethodNotAllowed, "GET, HEAD", "application/json"},
+		{http.MethodHead, "/api/v1/camera/stream", http.StatusMethodNotAllowed, "GET", "application/json"},
+		{http.MethodHead, "/api/v1/camera/status", http.StatusOK, "", "application/json"},
+		{http.MethodPost, "/plain", http.StatusMethodNotAllowed, "GET, HEAD", "text/plain"},
+		{http.MethodPost, "/no/such/path", http.StatusMethodNotAllowed, "GET, HEAD", "text/plain"},
+		{http.MethodPost, "/api/v1/nope", http.StatusNotFound, "", "application/json"},
+		{http.MethodDelete, "/api/zzz", http.StatusNotFound, "", "application/json"},
+		{http.MethodGet, "/api/v1/nope", http.StatusNotFound, "", "application/json"},
+	} {
+		t.Run(tc.method+" "+tc.path+" answers "+http.StatusText(tc.status), func(t *testing.T) {
+			rec := do(r, tc.method, tc.path, "", "")
+
+			require.Equal(t, tc.status, rec.Code)
+			assert.Equal(t, tc.allow, rec.Header().Get("Allow"))
+			assert.Contains(t, rec.Header().Get("Content-Type"), tc.contentType)
+			assertSecurityHeaders(t, rec.Header(), tc.method+" "+tc.path)
+		})
+	}
+
+	t.Run("HEAD on the feed routes is routed like GET", func(t *testing.T) {
+		for _, path := range []string{"/api/v1/repos", "/api/v1/packages"} {
+			rec := do(r, http.MethodHead, path, "", "")
+
+			assert.NotEqual(t, http.StatusNotFound, rec.Code, path)
+			assert.NotEqual(t, http.StatusMethodNotAllowed, rec.Code, path)
+		}
+	})
+}
+
 func TestConcurrentRequests(t *testing.T) {
 	r := seoRouter(t)
 	want := get(r, "/").Body.String()

@@ -15,4 +15,5 @@ func (r Router) Default(page *render.Page) {
 	r.engine.GET("/sitemap.xml", action.HandleSitemap(page))
 	r.engine.HEAD("/sitemap.xml", action.HandleSitemap(page))
 	r.engine.NoRoute(action.HandleNotFound(page))
+	r.engine.NoMethod(action.HandleMethodNotAllowed())
 }

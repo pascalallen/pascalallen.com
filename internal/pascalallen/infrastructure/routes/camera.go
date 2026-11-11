@@ -12,6 +12,7 @@ func (r Router) Camera(stream camera.Stream) {
 		{
 			camera.GET("/stream", action.HandleCameraStream(stream))
 			camera.GET("/status", action.HandleCameraStatus(stream))
+			camera.HEAD("/status", action.HandleCameraStatus(stream))
 		}
 	}
 }
