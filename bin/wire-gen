@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TOOLS_VERSION="v0.49.0"
+
+ROOT="$(pwd)"
+WIRE_VERSION="$(awk '$1 == "github.com/google/wire" { print $2; exit }' "$ROOT/go.mod")"
+BUILD_DIR="$(mktemp -d)"
+trap 'rm -rf "$BUILD_DIR"' EXIT
+
+(
+    cd "$BUILD_DIR"
+    go mod init wiretool >/dev/null 2>&1
+    go get "github.com/google/wire/cmd/wire@$WIRE_VERSION" "golang.org/x/tools@$TOOLS_VERSION" >/dev/null 2>&1
+    go build -o "$BUILD_DIR/wire" github.com/google/wire/cmd/wire
+)
+
+cd "$ROOT"
+"$BUILD_DIR/wire" ./cmd/pascalallen
