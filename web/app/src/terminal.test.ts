@@ -693,9 +693,9 @@ describe('input method composition', () => {
     const s = setup();
     await s.ready;
     type(s, 'ni');
-    fire(s, 'compositionstart');
-    fire(s, 'compositionend');
-    key(s.jsdom, s.input, 'Enter');
+    at(s, 'compositionstart', 100);
+    at(s, 'compositionend', 200);
+    at(s, 'keydown', 200, { key: 'Enter' });
 
     assert.deepEqual(execs(s), []);
     assert.equal(s.input.value, 'ni');
