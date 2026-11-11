@@ -72,7 +72,8 @@ func TestRouter(t *testing.T) {
 	t.Run("a static asset is served", func(t *testing.T) {
 		rec := get(r, "/static/favicon.ico")
 
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.NotEmpty(t, rec.Body.Bytes())
+		require.Equal(t, http.StatusOK, rec.Code)
+		assert.NotContains(t, rec.Header().Get("Content-Type"), "text/html")
+		assert.NotContains(t, rec.Body.String(), "Pascal Allen")
 	})
 }
