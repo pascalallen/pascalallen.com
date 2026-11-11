@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 const css = readFileSync('src/styles.css', 'utf8');
-const template = readFileSync('../template/index.tmpl', 'utf8');
+const template = readFileSync('../template/index.tmpl', 'utf8') + readFileSync('../template/head.tmpl', 'utf8');
 
 describe('mobile input sizing', () => {
   it('keeps the prompt line at 16px or more on coarse pointers so iOS does not zoom', () => {
