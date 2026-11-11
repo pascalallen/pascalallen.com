@@ -17,9 +17,9 @@ class RemoveStaleCompressedPlugin {
 
 module.exports = (_env, argv) => ({
   entry: {
-    'app': './src/app.ts',
+    app: './src/app.ts',
     ...(argv.mode === 'production' ? {} : { 'dev-shell': './src/dev-shell.ts' }),
-    'theme': './src/theme-boot.ts'
+    theme: './src/theme-boot.ts'
   },
   devtool: argv.mode === 'production' ? 'source-map' : 'inline-source-map',
   plugins: [
