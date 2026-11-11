@@ -7,9 +7,9 @@ cd "$DIR"/.. || exit
 if [ "$1" == "prod" ]
 then
     docker compose -f compose.yaml --progress quiet build \
-      && docker compose -f compose.yaml --progress quiet up -d
+      && docker compose -f compose.yaml --progress quiet up -d --remove-orphans
 else
     docker compose build \
-      && docker compose up -d \
+      && docker compose up -d --remove-orphans \
       && docker compose logs -f
 fi

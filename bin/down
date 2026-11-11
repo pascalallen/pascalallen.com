@@ -6,7 +6,7 @@ cd "$DIR"/.. || exit
 
 if [ "$1" == "prod" ]
 then
-  docker compose --progress quiet down
+  docker compose --progress quiet down --remove-orphans
 else
-  docker compose down
+  docker compose down --remove-orphans
 fi

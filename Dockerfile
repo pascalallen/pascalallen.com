@@ -30,6 +30,7 @@ ENV GOCACHE=/root/.cache/go-build
 
 RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -C cmd/pascalallen -o /pascalallen
 
-EXPOSE 9990
+ARG PORT=9990
+EXPOSE ${PORT}
 
 CMD ["/pascalallen"]

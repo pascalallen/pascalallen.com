@@ -10,7 +10,7 @@ docker container run \
     -w /app \
     -p 9990:9990 \
     --name pascalallen-air \
-    --net pascalallen \
     --env-file .env \
+    -e PORT=9990 \
     cosmtrek/air \
     -build.exclude_dir "web"
