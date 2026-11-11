@@ -8,7 +8,7 @@ The WASM module and the bundle change on deploy, and stale copies in a browser o
 
 ## Decision
 
-The server hashes each asset (SHA-256, first 12 hex characters) and templates its URL as `/static/assets/<name>?v=<hash>`. A request whose `v` equals the file's current hash is served `Cache-Control: public, max-age=31536000, immutable`; anything else is `no-cache` with an `ETag` derived from the hash. `yarn build` writes `.br` and `.gz` siblings (`compress.mjs`) and the handler serves the best accepted one with `Vary: Accept-Encoding`, ignoring a sibling older than its source file so a dev rebuild cannot serve stale bytes. The dev webpack config deletes stale siblings on emit.
+The server hashes each asset (SHA-256, first 12 hex characters) and templates its URL as `/static/assets/<name>?v=<hash>`. A request whose `v` equals the file's current hash is served `Cache-Control: public, max-age=31536000, immutable`; anything else is `no-cache` with an `ETag` derived from the hash. `yarn build` writes `.br` and `.gz` siblings (`compress.mjs`) and the handler serves the best accepted one with `Vary: Accept-Encoding`, ignoring a sibling older than its source file (compared in whole seconds, because the compressors truncate the modification time) so a dev rebuild cannot serve stale bytes. The dev webpack config deletes stale siblings on emit.
 
 ## Consequences
 

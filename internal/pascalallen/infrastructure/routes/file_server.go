@@ -64,7 +64,7 @@ func serveStatic(root string) gin.HandlerFunc {
 		accepted := acceptedEncodings(c.GetHeader("Accept-Encoding"))
 		for _, e := range encodings {
 			sibling := name + e.suffix
-			if sinfo, err := os.Stat(sibling); err == nil && sinfo.Mode().IsRegular() && !sinfo.ModTime().Before(info.ModTime()) {
+			if sinfo, err := os.Stat(sibling); err == nil && sinfo.Mode().IsRegular() && sinfo.ModTime().Unix() >= info.ModTime().Unix() {
 				hasSibling = true
 				if encoding == "" && accepted[e.token] {
 					served = sibling

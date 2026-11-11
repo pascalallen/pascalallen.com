@@ -308,6 +308,14 @@ func TestServeStaticStaleSiblings(t *testing.T) {
 		assert.Equal(t, "gzip", rec.Header().Get("Content-Encoding"))
 	})
 
+	t.Run("a sibling truncated to whole seconds by the compressor is still fresh", func(t *testing.T) {
+		touch("app.js", baseTime.Add(time.Minute+700*time.Millisecond))
+		touch("app.js.br", baseTime.Add(time.Minute))
+		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"Accept-Encoding": "br"})
+
+		assert.Equal(t, "OLDBR", rec.Body.String())
+	})
+
 	t.Run("a sibling with the same mtime as its source is served", func(t *testing.T) {
 		touch("app.js.br", baseTime.Add(time.Minute))
 		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"Accept-Encoding": "br"})
