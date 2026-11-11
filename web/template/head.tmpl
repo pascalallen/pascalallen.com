@@ -1,0 +1,32 @@
+{{ define "head" }}    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>{{ .Title }}</title>
+    <meta name="description" content="{{ .Description }}">
+    <meta name="theme-color" content="{{ .ThemeColor }}">
+{{- if .Robots }}
+    <meta name="robots" content="{{ .Robots }}">
+{{- end }}
+{{- if .Canonical }}
+    <link rel="canonical" href="{{ .Canonical }}">
+    <meta property="og:url" content="{{ .Canonical }}">
+{{- end }}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="pascalallen.com">
+    <meta property="og:title" content="{{ .Title }}">
+    <meta property="og:description" content="{{ .Description }}">
+{{- if .OGImage }}
+    <meta property="og:image" content="{{ .OGImage }}">
+{{- end }}
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ .Title }}">
+    <meta name="twitter:description" content="{{ .Description }}">
+{{- if .OGImage }}
+    <meta name="twitter:image" content="{{ .OGImage }}">
+{{- end }}
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="manifest" href="/static/site.webmanifest">
+    <link href="/static/assets/app.css" rel="stylesheet" type="text/css">
+    <script type="application/ld+json">{{ .JSONLD }}</script>
+{{ end }}

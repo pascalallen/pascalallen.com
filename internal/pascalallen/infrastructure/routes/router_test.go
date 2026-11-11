@@ -1,13 +1,18 @@
 package routes
 
 import (
+	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/content"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/render"
 )
 
 func newTestRouter(t *testing.T) Router {
@@ -17,8 +22,9 @@ func newTestRouter(t *testing.T) Router {
 
 	r := NewRouter()
 	r.Config()
+	r.Headers()
 	r.Fileserver()
-	r.Default()
+	r.Default(render.NewPage(content.FS(), render.ConfigFromEnv()))
 	r.Camera(stubStream{})
 
 	return r
@@ -55,18 +61,23 @@ func TestRouter(t *testing.T) {
 		assert.NotContains(t, body, "secret-slack-path")
 	})
 
-	t.Run("the encoded page config holds only the base url and environment", func(t *testing.T) {
+	t.Run("the encoded page config holds only the base url, environment and asset hashes", func(t *testing.T) {
 		body := get(r, "/").Body.String()
+		m := regexp.MustCompile(`id="script_config" type="hidden" value="([^"]+)"`).FindStringSubmatch(body)
+		require.Len(t, m, 2)
+		raw, err := base64.StdEncoding.DecodeString(m[1])
+		require.NoError(t, err)
 
-		assert.Contains(t, body, "eyJBUFBfQkFTRV9VUkwiOiJodHRwOi8vbG9jYWxob3N0Ojk5MzgiLCJBUFBfRU5WIjoidGVzdCJ9")
+		assert.JSONEq(t, `{"APP_BASE_URL":"http://localhost:9938","APP_ENV":"test","ASSET_HASHES":{}}`, string(raw))
 	})
 
-	t.Run("an unknown path renders the same page", func(t *testing.T) {
-		root := get(r, "/").Body.String()
+	t.Run("an unknown path renders the page marked noindex", func(t *testing.T) {
 		rec := get(r, "/no/such/path")
 
 		require.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, root, rec.Body.String())
+		assert.Contains(t, rec.Body.String(), `<meta name="robots" content="noindex">`)
+		assert.Contains(t, rec.Body.String(), `data-prerendered=""`)
+		assert.NotContains(t, get(r, "/").Body.String(), "noindex")
 	})
 
 	t.Run("a static asset is served", func(t *testing.T) {

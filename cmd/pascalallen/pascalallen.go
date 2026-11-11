@@ -7,8 +7,10 @@ import (
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/command_handler"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/query_handler"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/content"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/camera"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/container"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/render"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/routes"
 	"os"
 	"time"
@@ -33,8 +35,9 @@ func main() {
 	router := routes.NewRouter()
 
 	router.Config()
+	router.Headers()
 	router.Fileserver()
-	router.Default()
+	router.Default(render.NewPage(content.FS(), render.ConfigFromEnv()))
 	router.Camera(camera.NewHub(camera.Config{
 		Source: camera.GStreamerSource,
 		Check:  camera.GStreamerAvailable,
