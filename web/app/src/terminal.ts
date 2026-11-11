@@ -1,5 +1,15 @@
 import type { Result, Shell } from './bridge';
-import { applyTheme, fetchFeed, OpenImpl, openUrl, readTheme, StorageAccess } from './effects';
+import {
+  applyTheme,
+  CAMERA_STREAM,
+  cameraAvailable,
+  fetchFeed,
+  OpenImpl,
+  openUrl,
+  readTheme,
+  StorageAccess,
+  THEMES
+} from './effects';
 import { attachEditor } from './input';
 import { renderEcho, renderEntry, renderResult } from './render';
 
@@ -57,6 +67,31 @@ const byId = <T extends HTMLElement>(doc: Document, id: string): T => {
 };
 
 const plain = (text: string, style = 'plain') => ({ text, style, href: '', run: '' });
+
+const CAMERA_OFFLINE: Result = {
+  blocks: [{ kind: 'error', lines: [[plain('camera: the camera is offline right now', 'error')]], src: '', alt: '' }],
+  effects: []
+};
+
+const failureNotice = (doc: Document): HTMLElement => {
+  const block = doc.createElement('div');
+  block.className = 'block block-error';
+  const line = doc.createElement('div');
+  line.className = 'line';
+  const text = doc.createElement('span');
+  text.className = 's-warning';
+  text.textContent = 'The terminal could not start. Read the ';
+  const link = doc.createElement('a');
+  link.className = 's-accent';
+  link.setAttribute('href', '/plain');
+  link.textContent = 'plain text version';
+  const end = doc.createElement('span');
+  end.className = 's-warning';
+  end.textContent = '.';
+  line.append(text, link, end);
+  block.append(line);
+  return block;
+};
 
 export const createTerminal = (options: TerminalOptions): Terminal => {
   const { win } = options;
@@ -124,6 +159,18 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
       .catch(() => undefined);
   };
 
+  const showWhenLive = (target: HTMLElement, result: Result): void => {
+    if (!result.blocks.some(block => block.kind === 'media' && block.src === CAMERA_STREAM)) {
+      append(target, result);
+      return;
+    }
+    cameraAvailable(fetchImpl, fetchTimeoutMs).then(available => {
+      const wasAtBottom = atBottom();
+      append(target, available ? result : CAMERA_OFFLINE);
+      follow(wasAtBottom);
+    });
+  };
+
   const run = (line: string, user: boolean): void => {
     if (failed) {
       return;
@@ -160,7 +207,7 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
           break;
       }
     }
-    append(target, result);
+    showWhenLive(target, result);
     if (!target.hasChildNodes()) {
       target.remove();
     }
@@ -265,9 +312,9 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
         append(entry, sh.boot());
       }
       prompt.textContent = sh.prompt();
-      const stored = readTheme(storage);
-      if (stored !== null) {
-        sh.setTheme(stored);
+      const active = readTheme(storage) ?? doc.documentElement.getAttribute('data-theme');
+      if (active !== null && THEMES.includes(active)) {
+        sh.setTheme(active);
       }
       deepLink();
       for (const line of queue.splice(0)) {
@@ -277,19 +324,11 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
     () => {
       failed = true;
       root.setAttribute('data-state', 'failed');
+      input.disabled = true;
       const entry = renderEntry(doc);
+      entry.append(failureNotice(doc));
       output.append(entry);
-      append(entry, {
-        blocks: [
-          {
-            kind: 'error',
-            lines: [[plain('the terminal is unavailable; the content is below in plain view', 'warning')]],
-            src: '',
-            alt: ''
-          }
-        ],
-        effects: []
-      });
+      reveal(entry);
     }
   );
 

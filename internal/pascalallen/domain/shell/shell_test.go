@@ -41,6 +41,23 @@ func TestPrompt(t *testing.T) {
 		assert.Contains(t, resultText(newTestShell(WithTheme("amber")).Exec("theme")), "* amber")
 	})
 
+	t.Run("SetTheme switches to a known theme without output or history", func(t *testing.T) {
+		s := newTestShell()
+
+		assert.True(t, s.SetTheme("light"))
+
+		assert.Contains(t, resultText(s.Exec("theme")), "* light")
+		assert.Equal(t, []string{"theme"}, s.History())
+	})
+
+	t.Run("SetTheme ignores an unknown theme", func(t *testing.T) {
+		s := newTestShell(WithTheme("amber"))
+
+		assert.False(t, s.SetTheme("neon"))
+
+		assert.Contains(t, resultText(s.Exec("theme")), "* amber")
+	})
+
 	t.Run("strips control characters from the prompt", func(t *testing.T) {
 		assert.Equal(t, "a b@pascalallen.com:~$", newTestShell(WithUser("a\x1bb")).Prompt())
 	})

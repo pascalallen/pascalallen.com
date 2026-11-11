@@ -66,7 +66,7 @@ async function main() {
     assert.equal(logged.length, 1, 'a throwing __shellReady is logged once');
     assert.match(logged[0], /__shellReady/);
     console.error = originalError;
-    for (const name of ['boot', 'exec', 'complete', 'prompt', 'history', 'commands', 'deliver', 'deliverError']) {
+    for (const name of ['boot', 'exec', 'complete', 'prompt', 'history', 'commands', 'deliver', 'deliverError', 'setTheme']) {
         assert.equal(typeof sh[name], 'function', name);
     }
 
@@ -173,6 +173,11 @@ async function main() {
     assert.equal(r.blocks[0].kind, 'error');
 
     assert.equal(sh.prompt(), 'visitor@pascalallen.com:~$');
+
+    assert.equal(sh.setTheme('amber'), true, 'setTheme accepts a known theme');
+    assert.equal(sh.setTheme('neon'), false, 'setTheme refuses an unknown theme');
+    assert.equal(sh.setTheme().blocks[0].kind, 'error', 'setTheme without a name is an error result');
+    assert.match(text(sh.exec('theme')), /\* amber/, 'the theme command reports the theme set by the host');
     console.log('wasm smoke test passed');
     process.exit(0);
 }

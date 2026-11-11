@@ -8,7 +8,8 @@ nothing from a `Result` is ever parsed as HTML.
 ## Page skeleton (`web/template/index.tmpl`)
 
 ```html
-<div class="terminal" id="terminal" data-state="loading" data-wasm-src="/static/assets/shell.wasm">
+<div class="terminal" id="terminal" data-state="loading" data-wasm-src="/static/assets/shell.wasm?v=<hash>"
+     data-runtime-src="/static/assets/wasm_exec.js?v=<hash>">
   <div class="scroll" id="scroll">
     <div class="output" id="output" role="log" aria-live="polite" aria-label="Terminal output">
       <!-- entries -->
@@ -28,16 +29,20 @@ nothing from a `Result` is ever parsed as HTML.
 
 | Element | Required | Notes |
 |---|---|---|
-| `#terminal` | yes | `data-state` is `loading`, then `ready` or `failed` (set by the host). `data-wasm-src` is the module URL; append `?v=<hash>` for cache busting. |
+| `#terminal` | yes | `data-state` is `loading`, then `ready` or `failed` (set by the host). `data-wasm-src` and `data-runtime-src` are the module and runtime URLs from the `asset` helper (`?v=<content hash>`, cached immutably). |
 | `#scroll` | yes | The scrolling region. |
 | `#output` | yes | `role="log"`, `aria-live="polite"`. Holds entries only. |
 | `#prompt` | yes | Text is `Shell.Prompt()`; the host replaces it after each command. |
 | `#input` | yes | The real input. Do not wrap it in a `<form>` (Enter must not submit). |
 | `.chips > a.chip[data-run]` | no | Tappable commands. `href="/#<command>"` so they work as deep links before the host loads. |
 
-Scripts: `app.js` only, `defer`, same origin; stylesheet `app.css`. The host loads `wasm_exec.js` itself (it fetches
-the file, requires a JavaScript content type, then injects a `<script>`), so a missing or HTML-served runtime puts the
-terminal in the `failed` state instead of logging a syntax error. Do not add a static `wasm_exec.js` tag.
+Head, in order: `theme.js` (a blocking script, no `defer`, under 512 bytes gzipped, that only sets `data-theme` on
+`<html>` from the stored theme so a reload never paints the default theme first; it is in the shared head, so `/plain`
+gets it too), the stylesheet `app.css`, a `<link rel="preload" href="<data-wasm-src>" as="fetch"
+type="application/wasm" crossorigin>` for the module, and `app.js` with `defer`. All are same origin and go through the
+`asset` helper. The host loads `wasm_exec.js` itself from `data-runtime-src` (it fetches the file, requires a
+JavaScript content type, then injects a `<script>`), so a missing or HTML-served runtime puts the terminal in the
+`failed` state instead of logging a syntax error. Do not add a static `wasm_exec.js` tag.
 
 ## Entries
 
@@ -64,8 +69,14 @@ Each command is one entry. The boot screen is an entry with no echo line.
   the entry's blocks; the echo line is not under a `.block` and gets no `--i`. Server-rendered markup must not include
   `reveal` or `--i`: pre-rendered content must be visible without JS or animation, and the host never adds either to
   adopted `data-prerendered` entries.
-- **Failure state**: when the shell cannot load, `#terminal` gets `data-state="failed"` and the host appends an entry
-  with one `block block-error` holding a `s-warning` line saying the terminal is unavailable and the content is below.
+- **Failure state**: when the shell cannot load, `#terminal` gets `data-state="failed"`, `#input` is disabled and the
+  host appends an entry with one `block block-error` whose line reads `The terminal could not start. Read the plain
+  text version.`: `s-warning` spans around `<a class="s-accent" href="/plain">plain text version</a>` (same tab, no
+  `target`). The pre-rendered boot screen stays above it.
+- **Camera**: a result with a `media` block whose `src` is `/api/v1/camera/stream` is not rendered until the host
+  has read `/api/v1/camera/status`. When `data.available` is `true` the result renders as usual; otherwise (false, an
+  HTTP error, a timeout or a network failure) the entry gets one `block block-error` with the `s-error` line
+  `camera: the camera is offline right now`, and the stream is never requested.
   `clear` (typed by the visitor) removes every child of `#output`, pre-rendered ones included.
 
 ## Blocks, lines, spans

@@ -13,7 +13,7 @@ import (
 
 const maxDepth = 4
 
-var functions = []string{"boot", "exec", "complete", "prompt", "history", "commands", "deliver", "deliverError"}
+var functions = []string{"boot", "exec", "complete", "prompt", "history", "commands", "deliver", "deliverError", "setTheme"}
 
 func global(name string) js.Value {
 	return js.Global().Get(name)

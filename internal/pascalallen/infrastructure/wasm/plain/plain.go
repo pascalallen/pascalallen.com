@@ -141,6 +141,12 @@ func (b *Bridge) CallLazy(name string, convert func() []any) (out any) {
 			return failure("shell: deliverError expects 1 string argument")
 		}
 		return Result(b.sh.DeliverError(feed))
+	case "setTheme":
+		theme, ok := stringArg(args, 0, 1)
+		if !ok {
+			return failure("shell: setTheme expects 1 string argument")
+		}
+		return b.sh.SetTheme(theme)
 	}
 
 	return failure("shell: unknown function " + name)

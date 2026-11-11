@@ -45,6 +45,7 @@ func (s *Shell) Boot() Result
 func (s *Shell) Deliver(feed string, items []FeedItem) Result
 func (s *Shell) DeliverError(feed string) Result
 func (s *Shell) Commands() []CommandInfo
+func (s *Shell) SetTheme(name string) bool
 ```
 
 - `Exec` runs one input line. It records the trimmed line in history first (blank lines are skipped, consecutive
@@ -69,6 +70,8 @@ func (s *Shell) Commands() []CommandInfo
   `packages` (`shell.FeedRepos`, `shell.FeedPackages`); anything else returns an error block.
 - `Commands` lists the visible commands in registry order, for help screens and the server-rendered page. Easter
   eggs and the write commands (`sudo`, `vim`, `rm`, `mkdir`, `touch`, `mv`) work but are not listed.
+- `SetTheme` sets the current theme without output, effects or history, so the `theme` listing agrees with a theme
+  the host restored from storage. It returns false and keeps the current theme for an unknown name.
 
 ## Types
 

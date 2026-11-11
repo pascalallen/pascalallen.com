@@ -24,6 +24,10 @@ export default tseslint.config(
     }
   },
   {
+    files: ['e2e/**/*.ts'],
+    rules: { 'no-empty-pattern': 'off' }
+  },
+  {
     files: ['**/*.js', '**/*.mjs'],
     languageOptions: {
       globals: {

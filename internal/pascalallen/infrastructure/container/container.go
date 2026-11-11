@@ -15,6 +15,8 @@ type Config struct {
 	GitHubToken     string
 	SlackWebhookURL string
 	AppEnv          string
+	GitHubReposURL  string
+	NpmSearchURL    string
 }
 
 type Container struct {
@@ -49,7 +51,17 @@ func NewConfig() Config {
 		GitHubToken:     os.Getenv("GITHUB_TOKEN"),
 		SlackWebhookURL: os.Getenv("SLACK_DM_URL"),
 		AppEnv:          os.Getenv("APP_ENV"),
+		GitHubReposURL:  envOr("GITHUB_REPOS_URL", feed.GitHubReposURL),
+		NpmSearchURL:    envOr("NPM_SEARCH_URL", feed.NpmSearchURL),
 	}
+}
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+
+	return fallback
 }
 
 func NewLogger() *slog.Logger {
@@ -57,11 +69,11 @@ func NewLogger() *slog.Logger {
 }
 
 func NewRepositoryFeed(config Config, cache *feed.Cache) domainfeed.RepositoryFeed {
-	return feed.NewCachedRepositoryFeed(cache, feed.NewGitHubClient(feed.GitHubReposURL, config.GitHubToken, nil))
+	return feed.NewCachedRepositoryFeed(cache, feed.NewGitHubClient(config.GitHubReposURL, config.GitHubToken, nil))
 }
 
-func NewPackageFeed(cache *feed.Cache) domainfeed.PackageFeed {
-	return feed.NewCachedPackageFeed(cache, feed.NewNpmClient(feed.NpmSearchURL, nil))
+func NewPackageFeed(config Config, cache *feed.Cache) domainfeed.PackageFeed {
+	return feed.NewCachedPackageFeed(cache, feed.NewNpmClient(config.NpmSearchURL, nil))
 }
 
 func NewVisitNotifier(config Config) visit.Notifier {

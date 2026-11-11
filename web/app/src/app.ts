@@ -16,7 +16,7 @@ if (root !== null) {
   const useFake =
     env(EnvKey.APP_ENV) === 'local' && new URLSearchParams(window.location.search).get('shell') === 'fake';
   const shell = loadShell({
-    runtimeSrc: '/static/assets/wasm_exec.js',
+    runtimeSrc: root.getAttribute('data-runtime-src') ?? '/static/assets/wasm_exec.js',
     wasmSrc: root.getAttribute('data-wasm-src') ?? '/static/assets/shell.wasm',
     devShellSrc: useFake ? '/static/assets/dev-shell.js' : undefined
   });

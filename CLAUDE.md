@@ -19,6 +19,7 @@ Go and Node run in throwaway containers, so no running compose stack is needed t
 
 ```bash
 bin/verify          # the full gate, same steps as CI, from any worktree
+bin/e2e [args]      # build WASM, assets and the binary, then run Playwright in its pinned container (args go to playwright test)
 bin/up              # build + up + logs; base/pi/prod select the compose overlay
 bin/down            # same selectors as bin/up
 bin/exec <cmd>      # run a command in the running container (the runtime image has no Go toolchain)

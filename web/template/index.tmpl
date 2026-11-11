@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 {{ template "head" .Head }}
+    <link rel="preload" href="{{ asset "shell.wasm" }}" as="fetch" type="application/wasm" crossorigin>
     <script src="{{ asset "app.js" }}" defer></script>
 </head>
 <body>
-    <div class="terminal" id="terminal" data-state="loading" data-wasm-src="{{ asset "shell.wasm" }}">
+    <div class="terminal" id="terminal" data-state="loading" data-wasm-src="{{ asset "shell.wasm" }}" data-runtime-src="{{ asset "wasm_exec.js" }}">
         <div class="scroll" id="scroll">
             <div class="output" id="output" role="log" aria-live="polite" aria-label="Terminal output">{{ .Boot }}</div>
             <div class="prompt-line">
