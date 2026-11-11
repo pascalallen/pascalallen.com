@@ -1,0 +1,445 @@
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0e1116;
+  --bar: #0a0d11;
+  --raise: #161b22;
+  --fg: #d8dee6;
+  --dim: #8b95a3;
+  --heading: #f3f5f8;
+  --accent: #5cc8e6;
+  --path: #b4a2f2;
+  --success: #82d39a;
+  --warning: #e8c06a;
+  --error: #f28b82;
+  --rule: #262d37;
+  --sel: rgb(92 200 230 / 28%);
+  --glow: rgb(92 200 230 / 6%);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f5f0;
+  --bar: #efece4;
+  --raise: #e9e5da;
+  --fg: #1f2328;
+  --dim: #5a6270;
+  --heading: #0d1117;
+  --accent: #006d8f;
+  --path: #6d3fc0;
+  --success: #1f7a3a;
+  --warning: #8a5a00;
+  --error: #b3261e;
+  --rule: #d9d3c5;
+  --sel: rgb(0 109 143 / 18%);
+  --glow: rgb(0 109 143 / 5%);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #f7f5f0;
+    --bar: #efece4;
+    --raise: #e9e5da;
+    --fg: #1f2328;
+    --dim: #5a6270;
+    --heading: #0d1117;
+    --accent: #006d8f;
+    --path: #6d3fc0;
+    --success: #1f7a3a;
+    --warning: #8a5a00;
+    --error: #b3261e;
+    --rule: #d9d3c5;
+    --sel: rgb(0 109 143 / 18%);
+    --glow: rgb(0 109 143 / 5%);
+  }
+}
+
+[data-theme='amber'] {
+  color-scheme: dark;
+  --bg: #130d05;
+  --bar: #0e0903;
+  --raise: #21170a;
+  --fg: #ffb347;
+  --dim: #c0904f;
+  --heading: #ffe3b0;
+  --accent: #ffd27f;
+  --path: #ffc46b;
+  --success: #e8d27a;
+  --warning: #ffe08a;
+  --error: #ff8a66;
+  --rule: #3a2a12;
+  --sel: rgb(255 179 71 / 24%);
+  --glow: rgb(255 179 71 / 7%);
+}
+
+[data-theme='green'] {
+  color-scheme: dark;
+  --bg: #07110b;
+  --bar: #040b07;
+  --raise: #0f1f15;
+  --fg: #8ee6a8;
+  --dim: #62ab7e;
+  --heading: #d8ffe0;
+  --accent: #c4f5a0;
+  --path: #9ee8d9;
+  --success: #b8f5b0;
+  --warning: #e6e58a;
+  --error: #ff9a8a;
+  --rule: #173322;
+  --sel: rgb(142 230 168 / 22%);
+  --glow: rgb(142 230 168 / 6%);
+}
+
+:root {
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, 'Cascadia Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --lh: 1.6;
+  --measure: 92ch;
+  --gutter: clamp(0.9rem, 4vw, 2.5rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  font-family: var(--mono);
+  font-size: clamp(13px, 0.35vw + 12px, 15.5px);
+  line-height: var(--lh);
+  font-variant-ligatures: none;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--sel);
+}
+
+.terminal {
+  position: fixed;
+  inset: var(--vvt, 0) 0 auto 0;
+  height: 100vh;
+  height: var(--vvh, 100dvh);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background:
+    radial-gradient(120ch 60ch at 0 0, var(--glow), transparent 70%),
+    var(--bg);
+}
+
+.scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+  padding: max(var(--gutter), env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) 2.5rem
+    max(var(--gutter), env(safe-area-inset-left));
+}
+
+.output,
+.prompt-line {
+  max-width: var(--measure);
+}
+
+.output:empty {
+  display: none;
+}
+
+.entry {
+  position: relative;
+  margin: 0 0 1.1em;
+  padding-left: 1.5ch;
+  border-left: 1px solid transparent;
+  transition: border-color 160ms ease;
+}
+
+.entry:hover {
+  border-left-color: var(--rule);
+}
+
+.entry-boot {
+  margin-bottom: 1.6em;
+}
+
+.line {
+  min-height: calc(var(--lh) * 1em);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.echo {
+  margin-bottom: 0.15em;
+}
+
+.prompt {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.cmd {
+  color: var(--heading);
+  font-weight: 600;
+}
+
+.s-bold {
+  font-weight: 700;
+}
+
+.s-dim {
+  color: var(--dim);
+}
+
+.s-accent {
+  color: var(--accent);
+}
+
+.s-success {
+  color: var(--success);
+}
+
+.s-warning {
+  color: var(--warning);
+}
+
+.s-error {
+  color: var(--error);
+}
+
+.s-path {
+  color: var(--path);
+}
+
+.s-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5ch;
+  width: 100%;
+  margin-top: 0.4em;
+  color: var(--heading);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.s-heading::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--rule);
+}
+
+.block-error {
+  border-left: 2px solid var(--error);
+  margin-left: -1.5ch;
+  padding-left: calc(1.5ch - 2px);
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentcolor 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+a:hover {
+  text-decoration-color: currentcolor;
+  background: var(--sel);
+}
+
+.run {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in srgb, currentcolor 55%, transparent);
+  text-underline-offset: 0.28em;
+  cursor: pointer;
+}
+
+.run.s-plain {
+  color: var(--fg);
+}
+
+.run:hover {
+  color: var(--accent);
+  text-decoration-style: solid;
+}
+
+a:focus-visible,
+.run:focus-visible,
+.chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.media {
+  display: block;
+  width: min(100%, 640px);
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin: 0.4em 0 0.5em;
+  object-fit: cover;
+  background: var(--raise);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+.prompt-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 1ch;
+  margin-left: -1px;
+  padding-left: 1.5ch;
+  border-left: 2px solid transparent;
+  transition: border-color 160ms ease;
+}
+
+.prompt-line:focus-within {
+  border-left-color: var(--accent);
+}
+
+.input {
+  flex: 1 1 14ch;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--heading);
+  font: inherit;
+  line-height: inherit;
+  caret-color: var(--accent);
+  caret-shape: block;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  counter-reset: chip;
+  padding: 0.3rem max(var(--gutter), env(safe-area-inset-right)) calc(0.3rem + env(safe-area-inset-bottom))
+    max(var(--gutter), env(safe-area-inset-left));
+  border-top: 1px solid var(--rule);
+  background: var(--bar);
+  font-size: 0.9em;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chips::before {
+  content: 'pascalallen';
+  flex: none;
+  margin-right: 0.6rem;
+  padding: 0.1rem 0.55rem;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  border-radius: 2px;
+}
+
+.chips::after {
+  flex: none;
+  margin-left: auto;
+  padding-left: 1rem;
+  color: var(--dim);
+}
+
+.terminal[data-state='loading'] .chips::after {
+  content: 'loading shell';
+}
+
+.terminal[data-state='failed'] .chips::after {
+  content: 'static mode';
+}
+
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.55rem;
+  color: var(--dim);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 2px;
+}
+
+.chip::before {
+  counter-increment: chip;
+  content: counter(chip) ':';
+  color: var(--accent);
+}
+
+.chip:hover {
+  background: var(--raise);
+  color: var(--fg);
+}
+
+@media (pointer: coarse) {
+  .chip {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+  }
+}
+
+@media (max-width: 30rem) {
+  .gap {
+    display: block;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .chips::after {
+    content: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal > .block > .line {
+    animation: line-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 14ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry,
+  .prompt-line {
+    transition: none;
+  }
+}
+
+@keyframes line-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}

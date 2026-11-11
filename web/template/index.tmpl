@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
     <title>Pascal Allen - pascalallen.com</title>
     <meta name="description" content="Pascal Allen, software engineer. The terminal at pascalallen.com is coming online.">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
@@ -10,13 +11,29 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="manifest" href="/static/site.webmanifest">
     <link href="/static/assets/app.css" rel="stylesheet" type="text/css">
+    <script src="/static/assets/wasm_exec.js" defer></script>
+    <script src="/static/assets/app.js" defer></script>
 </head>
 <body>
-    <main>
-        <h1>Pascal Allen</h1>
-        <p id="status">terminal coming online</p>
-    </main>
+    <div class="terminal" id="terminal" data-state="loading" data-wasm-src="/static/assets/shell.wasm">
+        <div class="scroll" id="scroll">
+            <div class="output" id="output" role="log" aria-live="polite" aria-label="Terminal output"></div>
+            <div class="prompt-line">
+                <label class="prompt" id="prompt" for="input">visitor@pascalallen.com:~$</label>
+                <input class="input" id="input" type="text" name="command" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
+            </div>
+        </div>
+        <nav class="chips" aria-label="Commands">
+            <a class="chip" href="/#help" data-run="help">help</a>
+            <a class="chip" href="/#about" data-run="about">about</a>
+            <a class="chip" href="/#projects" data-run="projects">projects</a>
+            <a class="chip" href="/#writing" data-run="writing">writing</a>
+            <a class="chip" href="/#repos" data-run="repos">repos</a>
+            <a class="chip" href="/#contact" data-run="contact">contact</a>
+            <a class="chip" href="/#theme" data-run="theme">theme</a>
+            <a class="chip" href="/#clear" data-run="clear">clear</a>
+        </nav>
+    </div>
     <input id="script_config" type="hidden" value="{{ .environment }}" />
-    <script type="text/javascript" src="/static/assets/app.js"></script>
 </body>
 </html>
