@@ -57,14 +57,16 @@ run_go go vet ./...
 step "go test -race -cover ./..."
 run_go go test -race -cover ./...
 
-step "wire drift"
-if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
-    run_go go generate ./...
-elif [ -f cmd/pascalallen/wire.go ]; then
-    run_go bin/wire-gen
-else
-    printf 'no wire injector, skipped\n'
+step "go mod tidy drift"
+tidy_before="$(cat go.mod go.sum)"
+run_go go mod tidy
+if [ "$tidy_before" != "$(cat go.mod go.sum)" ]; then
+    git diff go.mod go.sum
+    exit 1
 fi
+
+step "wire drift"
+run_go go generate ./...
 if [ -n "$(git status --porcelain)" ]; then
     git status --porcelain
     git diff

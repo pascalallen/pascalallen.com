@@ -22,42 +22,6 @@ type JSendSuccessResponse[T any] struct {
 	Data   T      `json:"data,omitempty"`
 }
 
-func InternalServerErrorResponse(c *gin.Context, error error) {
-	c.JSON(
-		http.StatusInternalServerError,
-		JSendErrorResponse[string]{
-			Status:  "error",
-			Message: error.Error(),
-		},
-	)
-
-	return
-}
-
-func UnprocessableEntityResponse(c *gin.Context, error error) {
-	c.JSON(
-		http.StatusUnprocessableEntity,
-		JSendErrorResponse[string]{
-			Status:  "error",
-			Message: error.Error(),
-		},
-	)
-
-	return
-}
-
-func UnauthorizedResponse(c *gin.Context, error error) {
-	c.JSON(
-		http.StatusUnauthorized,
-		JSendFailResponse[string]{
-			Status: "fail",
-			Data:   error.Error(),
-		},
-	)
-
-	return
-}
-
 func BadRequestResponse(c *gin.Context, error error) {
 	c.JSON(
 		http.StatusBadRequest,
@@ -107,18 +71,6 @@ func BadGatewayResponse(c *gin.Context, message string) {
 			Status:  "error",
 			Message: message,
 			Code:    http.StatusBadGateway,
-		},
-	)
-
-	return
-}
-
-func CreatedResponse[T interface{}](c *gin.Context, i *T) {
-	c.JSON(
-		http.StatusCreated,
-		JSendSuccessResponse[T]{
-			Status: "success",
-			Data:   *i,
 		},
 	)
 

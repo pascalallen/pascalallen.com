@@ -91,12 +91,20 @@ Each command is one entry. The boot screen is an entry with no echo line.
 | `Block{Kind: error}` | `<div>` | `block block-error` |
 | `Block{Kind: media}` | `<div>` | `block block-media`; first child `<img class="media" src alt>` when the source is allowed (below), then its lines |
 | unknown kind | `<div>` | `block block-text` |
-| `Line` | `<div>` | `line`; an empty `Line` is an empty `<div class="line"></div>` |
+| `Line` | `<div>` | `line` plus the modifiers below; an empty `Line` is an empty `<div class="line"></div>` |
 | plain span | `<span>` | `s-<style>` |
 | link span (`Href` allowed) | `<a>` | `s-<style>`, `href=<normalised URL>`, `target="_blank"`, `rel="noopener noreferrer"` |
 | link span (`Href` refused) | `<span>` | `s-<style>`; text kept, no link |
 | run span | host: `<button type="button">`; server: `<a href="/#<encodeURIComponent(run)>">` | `run s-<style>`, `data-run=<command>` |
 
+- **Line modifiers** (identical in the host and the server renderer, decided from the line's spans):
+  - `indent-N` (N from 1 to 8): the first span's leading spaces are counted, removed from its text (a span that was
+    only spaces is dropped) and emitted as the class; CSS gives `padding-left: Nch`, so wrapped rows keep the indent.
+    More than eight spaces count as eight.
+  - `line-prose`: the line has no indent, no run span and no gap span. It carries the 80ch measure; listings, tables
+    and indented rows use the full width.
+  - Run spans and path-styled spans are `inline-block` with `max-width: 100%`, so a name never breaks inside itself;
+    rows wrap only between items.
 - Styles: `plain`, `bold`, `dim`, `accent`, `success`, `warning`, `error`, `heading`, `path`. Anything else
   becomes `s-plain`. A span with both `Href` and `Run` cannot happen; the host checks `Href` first.
 - **Gap spans**: a span whose text is two or more spaces and nothing else gets an extra class `gap`
@@ -125,7 +133,7 @@ updates the hash with `history.replaceState` only for allow-listed commands; any
 
 ## Content-Security-Policy
 
-The template carries this policy as a `<meta http-equiv>`; the header middleware (item 9) should send the same
+The template carries this policy as a `<meta http-equiv>`; the header middleware (`infrastructure/routes/headers.go`) sends the same
 policy plus `frame-ancestors 'none'` (not allowed in a meta tag):
 
 ```

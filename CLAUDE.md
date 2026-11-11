@@ -4,9 +4,7 @@ Pointers and stable rules. Status lives in the epic issue #36 and `docs/build-lo
 
 ## What this is
 
-pascalallen.com: the whole site is a bash-style terminal. A pure Go shell runs natively on the server (pre-render, tests) and as WASM in the browser. One Go binary (Gin) serves it, a small JSON API under `/api/v1` and a live MJPEG camera stream from a Raspberry Pi. Production is the Pi itself running Docker Compose (`scripts/cron-deploy` is the intended deploy path, repaired by #42); k8s manifests are an alternate path in `docs/DEPLOYING.md`.
-
-The code under the old layout (GORM, Postgres, RabbitMQ, auth, the React SPA) is removed by #38. Do not extend it.
+pascalallen.com: the whole site is a bash-style terminal. A pure Go shell runs natively on the server (pre-render, tests) and as WASM in the browser. One Go binary (Gin) serves it, a small JSON API under `/api/v1` and a live MJPEG camera stream from a Raspberry Pi. Production is the Pi itself running Docker Compose (`scripts/cron-deploy` redeploys `main`; see `docs/DEPLOYING.md`).
 
 ## Domain docs
 
@@ -28,19 +26,19 @@ bin/yarn <args>     # yarn in web/app (node container)
 
 Site: http://localhost:9990. Live checks from agents use the port in their brief, never 9990.
 
-## Architecture (target)
+## Architecture
 
 Module `github.com/pascalallen/pascalallen.com`; entrypoint `cmd/pascalallen`; app code under `internal/pascalallen/`.
 
 - `domain/shell`: pure Go, stdlib only. Parser, read-only virtual filesystem, command registry, completion, history. `Exec(line)` returns blocks (styled spans, links) and effects.
 - `domain/content`: `go:embed` tree that is the virtual filesystem.
-- `application`: queries (`ListRepositories`, `ListPackages`), command (`RecordVisit`), ports for feeds.
-- `infrastructure`: `wasm` (bridge only), `feed` (GitHub and npm clients, TTL cache), `camera` (hub), `messaging` (synchronous buses, `ctx` threaded), `container` (Wire injector), `http` (Gin routes, JSend, template).
+- `application`: queries (`ListRepositories`, `ListPackages`), command (`RecordVisit`), `render` (server HTML for blocks, the boot screen and `/plain`), `http` actions and responders.
+- `infrastructure`: `wasm` (bridge only), `feed` (GitHub and npm clients, TTL cache), `camera` (hub), `slack` (visit notifier), `messaging` (synchronous buses, `ctx` threaded), `container` (Wire injector), `routes` (Gin routes, JSend, headers, static files, templates in `web/template`).
 - `web/app`: thin hand-written TypeScript host, no framework. Owns the DOM, input, rendering of blocks, scrolling, themes.
 - Live commands return an effect; the host calls the API and feeds the result back. No secret ever reaches the browser.
 - Layering is strict: infrastructure imports application and domain; domain imports nothing outside itself.
 
-Layout drift is enforced by an architecture test once item 3 lands; until then `REVIEW.md` is the check.
+Layout drift is enforced by `internal/pascalallen/architecture_test.go` and `internal/pascalallen/domain/architecture_test.go`.
 
 ## Generated files
 

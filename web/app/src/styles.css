@@ -175,9 +175,50 @@ body {
 
 .line {
   min-height: calc(var(--lh) * 1em);
-  max-width: 80ch;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.line-prose {
+  max-width: 80ch;
+}
+
+.indent-1 {
+  padding-left: 1ch;
+}
+
+.indent-2 {
+  padding-left: 2ch;
+}
+
+.indent-3 {
+  padding-left: 3ch;
+}
+
+.indent-4 {
+  padding-left: 4ch;
+}
+
+.indent-5 {
+  padding-left: 5ch;
+}
+
+.indent-6 {
+  padding-left: 6ch;
+}
+
+.indent-7 {
+  padding-left: 7ch;
+}
+
+.indent-8 {
+  padding-left: 8ch;
+}
+
+.run,
+.s-path {
+  display: inline-block;
+  max-width: 100%;
 }
 
 .echo {

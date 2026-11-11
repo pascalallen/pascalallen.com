@@ -11,7 +11,7 @@ You implement exactly one checklist item. Your prompt gives the path of your bri
 - You are in your own worktree: `git fetch origin && git checkout -b <branch> origin/revamp` (the base branch in the brief wins).
 - Never `reset --soft`, squash, rebase onto a stale tree, amend or force-push. A review fix is a new plain commit.
 - Edit only your item's files. Do not edit `CLAUDE.md`, `docs/build-log.md`, ADRs or the issue unless the brief says so.
-- Siblings run in parallel: append at the END of shared lists and files (routes, registries, query hooks, `main.go` blocks). Never reformat lines you did not write.
+- Siblings run in parallel: append at the END of shared lists and files (routes, registries, query hooks, `cmd/pascalallen` blocks). Never reformat lines you did not write.
 - Keep every scratch file in your own scratch dir with your slug in its name.
 - Before every push and before the PR: `git diff --stat <base>...HEAD` lists only your files, and `gh pr list --head <branch>` is empty (otherwise push to that PR).
 - One or two commits, plain messages, no Co-Authored-By trailer. `git push -u origin <branch>`.

@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var baseTime = time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+
 func staticEngine(t *testing.T, files map[string]string) *gin.Engine {
 	t.Helper()
 	engine, _ := staticEngineAt(t, files)
@@ -33,6 +35,7 @@ func staticEngineAt(t *testing.T, files map[string]string) (*gin.Engine, string)
 		full := filepath.Join(root, name)
 		require.NoError(t, os.MkdirAll(filepath.Dir(full), 0o755))
 		require.NoError(t, os.WriteFile(full, []byte(body), 0o644))
+		require.NoError(t, os.Chtimes(full, baseTime, baseTime))
 	}
 	engine := gin.New()
 	handler := serveStatic(root)
@@ -268,6 +271,49 @@ func TestServeStatic(t *testing.T) {
 		rec := request(engine, http.MethodGet, "/static/assets/plain.css", map[string]string{"If-Modified-Since": since})
 
 		assert.Equal(t, http.StatusNotModified, rec.Code)
+	})
+}
+
+func TestServeStaticStaleSiblings(t *testing.T) {
+	engine, root := staticEngineAt(t, map[string]string{
+		"assets/app.js":    "NEW",
+		"assets/app.js.br": "OLDBR",
+		"assets/app.js.gz": "OLDGZ",
+	})
+	touch := func(name string, at time.Time) {
+		require.NoError(t, os.Chtimes(filepath.Join(root, "assets", name), at, at))
+	}
+	touch("app.js", baseTime.Add(time.Minute))
+
+	t.Run("a brotli sibling older than its source is ignored", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"Accept-Encoding": "br"})
+
+		require.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "NEW", rec.Body.String())
+		assert.Empty(t, rec.Header().Get("Content-Encoding"))
+	})
+
+	t.Run("a gzip sibling older than its source is ignored", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"Accept-Encoding": "gzip"})
+
+		assert.Equal(t, "NEW", rec.Body.String())
+		assert.Empty(t, rec.Header().Get("Content-Encoding"))
+	})
+
+	t.Run("a fresh sibling is served while a stale one is skipped", func(t *testing.T) {
+		touch("app.js.gz", baseTime.Add(2*time.Minute))
+		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"Accept-Encoding": "br, gzip"})
+
+		assert.Equal(t, "OLDGZ", rec.Body.String())
+		assert.Equal(t, "gzip", rec.Header().Get("Content-Encoding"))
+	})
+
+	t.Run("a sibling with the same mtime as its source is served", func(t *testing.T) {
+		touch("app.js.br", baseTime.Add(time.Minute))
+		rec := request(engine, http.MethodGet, "/static/assets/app.js", map[string]string{"Accept-Encoding": "br"})
+
+		assert.Equal(t, "OLDBR", rec.Body.String())
+		assert.Equal(t, "br", rec.Header().Get("Content-Encoding"))
 	})
 }
 

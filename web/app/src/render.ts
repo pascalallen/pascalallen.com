@@ -24,9 +24,30 @@ export const safeMediaSrc = (src: string, origin: string): string | null => {
   }
 };
 
+const isGap = (text: string): boolean => /^ {2,}$/.test(text);
+
 const styleClass = (span: Span): string => {
   const base = `s-${STYLES.has(span.style) ? span.style : 'plain'}`;
-  return /^ {2,}$/.test(span.text) ? `${base} gap` : base;
+  return isGap(span.text) ? `${base} gap` : base;
+};
+
+const MAX_INDENT = 8;
+
+const splitIndent = (line: Line): { className: string; spans: Line } => {
+  if (line.length === 0) {
+    return { className: 'line', spans: line };
+  }
+  const first = line[0];
+  const indent = first.text.length - first.text.replace(/^ +/, '').length;
+  if (indent > 0) {
+    const rest = first.text.slice(indent);
+    return {
+      className: `line indent-${Math.min(indent, MAX_INDENT)}`,
+      spans: rest === '' ? line.slice(1) : [{ ...first, text: rest }, ...line.slice(1)]
+    };
+  }
+  const prose = line.every(span => span.run === '' && !isGap(span.text));
+  return { className: prose ? 'line line-prose' : 'line', spans: line };
 };
 
 export const renderSpan = (doc: Document, span: Span): HTMLElement => {
@@ -53,8 +74,9 @@ export const renderSpan = (doc: Document, span: Span): HTMLElement => {
 
 export const renderLine = (doc: Document, line: Line): HTMLElement => {
   const el = doc.createElement('div');
-  el.className = 'line';
-  for (const span of line) {
+  const { className, spans } = splitIndent(line);
+  el.className = className;
+  for (const span of spans) {
     el.appendChild(renderSpan(doc, span));
   }
   return el;

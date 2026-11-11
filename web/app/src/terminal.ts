@@ -228,7 +228,7 @@ export const createTerminal = (options: TerminalOptions): Terminal => {
         blocks: [
           {
             kind: 'text',
-            lines: [candidates.flatMap((c, i) => (i === 0 ? [plain(c)] : [plain('  '), plain(c)]))],
+            lines: [candidates.flatMap((c, i) => (i === 0 ? [plain(c, 'path')] : [plain('  '), plain(c, 'path')]))],
             src: '',
             alt: ''
           }

@@ -24,15 +24,13 @@ jobs:
         run: test -z "$(gofmt -l cmd internal)" || (gofmt -l cmd internal && exit 1)
       - run: go vet ./...
       - run: go test -race -cover ./...
+      - name: go mod tidy drift
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
       - name: Wire drift
         run: |
-          if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
-            go generate ./...
-          elif [ -f cmd/pascalallen/wire.go ]; then
-            bin/wire-gen
-          else
-            echo "no wire injector, skipped"
-          fi
+          go generate ./...
           if [ -n "$(git status --porcelain)" ]; then
             git status --porcelain
             git diff
