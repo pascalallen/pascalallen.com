@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/camera"
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/routes"
 	"os"
 )
@@ -15,7 +16,10 @@ func main() {
 	router.Config()
 	router.Fileserver()
 	router.Default()
-	router.Camera()
+	router.Camera(camera.NewHub(camera.Config{
+		Source: camera.GStreamerSource,
+		Check:  camera.GStreamerAvailable,
+	}))
 	router.Serve(":" + port())
 }
 

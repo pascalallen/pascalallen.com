@@ -1,16 +1,39 @@
 package action
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/application/http/responder"
+	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/camera"
 )
 
-func HandleCameraStream() gin.HandlerFunc {
+type cameraStatus struct {
+	Available bool `json:"available"`
+}
+
+func HandleCameraStatus(stream camera.Stream) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ch := hub.subscribe()
-		defer hub.unsubscribe(ch)
+		responder.OkResponse(c, cameraStatus{Available: stream.Available()})
+	}
+}
+
+func HandleCameraStream(stream camera.Stream) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		ch, unsubscribe, err := stream.Subscribe(ctx)
+		if err != nil {
+			if errors.Is(err, camera.ErrUnavailable) {
+				responder.ServiceUnavailableResponse(c, err)
+			}
+
+			return
+		}
+		defer unsubscribe()
 
 		c.Header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
 		c.Header("Cache-Control", "no-cache")
@@ -19,7 +42,6 @@ func HandleCameraStream() gin.HandlerFunc {
 		c.Writer.WriteHeader(http.StatusOK)
 		c.Writer.Flush()
 
-		ctx := c.Request.Context()
 		for {
 			select {
 			case <-ctx.Done():
