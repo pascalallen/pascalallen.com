@@ -3,7 +3,7 @@ set -euo pipefail
 
 TOOLS_VERSION="v0.49.0"
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(pwd)"
 WIRE_VERSION="$(awk '$1 == "github.com/google/wire" { print $2; exit }' "$ROOT/go.mod")"
 if [ -z "$WIRE_VERSION" ]; then
     echo "bin/wire-gen: go.mod has no github.com/google/wire requirement; add it with the injector" >&2
@@ -20,4 +20,4 @@ trap 'rm -rf "$BUILD_DIR"' EXIT
 )
 
 cd "$ROOT"
-"$BUILD_DIR/wire" ./internal/pascalallen/infrastructure/container
+"$BUILD_DIR/wire" ./cmd/pascalallen

@@ -11,8 +11,6 @@ import (
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/infrastructure/slack"
 )
 
-//go:generate ../../../../bin/wire-gen
-
 type Config struct {
 	GitHubToken     string
 	SlackWebhookURL string
