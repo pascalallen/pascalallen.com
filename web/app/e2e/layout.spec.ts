@@ -93,4 +93,47 @@ test.describe('a 390px touch screen', () => {
     const entryLefts = edges.filter(edge => edge.padding === edges[0].padding).map(edge => edge.left);
     expect(new Set(entryLefts).size).toBe(1);
   });
+
+  test('a wrapped bullet line in resume hangs its continuation rows under the text after the dash', async ({
+    page
+  }) => {
+    await open(page);
+    await run(page, 'resume');
+    const lineHeight = await lineHeightOf(page);
+    const hang = await lastEntry(page)
+      .locator('.line.bullet')
+      .evaluateAll((lines, lh) => {
+        for (const line of lines) {
+          if (line.getBoundingClientRect().height < lh * 1.5) {
+            continue;
+          }
+          const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+          const node = walker.nextNode() as Text;
+          const rect = (offset: number): DOMRect => {
+            const range = document.createRange();
+            range.setStart(node, offset);
+            range.setEnd(node, offset + 1);
+            return range.getBoundingClientRect();
+          };
+          const dash = rect(0);
+          const text = rect(2);
+          let wrapped: DOMRect | null = null;
+          for (let i = 3; i < node.length; i++) {
+            const r = rect(i);
+            if (r.top > dash.top + lh / 2) {
+              wrapped = r;
+              break;
+            }
+          }
+          if (wrapped) {
+            return { dashLeft: dash.left, textLeft: text.left, wrappedLeft: wrapped.left };
+          }
+        }
+        return null;
+      }, lineHeight);
+    expect(hang).not.toBeNull();
+    expect(hang!.textLeft).toBeGreaterThan(hang!.dashLeft + 1);
+    expect(hang!.wrappedLeft).toBeGreaterThan(hang!.dashLeft + 1);
+    expect(Math.abs(hang!.wrappedLeft - hang!.textLeft)).toBeLessThan(2);
+  });
 });

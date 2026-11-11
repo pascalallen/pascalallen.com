@@ -72,15 +72,23 @@ func splitIndent(line shell.Line) (string, shell.Line) {
 		} else {
 			rest = append(shell.Line{{Text: first[indent:], Style: line[0].Style, Href: line[0].Href, Run: line[0].Run}}, line[1:]...)
 		}
-		return "line indent-" + strconv.Itoa(min(indent, maxIndent)), rest
+		return "line indent-" + strconv.Itoa(min(indent, maxIndent)) + bulletSuffix(rest), rest
 	}
 	for _, span := range line {
 		if span.Run != "" || isGap(span.Text) {
-			return "line", line
+			return "line" + bulletSuffix(line), line
 		}
 	}
 
-	return "line line-prose", line
+	return "line line-prose" + bulletSuffix(line), line
+}
+
+func bulletSuffix(line shell.Line) string {
+	if len(line) > 0 && strings.HasPrefix(line[0].Text, "- ") {
+		return " bullet"
+	}
+
+	return ""
 }
 
 func writeSpan(b *strings.Builder, span shell.Span) {

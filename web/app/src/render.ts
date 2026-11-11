@@ -33,6 +33,8 @@ const styleClass = (span: Span): string => {
 
 const MAX_INDENT = 8;
 
+const isBullet = (line: Line): boolean => line.length > 0 && line[0].text.startsWith('- ');
+
 const splitIndent = (line: Line): { className: string; spans: Line } => {
   if (line.length === 0) {
     return { className: 'line', spans: line };
@@ -41,13 +43,14 @@ const splitIndent = (line: Line): { className: string; spans: Line } => {
   const indent = first.text.length - first.text.replace(/^ +/, '').length;
   if (indent > 0) {
     const rest = first.text.slice(indent);
+    const spans = rest === '' ? line.slice(1) : [{ ...first, text: rest }, ...line.slice(1)];
     return {
-      className: `line indent-${Math.min(indent, MAX_INDENT)}`,
-      spans: rest === '' ? line.slice(1) : [{ ...first, text: rest }, ...line.slice(1)]
+      className: `line indent-${Math.min(indent, MAX_INDENT)}${isBullet(spans) ? ' bullet' : ''}`,
+      spans
     };
   }
   const prose = line.every(span => span.run === '' && !isGap(span.text));
-  return { className: prose ? 'line line-prose' : 'line', spans: line };
+  return { className: `${prose ? 'line line-prose' : 'line'}${isBullet(line) ? ' bullet' : ''}`, spans: line };
 };
 
 export const renderSpan = (doc: Document, span: Span): HTMLElement => {

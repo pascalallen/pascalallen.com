@@ -184,35 +184,53 @@ body {
 }
 
 .indent-1 {
+  --indent: 1ch;
   padding-left: 1ch;
 }
 
 .indent-2 {
+  --indent: 2ch;
   padding-left: 2ch;
 }
 
 .indent-3 {
+  --indent: 3ch;
   padding-left: 3ch;
 }
 
 .indent-4 {
+  --indent: 4ch;
   padding-left: 4ch;
 }
 
 .indent-5 {
+  --indent: 5ch;
   padding-left: 5ch;
 }
 
 .indent-6 {
+  --indent: 6ch;
   padding-left: 6ch;
 }
 
 .indent-7 {
+  --indent: 7ch;
   padding-left: 7ch;
 }
 
 .indent-8 {
+  --indent: 8ch;
   padding-left: 8ch;
+}
+
+.bullet {
+  padding-left: calc(var(--indent, 0ch) + 2ch);
+  text-indent: -2ch;
+}
+
+.bullet .run,
+.bullet .s-path {
+  text-indent: 0;
 }
 
 .run,

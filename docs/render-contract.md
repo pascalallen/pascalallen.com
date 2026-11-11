@@ -101,6 +101,10 @@ Each command is one entry. The boot screen is an entry with no echo line.
   - `indent-N` (N from 1 to 8): the first span's leading spaces are counted, removed from its text (a span that was
     only spaces is dropped) and emitted as the class; CSS gives `padding-left: Nch`, so wrapped rows keep the indent.
     More than eight spaces count as eight.
+  - `bullet`: after the indent is removed, the first span's text starts with `- `. CSS gives `text-indent: -2ch` and
+    `padding-left: calc(indent + 2ch)`, so wrapped rows align with the text after the dash; an indented bullet hangs
+    at indent + 2ch. It combines with `indent-N` and `line-prose` (`line indent-2 bullet`, `line line-prose bullet`)
+    and is appended last in the class list. Run and path spans inside a bullet line reset `text-indent`.
   - `line-prose`: the line has no indent, no run span and no gap span. It carries the 80ch measure; listings, tables
     and indented rows use the full width.
   - Run spans and path-styled spans are `inline-block` with `max-width: 100%`, so a name never breaks inside itself;

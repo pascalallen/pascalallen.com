@@ -91,6 +91,18 @@ describe('render', () => {
     assert.equal(gapFirst.textContent, 'tap');
   });
 
+  it('marks bullet lines so wrapped rows hang under the text, alone or after an indent', () => {
+    const doc = dom().window.document;
+    const classOf = (spans: ReturnType<typeof span>[]): string => renderLine(doc, spans).className;
+
+    assert.equal(classOf([span('- shipped it')]), 'line line-prose bullet');
+    assert.equal(classOf([span('  - shipped it')]), 'line indent-2 bullet');
+    assert.equal(classOf([span('- '), span('x', { run: 'cat x' })]), 'line bullet');
+    assert.equal(classOf([span('-shipped')]), 'line line-prose');
+    assert.equal(classOf([span('a - b')]), 'line line-prose');
+    assert.equal(renderLine(doc, [span('  - shipped it')]).textContent, '- shipped it');
+  });
+
   it('refuses a media src on another origin', () => {
     const doc = dom().window.document;
     for (const src of [

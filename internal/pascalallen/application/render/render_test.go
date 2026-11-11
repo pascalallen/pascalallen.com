@@ -130,6 +130,21 @@ func TestBlocks(t *testing.T) {
 		assert.Contains(t, out, `<div class="line indent-4"><a class="run s-plain"`)
 	})
 
+	t.Run("bullet lines carry the bullet class alone or after an indent", func(t *testing.T) {
+		cases := map[string]string{
+			"- shipped it":   `<div class="line line-prose bullet"><span class="s-plain">- shipped it</span></div>`,
+			"  - shipped it": `<div class="line indent-2 bullet"><span class="s-plain">- shipped it</span></div>`,
+			"-shipped":       `<div class="line line-prose"><span class="s-plain">-shipped</span></div>`,
+			"a - b":          `<div class="line line-prose"><span class="s-plain">a - b</span></div>`,
+		}
+		for text, want := range cases {
+			assert.Contains(t, render(textBlock(shell.Span{Text: text})), want, text)
+		}
+
+		out := render(textBlock(shell.Span{Text: "- "}, shell.Span{Text: "x", Run: "cat x"}))
+		assert.Contains(t, out, `<div class="line bullet"><span class="s-plain">- </span><a class="run s-plain"`)
+	})
+
 	t.Run("listing rows with run spans or gaps use the full width", func(t *testing.T) {
 		for name, line := range map[string]shell.Line{
 			"run":   {{Text: "a"}, {Text: "b", Run: "cat b"}},

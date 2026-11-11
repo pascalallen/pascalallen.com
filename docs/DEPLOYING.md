@@ -129,3 +129,7 @@ bin/up pi     # force the Pi overlay
 bin/up prod   # Pi overlay, quiet, detached
 bin/down      # same selectors as bin/up
 ```
+
+## Trusted proxies
+
+The visit ping rate limit is per client address. Behind a reverse proxy, set `TRUSTED_PROXIES` to a comma-separated list of the proxy CIDRs or IPs (for example `10.0.0.0/8`) so the forwarded client address is used. Left empty, no proxy is trusted: every visitor appears as the proxy address and the per-address limit collapses to one ping per hour for the whole site. A global cap of 30 notifications per hour applies regardless.

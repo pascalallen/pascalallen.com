@@ -4,7 +4,7 @@ Status: accepted. Supersedes the Kubernetes lines of `docs/DEPLOYING.md` and any
 
 ## Context
 
-Production is one Raspberry Pi running Docker Compose, redeployed by `scripts/cron-deploy`. The Kubernetes manifests and the Docker Hub push in `bin/deploy` existed only to feed each other, nothing ran them, and they described services (database, broker) that ADR 0002 removed.
+Production is one Raspberry Pi running Docker Compose, redeployed by `scripts/cron-deploy`. The Kubernetes manifests and the Docker Hub push in `bin/deploy` existed only to feed each other, nothing ran them.
 
 ## Decision
 
