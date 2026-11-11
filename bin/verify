@@ -71,7 +71,7 @@ fi
 
 step "govulncheck ./..."
 set +e
-vuln_out="$(run_go go run golang.org/x/vuln/cmd/govulncheck@latest ./... 2>&1)"
+vuln_out="$(run_go sh -c "go install golang.org/x/vuln/cmd/govulncheck@latest && /cache/go/bin/govulncheck ./..." 2>&1)"
 vuln_code=$?
 set -e
 printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"

@@ -38,8 +38,9 @@ jobs:
           fi
       - name: govulncheck
         run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
           set +e
-          vuln_out="$(go run golang.org/x/vuln/cmd/govulncheck@latest ./... 2>&1)"
+          vuln_out="$("$(go env GOPATH)/bin/govulncheck" ./... 2>&1)"
           vuln_code=$?
           set -e
           printf '%s\n' "$vuln_out" | bin/vulncheck "$vuln_code"
