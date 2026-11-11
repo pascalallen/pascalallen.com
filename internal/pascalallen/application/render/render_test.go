@@ -48,7 +48,7 @@ func TestSpans(t *testing.T) {
 	})
 
 	t.Run("a span of two or more spaces gets the gap class", func(t *testing.T) {
-		out := render(textBlock(shell.Span{Text: "  "}, shell.Span{Text: " "}))
+		out := render(textBlock(shell.Span{Text: "a"}, shell.Span{Text: "  "}, shell.Span{Text: " "}))
 
 		assert.Contains(t, out, `<span class="s-plain gap">  </span>`)
 		assert.Contains(t, out, `<span class="s-plain"> </span>`)
@@ -101,14 +101,61 @@ func TestBlocks(t *testing.T) {
 			shell.Block{Kind: shell.BlockKind(9), Lines: []shell.Line{{{Text: "u"}}}},
 		)
 
-		assert.Contains(t, out, `<div class="block block-error"><div class="line"><span class="s-plain">e</span></div></div>`)
-		assert.Contains(t, out, `<div class="block block-text"><div class="line"><span class="s-plain">u</span></div></div>`)
+		assert.Contains(t, out, `<div class="block block-error"><div class="line line-prose"><span class="s-plain">e</span></div></div>`)
+		assert.Contains(t, out, `<div class="block block-text"><div class="line line-prose"><span class="s-plain">u</span></div></div>`)
 	})
 
 	t.Run("an empty line is an empty line element", func(t *testing.T) {
 		out := render(shell.Block{Kind: shell.BlockText, Lines: []shell.Line{{}}})
 
 		assert.Equal(t, `<div class="block block-text"><div class="line"></div></div>`, out)
+	})
+
+	t.Run("a line of unindented prose carries the measure class", func(t *testing.T) {
+		out := render(textBlock(shell.Span{Text: "hello "}, shell.Span{Text: "link", Style: shell.StyleAccent, Href: "https://example.com"}))
+
+		assert.Contains(t, out, `<div class="line line-prose">`)
+	})
+
+	t.Run("leading spaces become an indent class capped at eight and leave the text", func(t *testing.T) {
+		cases := map[string]string{
+			"  Go":          `<div class="line indent-2"><span class="s-plain">Go</span></div>`,
+			"            x": `<div class="line indent-8"><span class="s-plain">x</span></div>`,
+		}
+		for text, want := range cases {
+			assert.Contains(t, render(textBlock(shell.Span{Text: text})), want, text)
+		}
+
+		out := render(textBlock(shell.Span{Text: "    "}, shell.Span{Text: "tap", Run: "cat x"}))
+		assert.Contains(t, out, `<div class="line indent-4"><a class="run s-plain"`)
+	})
+
+	t.Run("bullet lines carry the bullet class alone or after an indent", func(t *testing.T) {
+		cases := map[string]string{
+			"- shipped it":   `<div class="line line-prose bullet"><span class="s-plain">- shipped it</span></div>`,
+			"  - shipped it": `<div class="line indent-2 bullet"><span class="s-plain">- shipped it</span></div>`,
+			"-shipped":       `<div class="line line-prose"><span class="s-plain">-shipped</span></div>`,
+			"a - b":          `<div class="line line-prose"><span class="s-plain">a - b</span></div>`,
+		}
+		for text, want := range cases {
+			assert.Contains(t, render(textBlock(shell.Span{Text: text})), want, text)
+		}
+
+		out := render(textBlock(shell.Span{Text: "- "}, shell.Span{Text: "x", Run: "cat x"}))
+		assert.Contains(t, out, `<div class="line bullet"><span class="s-plain">- </span><a class="run s-plain"`)
+	})
+
+	t.Run("listing rows with run spans or gaps use the full width", func(t *testing.T) {
+		for name, line := range map[string]shell.Line{
+			"run":   {{Text: "a"}, {Text: "b", Run: "cat b"}},
+			"gap":   {{Text: "a"}, {Text: "   "}, {Text: "b"}},
+			"empty": {},
+		} {
+			out := render(shell.Block{Kind: shell.BlockText, Lines: []shell.Line{line}})
+
+			assert.Contains(t, out, `<div class="line">`, name)
+			assert.NotContains(t, out, "line-prose", name)
+		}
 	})
 
 	t.Run("media renders an image only for a same-origin path", func(t *testing.T) {
@@ -164,7 +211,7 @@ func TestPlain(t *testing.T) {
 			count++
 			assert.Contains(t, out, ">"+name+"<", name)
 			for _, line := range strings.Split(string(data), "\n") {
-				line = strings.TrimPrefix(line, "# ")
+				line = strings.TrimLeft(strings.TrimPrefix(line, "# "), " ")
 				if line != "" {
 					assert.Contains(t, text, line, name)
 				}

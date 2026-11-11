@@ -9,5 +9,5 @@ One context, so one glossary: `GLOSSARY.md`.
 | Bridge | `internal/pascalallen/infrastructure/wasm` |
 | Feed | `internal/pascalallen/infrastructure/feed` |
 | Camera hub | `internal/pascalallen/infrastructure/camera` |
-| Pre-render, Boot screen | `internal/pascalallen/infrastructure/http` |
+| Pre-render, Boot screen | `internal/pascalallen/application/render` |
 | Host | `web/app` |

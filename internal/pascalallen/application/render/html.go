@@ -4,6 +4,7 @@ import (
 	"html"
 	"html/template"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/pascalallen/pascalallen.com/internal/pascalallen/domain/shell"
@@ -42,13 +43,52 @@ func writeBlock(b *strings.Builder, block shell.Block) {
 		}
 	}
 	for _, line := range block.Lines {
-		b.WriteString(`<div class="line">`)
-		for _, span := range line {
+		class, spans := splitIndent(line)
+		b.WriteString(`<div class="` + class + `">`)
+		for _, span := range spans {
 			writeSpan(b, span)
 		}
 		b.WriteString(`</div>`)
 	}
 	b.WriteString(`</div>`)
+}
+
+func isGap(text string) bool {
+	return len(text) >= 2 && strings.Trim(text, " ") == ""
+}
+
+const maxIndent = 8
+
+func splitIndent(line shell.Line) (string, shell.Line) {
+	if len(line) == 0 {
+		return "line", line
+	}
+	first := line[0].Text
+	indent := len(first) - len(strings.TrimLeft(first, " "))
+	if indent > 0 {
+		var rest shell.Line
+		if indent == len(first) {
+			rest = line[1:]
+		} else {
+			rest = append(shell.Line{{Text: first[indent:], Style: line[0].Style, Href: line[0].Href, Run: line[0].Run}}, line[1:]...)
+		}
+		return "line indent-" + strconv.Itoa(min(indent, maxIndent)) + bulletSuffix(rest), rest
+	}
+	for _, span := range line {
+		if span.Run != "" || isGap(span.Text) {
+			return "line" + bulletSuffix(line), line
+		}
+	}
+
+	return "line line-prose" + bulletSuffix(line), line
+}
+
+func bulletSuffix(line shell.Line) string {
+	if len(line) > 0 && strings.HasPrefix(line[0].Text, "- ") {
+		return " bullet"
+	}
+
+	return ""
 }
 
 func writeSpan(b *strings.Builder, span shell.Span) {
@@ -73,7 +113,7 @@ func styleClass(span shell.Span) string {
 		name = "plain"
 	}
 	class := "s-" + name
-	if len(span.Text) >= 2 && strings.Trim(span.Text, " ") == "" {
+	if isGap(span.Text) {
 		class += " gap"
 	}
 	return class

@@ -118,7 +118,7 @@ Stack: AWS, GCP, Digital Ocean, Go, Gin, PHP, Laravel, React, TanStack, TypeScri
 - vllm-server — A high-performance Docker Compose setup for running vLLM as an OpenAI-compatible API server, specifically optimized for ARM64 CPU environments.
 - react-form-components (v3.1) — Repository for the @pascalallen/react-form-components NPM package. Simple HTML form elements for React.
 - react-event-dispatcher (v2) — Repository for the @pascalallen/react-event-dispatcher NPM package. A lightweight event dispatcher for React.
-- pascalallen.com — Personal portfolio website. Go/React/TypeScript site on Kubernetes (k3s) with a RabbitMQ-backed async command bus, SSE, and a WebAssembly module.
+- pascalallen.com — Personal portfolio website. This site runs on Go, WebAssembly, TypeScript, Docker and a Raspberry Pi.
 
 # Education & Certifications
 

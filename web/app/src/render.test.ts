@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { renderBlock, renderEcho, renderResult, renderSpan } from './render';
+import { renderBlock, renderEcho, renderLine, renderResult, renderSpan } from './render';
 import { block, dom, ORIGIN, result, span } from './test-dom';
 
 describe('render', () => {
@@ -67,6 +67,42 @@ describe('render', () => {
     assert.equal(renderSpan(doc, span(' ')).className, 's-plain');
   });
 
+  it('gives unindented prose lines the measure class and listing rows the full width', () => {
+    const doc = dom().window.document;
+    const classOf = (spans: ReturnType<typeof span>[]): string => renderLine(doc, spans).className;
+
+    assert.equal(classOf([span('hello '), span('link', { href: 'https://example.com' })]), 'line line-prose');
+    assert.equal(classOf([span('a'), span('b', { run: 'cat b' })]), 'line');
+    assert.equal(classOf([span('a'), span('   '), span('b')]), 'line');
+    assert.equal(classOf([]), 'line');
+  });
+
+  it('turns leading spaces into a capped indent class and removes them from the text', () => {
+    const doc = dom().window.document;
+    const two = renderLine(doc, [span('  Go, PHP')]);
+    const deep = renderLine(doc, [span('            x')]);
+    const gapFirst = renderLine(doc, [span('    '), span('tap', { run: 'cat x' })]);
+
+    assert.equal(two.className, 'line indent-2');
+    assert.equal(two.textContent, 'Go, PHP');
+    assert.equal(deep.className, 'line indent-8');
+    assert.equal(gapFirst.className, 'line indent-4');
+    assert.equal(gapFirst.children.length, 1);
+    assert.equal(gapFirst.textContent, 'tap');
+  });
+
+  it('marks bullet lines so wrapped rows hang under the text, alone or after an indent', () => {
+    const doc = dom().window.document;
+    const classOf = (spans: ReturnType<typeof span>[]): string => renderLine(doc, spans).className;
+
+    assert.equal(classOf([span('- shipped it')]), 'line line-prose bullet');
+    assert.equal(classOf([span('  - shipped it')]), 'line indent-2 bullet');
+    assert.equal(classOf([span('- '), span('x', { run: 'cat x' })]), 'line bullet');
+    assert.equal(classOf([span('-shipped')]), 'line line-prose');
+    assert.equal(classOf([span('a - b')]), 'line line-prose');
+    assert.equal(renderLine(doc, [span('  - shipped it')]).textContent, '- shipped it');
+  });
+
   it('refuses a media src on another origin', () => {
     const doc = dom().window.document;
     for (const src of [
@@ -111,7 +147,7 @@ describe('render', () => {
     assert.equal(els.length, 2);
     assert.equal(els[0].className, 'block block-text');
     assert.equal(els[0].children.length, 2);
-    assert.equal(els[0].children[0].className, 'line');
+    assert.equal(els[0].children[0].className, 'line line-prose');
     assert.equal(els[0].children[0].children.length, 2);
     assert.equal(els[0].children[1].children.length, 0);
     assert.equal(els[1].className, 'block block-error');
