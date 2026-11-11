@@ -86,8 +86,26 @@ describe('boot', () => {
     await s.ready;
 
     assert.equal(s.doc.getElementById('terminal')?.getAttribute('data-state'), 'failed');
-    assert.match(s.output.textContent ?? '', /terminal is unavailable/);
-    assert.match(s.output.textContent ?? '', /content is below/);
+    const notice = s.output.querySelector('.entry:last-child .block-error') as HTMLElement;
+    assert.equal(notice.textContent, 'The terminal could not start. Read the plain text version.');
+    const link = notice.querySelector('a') as HTMLAnchorElement;
+    assert.equal(link.getAttribute('href'), '/plain');
+    assert.equal(link.textContent, 'plain text version');
+    assert.equal(link.hasAttribute('target'), false);
+  });
+
+  it('disables the input when the shell cannot load', async () => {
+    const s = setup({ shell: Promise.reject(new Error('no module')) });
+    await s.ready;
+
+    assert.equal(s.input.disabled, true);
+  });
+
+  it('keeps the input enabled once the shell is ready', async () => {
+    const s = setup();
+    await s.ready;
+
+    assert.equal(s.input.disabled, false);
   });
 
   it('marks the terminal ready once the shell resolves', async () => {
@@ -142,6 +160,48 @@ describe('running a command', () => {
     assert.deepEqual(execs(s), ['exec:about']);
   });
 
+  it('leaves a modifier click on a run link to the browser', async () => {
+    const prerendered =
+      '<div class="entry entry-boot" data-prerendered=""><div class="block block-text"><div class="line"><a class="run s-accent" href="/#about" data-run="about">about</a></div></div></div>';
+    const s = setup({ output: prerendered });
+    await s.ready;
+    const link = s.output.querySelector('a[data-run]') as HTMLElement;
+    for (const init of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+      const event = new s.jsdom.window.MouseEvent('click', { bubbles: true, cancelable: true, ...init });
+      link.dispatchEvent(event);
+
+      assert.equal(event.defaultPrevented, false, JSON.stringify(init));
+    }
+    assert.deepEqual(execs(s), []);
+  });
+
+  it('still runs a modifier click on a run button', async () => {
+    const s = setup();
+    await s.ready;
+    const button = s.output.querySelector('[data-run="help"]') as HTMLElement;
+    button.dispatchEvent(new s.jsdom.window.MouseEvent('click', { bubbles: true, cancelable: true, shiftKey: true }));
+
+    assert.deepEqual(execs(s), ['exec:help']);
+  });
+
+  it('points run links and chips at the plain page and disables run buttons when the shell cannot load', async () => {
+    const prerendered =
+      '<div class="entry entry-boot" data-prerendered=""><div class="block block-text"><div class="line"><a class="run s-accent" href="/#about" data-run="about">about</a><button type="button" class="run" data-run="help">help</button></div></div></div>';
+    const s = setup({ output: prerendered, shell: Promise.reject(new Error('no module')) });
+    await s.ready;
+
+    const chip = s.doc.querySelector('.chips a.chip[data-run]') as HTMLElement;
+    assert.equal(chip.getAttribute('href'), '/plain');
+    const link = s.output.querySelector('a[data-run]') as HTMLElement;
+    assert.equal(link.getAttribute('href'), '/plain');
+    const event = new s.jsdom.window.MouseEvent('click', { bubbles: true, cancelable: true });
+    link.dispatchEvent(event);
+    assert.equal(event.defaultPrevented, false);
+    const button = s.output.querySelector('button[data-run]') as HTMLButtonElement;
+    assert.equal(button.disabled, true);
+    assert.match(button.getAttribute('title') ?? '', /plain text version/);
+  });
+
   it('empties the log on a clear effect', async () => {
     const s = setup();
     await s.ready;
@@ -167,6 +227,61 @@ describe('running a command', () => {
 
     assert.equal(s.doc.documentElement.getAttribute('data-theme'), 'amber');
     assert.equal(storage.getItem('theme'), 'amber');
+  });
+});
+
+describe('camera in the terminal', () => {
+  const statusFetch = (body: unknown, urls: string[], status = 200): typeof fetch =>
+    (async (url: string) => {
+      urls.push(url);
+      return new Response(JSON.stringify(body), { status });
+    }) as unknown as typeof fetch;
+
+  it('checks the camera status and embeds the stream when it is available', async () => {
+    const urls: string[] = [];
+    const s = setup({ extra: { fetchImpl: statusFetch({ status: 'success', data: { available: true } }, urls) } });
+    await s.ready;
+    enter(s, 'camera');
+    const entry = s.output.lastElementChild as HTMLElement;
+    assert.equal(entry.querySelector('img'), null);
+    await tick(5);
+
+    assert.deepEqual(urls, ['/api/v1/camera/status']);
+    assert.equal(entry.querySelector('img.media')?.getAttribute('src'), '/api/v1/camera/stream');
+  });
+
+  it('prints an offline message and no stream when the camera is unavailable', async () => {
+    const urls: string[] = [];
+    const s = setup({ extra: { fetchImpl: statusFetch({ status: 'success', data: { available: false } }, urls) } });
+    await s.ready;
+    enter(s, 'camera');
+    const entry = s.output.lastElementChild as HTMLElement;
+    await tick(5);
+
+    assert.equal(entry.querySelector('img'), null);
+    assert.equal(entry.querySelector('.block-error')?.textContent, 'camera: the camera is offline right now');
+  });
+
+  it('prints the offline message when the status check fails', async () => {
+    const s = setup();
+    await s.ready;
+    enter(s, 'camera');
+    const entry = s.output.lastElementChild as HTMLElement;
+    await tick(5);
+
+    assert.equal(entry.querySelector('img'), null);
+    assert.equal(entry.querySelector('.block-error')?.textContent, 'camera: the camera is offline right now');
+  });
+
+  it('prints the offline message when the status endpoint answers with an error', async () => {
+    const urls: string[] = [];
+    const s = setup({ extra: { fetchImpl: statusFetch({ status: 'success', data: { available: true } }, urls, 503) } });
+    await s.ready;
+    enter(s, 'camera');
+    const entry = s.output.lastElementChild as HTMLElement;
+    await tick(5);
+
+    assert.equal(entry.querySelector('img'), null);
   });
 });
 
@@ -362,6 +477,19 @@ describe('theme sync', () => {
     await s.ready;
 
     assert.ok(s.shell.calls.includes('setTheme:amber'));
+  });
+
+  it('tells the shell the theme already on the page when nothing is stored', async () => {
+    const jsdomPage = dom();
+    jsdomPage.window.document.documentElement.setAttribute('data-theme', 'light');
+    const shell = spyShell();
+    await createTerminal({
+      win: jsdomPage.window as unknown as Window,
+      shell: Promise.resolve(shell),
+      storage: () => memoryStorage()
+    }).ready;
+
+    assert.ok(shell.calls.includes('setTheme:light'));
   });
 
   it('does not call setTheme when no theme is stored', async () => {
@@ -607,12 +735,67 @@ describe('input method composition', () => {
     const s = setup();
     await s.ready;
     type(s, 'ni');
-    fire(s, 'compositionstart');
-    fire(s, 'compositionend');
-    key(s.jsdom, s.input, 'Enter');
+    at(s, 'compositionstart', 100);
+    at(s, 'compositionend', 200);
+    at(s, 'keydown', 200, { key: 'Enter' });
 
     assert.deepEqual(execs(s), []);
     assert.equal(s.input.value, 'ni');
+  });
+
+  const at = (s: Setup, type: string, timeStamp: number, init: KeyboardEventInit = {}): Event => {
+    const event =
+      type === 'keydown'
+        ? new s.jsdom.window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init })
+        : new s.jsdom.window.CompositionEvent(type, { bubbles: true });
+    Object.defineProperty(event, 'timeStamp', { value: timeStamp });
+    s.input.dispatchEvent(event);
+    return event;
+  };
+
+  it('ignores the keyCode 13 Enter that ended the composition in the same turn', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'ni');
+    at(s, 'compositionstart', 100);
+    at(s, 'compositionend', 200);
+    at(s, 'keydown', 200, { key: 'Enter', keyCode: 13 });
+
+    assert.deepEqual(execs(s), []);
+    assert.equal(s.input.value, 'ni');
+  });
+
+  it('runs a keyCode 13 Enter that arrives before compositionend', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'help');
+    at(s, 'compositionstart', 100);
+    const event = at(s, 'keydown', 200, { key: 'Enter', keyCode: 13 });
+    at(s, 'compositionend', 201);
+
+    assert.equal(event.defaultPrevented, true);
+    assert.deepEqual(execs(s), ['exec:help']);
+  });
+
+  it('runs a keyCode 13 Enter from a later turn even before any timer has fired', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'help');
+    at(s, 'compositionstart', 100);
+    at(s, 'compositionend', 200);
+    at(s, 'keydown', 240, { key: 'Enter', keyCode: 13 });
+
+    assert.deepEqual(execs(s), ['exec:help']);
+  });
+
+  it('still ignores a keyCode 13 Enter the browser marks as composing', async () => {
+    const s = setup();
+    await s.ready;
+    type(s, 'ni');
+    at(s, 'compositionstart', 100);
+    at(s, 'keydown', 200, { key: 'Enter', keyCode: 13, isComposing: true });
+
+    assert.deepEqual(execs(s), []);
   });
 
   it('accepts Enter once the tick after compositionend has passed', async () => {

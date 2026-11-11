@@ -5,7 +5,8 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 module.exports = (_env, argv) => ({
   entry: {
     'app': './src/app.ts',
-    'dev-shell': './src/dev-shell.ts'
+    'dev-shell': './src/dev-shell.ts',
+    'theme': './src/theme-boot.ts'
   },
   devtool: argv.mode === 'production' ? 'source-map' : 'inline-source-map',
   plugins: [new MiniCssExtractPlugin({ filename: '[name].css' })],

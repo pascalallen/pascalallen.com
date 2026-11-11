@@ -2,6 +2,7 @@ package content_test
 
 import (
 	"io/fs"
+	"regexp"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -175,13 +176,15 @@ func TestContent(t *testing.T) {
 		}
 	})
 
-	t.Run("every line fits 80 columns unless it is a url", func(t *testing.T) {
+	t.Run("a prose line is never a mid-sentence continuation of the line before it", func(t *testing.T) {
 		for name, text := range all(t) {
-			for _, line := range strings.Split(text, "\n") {
-				if strings.HasPrefix(strings.TrimSpace(line), "https://") {
+			lines := strings.Split(text, "\n")
+			for i, line := range lines {
+				if i == 0 || strings.TrimSpace(line) == "" || startsBlock(line) {
 					continue
 				}
-				assert.LessOrEqual(t, utf8.RuneCountInString(line), 80, name+": "+line)
+				prev := lines[i-1]
+				assert.True(t, mayPrecedeProse(prev) || isLabel(prev, line), name+": "+line)
 			}
 		}
 	})
@@ -215,4 +218,30 @@ func hasPhoneNumber(text string) bool {
 		}
 	}
 	return false
+}
+
+var (
+	keyValue = regexp.MustCompile(`\S\s{2,}\S`)
+	meta     = regexp.MustCompile(`· \d{4}`)
+)
+
+func startsBlock(line string) bool {
+	return strings.HasPrefix(line, "#") ||
+		strings.HasPrefix(line, "- ") ||
+		strings.HasPrefix(line, "Stack:") ||
+		strings.HasPrefix(strings.TrimSpace(line), "https://") ||
+		keyValue.MatchString(line) ||
+		meta.MatchString(line)
+}
+
+func mayPrecedeProse(line string) bool {
+	return strings.TrimSpace(line) == "" ||
+		strings.HasPrefix(line, "#") ||
+		strings.HasPrefix(strings.TrimSpace(line), "https://") ||
+		keyValue.MatchString(line) ||
+		meta.MatchString(line)
+}
+
+func isLabel(prev, line string) bool {
+	return strings.HasPrefix(line, "  ") && !strings.HasPrefix(prev, " ") && !startsBlock(prev)
 }

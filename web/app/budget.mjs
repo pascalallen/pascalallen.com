@@ -3,7 +3,8 @@ import { gzipSync } from 'node:zlib';
 
 const budgets = [
   { file: '../static/assets/app.js', limit: 30 * 1024 },
-  { file: '../static/assets/app.css', limit: 10 * 1024 }
+  { file: '../static/assets/app.css', limit: 10 * 1024 },
+  { file: '../static/assets/theme.js', limit: 512 }
 ];
 
 let failed = false;

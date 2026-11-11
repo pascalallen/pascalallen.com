@@ -17,3 +17,6 @@ docs/superpowers/
 CLAUDE.local.md
 /tmp/
 /web/app/.test-build/
+/web/app/.e2e/
+/web/app/playwright-report/
+/web/app/test-results/

@@ -61,14 +61,13 @@ $ visitor@pascalallen.com:~/writing$ cat 03-live-security-camera-with-go.md
 <text>
   [heading:I Turned a $35 Computer Into a Live Security Camera With Go]
   
-  No cloud, no subscription, no WebRTC. Just a Raspberry Pi, a camera module, and
-  about 170 lines of Go.
+  No cloud, no subscription, no WebRTC. Just a Raspberry Pi, a camera module, and about 170 lines of Go.
   
   [accent:https://medium.com/@pascalallen/i-turned-a-35-computer-into-a-live-security-camera-with-go-f1e061dacc33 -> https://medium.com/@pascalallen/i-turned-a-35-computer-into-a-live-security-camera-with-go-f1e061dacc33]
 $ visitor@pascalallen.com:~/writing$ cd ..
 $ visitor@pascalallen.com:~$ grep -i raspberry projects
 <text>
-  [path:projects/pascalallen.com.md => cat ~/projects/pascalallen.com.md][dim::4:] Docker and a [warning:Raspberry] Pi.
+  [path:projects/pascalallen.com.md => cat ~/projects/pascalallen.com.md][dim::3:] Personal portfolio website. This site runs on Go, WebAssembly, TypeScript, Docker and a [warning:Raspberry] Pi.
   [path:projects/rpi-security-cam.md => cat ~/projects/rpi-security-cam.md][dim::3:] Live camera streaming on a [warning:Raspberry] Pi, served over HTTP in Go.
 $ visitor@pascalallen.com:~$ experience
 <text>
@@ -96,8 +95,7 @@ $ visitor@pascalallen.com:~$ cat ~/experience/01-sectigo.md
   
   - Currently developing [accent:https://www.sectigo.com/qspm-quantum-ready -> https://www.sectigo.com/qspm-quantum-ready]
   
-  Stack: GCP, Docker, Kubernetes, Terraform, Helm, Flux, Spacelift, Grafana,
-    Elasticsearch, Node, Python, JavaScript, Claude, Copilot
+  Stack: GCP, Docker, Kubernetes, Terraform, Helm, Flux, Spacelift, Grafana, Elasticsearch, Node, Python, JavaScript, Claude, Copilot
 $ visitor@pascalallen.com:~$ head -n 4 resume.md
 <text>
   [heading:Pascal Allen]

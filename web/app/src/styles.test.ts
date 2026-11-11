@@ -6,10 +6,25 @@ const css = readFileSync('src/styles.css', 'utf8');
 const template = readFileSync('../template/index.tmpl', 'utf8') + readFileSync('../template/head.tmpl', 'utf8');
 
 describe('mobile input sizing', () => {
-  it('keeps the prompt line at 16px or more on coarse pointers so iOS does not zoom', () => {
-    const block = /@media \(pointer: coarse\)\s*\{[^}]*\.prompt-line\s*\{[^}]*font-size:\s*max\(16px, 1em\)/.exec(css);
+  it('sets the terminal body text to 16px on coarse pointers so prompt and output match and iOS does not zoom', () => {
+    const block = /@media \(pointer: coarse\)\s*\{[^}]*\bbody\s*\{[^}]*font-size:\s*16px/.exec(css);
 
     assert.notEqual(block, null);
+  });
+
+  it('does not size the prompt line separately from the output', () => {
+    assert.doesNotMatch(css, /\.prompt-line\s*\{[^}]*font-size/);
+  });
+
+  it('never turns gap spans into row breaks', () => {
+    assert.doesNotMatch(css, /\.gap\s*\{[^}]*display:\s*block/);
+  });
+
+  it('gives run buttons a 40px tap target through padding on coarse pointers', () => {
+    const rule = /@media \(pointer: coarse\)\s*\{[^@]*?\.run\s*\{[^}]*\}/.exec(css)?.[0] ?? '';
+
+    assert.match(rule, /display:\s*inline-block/);
+    assert.match(rule, /padding-block:/);
   });
 
   it('lets the input inherit the prompt line font size', () => {

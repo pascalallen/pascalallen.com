@@ -14,6 +14,8 @@ export interface Editor {
   set(value: string): void;
 }
 
+const SAME_TURN_MS = 1;
+
 const toCodePoints = (value: string, offset: number): number => Array.from(value.slice(0, offset)).length;
 
 const toUnits = (value: string, cursor: number): number => Array.from(value).slice(0, cursor).join('').length;
@@ -23,7 +25,7 @@ export const attachEditor = (input: HTMLInputElement, hooks: EditorHooks): Edito
   let draft = '';
   let escaped = false;
   let composing = false;
-  let justComposed = false;
+  let composedAt: number | null = null;
 
   const set = (value: string, cursor = value.length): void => {
     input.value = value;
@@ -98,21 +100,24 @@ export const attachEditor = (input: HTMLInputElement, hooks: EditorHooks): Edito
 
   input.addEventListener('compositionstart', () => {
     composing = true;
-    justComposed = false;
+    composedAt = null;
   });
 
-  input.addEventListener('compositionend', () => {
+  input.addEventListener('compositionend', event => {
     composing = false;
-    justComposed = true;
-    setTimeout(() => {
-      justComposed = false;
-    }, 0);
+    composedAt = event.timeStamp;
   });
 
   input.addEventListener('keydown', event => {
-    if (event.isComposing || composing || justComposed || event.keyCode === 229) {
+    if (event.isComposing || event.keyCode === 229) {
       return;
     }
+    const endedThisTurn = composedAt !== null && Math.abs(event.timeStamp - composedAt) < SAME_TURN_MS;
+    const plainEnter = event.key === 'Enter' && event.keyCode === 13;
+    if (endedThisTurn || (composing && !plainEnter)) {
+      return;
+    }
+    composedAt = null;
     const afterEscape = escaped;
     escaped = event.key === 'Escape';
 

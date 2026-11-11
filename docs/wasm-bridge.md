@@ -18,12 +18,16 @@ HTML.
    startup. A request is cached as `immutable` for a year only when its `?v=` equals the hash of the file served;
    anything else gets `no-cache` and an ETag derived from the hash, so revalidation is cheap. The page template has
    an `asset` function: `{{ asset "shell.wasm" }}` renders `/static/assets/shell.wasm?v=<hash>` (without the query if
-   the file is absent), and `.wasmVersion` holds the module hash (empty when absent). Wiring these into the template
-   and the host lands in the follow-up host item; this item only provides them.
-
+   the file is absent), and `.wasmVersion` holds the module hash (empty when absent). The page template passes both
+   URLs to the host as `data-wasm-src` and `data-runtime-src` on `#terminal`. The page does not preload the module: a
+   `<link rel="preload" as="fetch">` is requested a second time by WebKit, which does not reuse it for the host's
+   `fetch`, so the module would transfer twice. Instead `loadShell` starts the module `fetch` synchronously when it is
+   called (the top of app start), in parallel with the runtime script request, and streams that single response into
+   `WebAssembly.instantiateStreaming`; when streaming is refused (a wrong content type or no support) the same response is read as a buffer, so the module is never requested twice.
+   The e2e suite asserts exactly one `shell.wasm` request per page load in Chromium and WebKit.
 One `Shell` exists per module instance, built over the embedded content with the real clock, user `visitor`, host
-`pascalallen.com` and the `dark` theme. There is no theme setter: the contract has theme only as a construction
-option, and a `theme` command returns a `theme` effect that the host applies and persists itself.
+`pascalallen.com` and the `dark` theme. A `theme` command returns a `theme` effect that the host applies and persists
+itself; on ready the host calls `setTheme` with the stored theme so the shell's `theme` listing agrees with the page.
 
 ## Functions
 
@@ -37,6 +41,7 @@ option, and a `theme` command returns a `theme` effect that the host applies and
 | `__shell.commands()` | CommandInfo[] |
 | `__shell.deliver(feed: string, items: FeedItem[])` | Result |
 | `__shell.deliverError(feed: string)` | Result |
+| `__shell.setTheme(name: string)` | boolean: true when the theme was set, false for an unknown name |
 
 `cursor` is a code point offset. It must be an integer number from 0 to 2147483647; a fractional, negative,
 out-of-range, `NaN` or non-number cursor is rejected with an error Result (it is not truncated or clamped here; the
@@ -68,7 +73,7 @@ Result instead of the documented value:
 { blocks: [{ kind: 'error', lines: [[{ text: 'shell: exec expects 1 string argument', style: 'error', href: '', run: '' }]], src: '', alt: '' }], effects: [] }
 ```
 
-For `complete`, `prompt`, `history` and `commands` the host can detect this by shape (`blocks` present). The messages
+For `complete`, `prompt`, `history`, `commands` and `setTheme` the host can detect this by shape (`blocks` present). The messages
 are exactly:
 
 | Case | Text |
@@ -80,6 +85,7 @@ are exactly:
 | `deliver` without a feed string and an array | `shell: deliver expects a feed name and an array of items` |
 | `deliver` with a bad item | `shell: deliver items must be objects with string name, description, url and meta` |
 | `deliverError` without exactly one string | `shell: deliverError expects 1 string argument` |
+| `setTheme` without exactly one string | `shell: setTheme expects 1 string argument` |
 | a panic or a throwing JavaScript value | `shell: <name> failed` |
 
 An unknown feed name is not a bridge error: the shell answers with its own error block.

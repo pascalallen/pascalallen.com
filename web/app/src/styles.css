@@ -175,6 +175,7 @@ body {
 
 .line {
   min-height: calc(var(--lh) * 1em);
+  max-width: 80ch;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -333,8 +334,14 @@ a:focus-visible,
 }
 
 @media (pointer: coarse) {
-  .prompt-line {
-    font-size: max(16px, 1em);
+  body {
+    font-size: 16px;
+  }
+
+  .run {
+    display: inline-block;
+    padding-block: 0.5rem;
+    margin-block: -0.25rem;
   }
 }
 
@@ -413,12 +420,6 @@ a:focus-visible,
 }
 
 @media (max-width: 30rem) {
-  .gap {
-    display: block;
-    height: 0;
-    overflow: hidden;
-  }
-
   .chips::after {
     content: none;
   }

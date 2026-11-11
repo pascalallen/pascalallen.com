@@ -94,6 +94,15 @@ func (s *Shell) Prompt() string {
 	return clean(s.user + "@" + s.host + ":" + tildePath(s.cwd) + "$")
 }
 
+func (s *Shell) SetTheme(name string) bool {
+	if !isTheme(name) {
+		return false
+	}
+	s.theme = name
+
+	return true
+}
+
 func (s *Shell) History() []string {
 	return append([]string{}, s.history...)
 }

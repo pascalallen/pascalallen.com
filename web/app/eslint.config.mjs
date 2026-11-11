@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 const domRule = 'Build DOM with createElement and textContent.';
 
 export default tseslint.config(
-  { ignores: ['node_modules/', '.test-build/'] },
+  { ignores: ['node_modules/', '.test-build/', '.e2e/', 'playwright-report/', 'test-results/'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,
@@ -22,6 +22,10 @@ export default tseslint.config(
         { object: 'document', property: 'writeln', message: domRule }
       ]
     }
+  },
+  {
+    files: ['e2e/**/*.ts'],
+    rules: { 'no-empty-pattern': 'off' }
   },
   {
     files: ['**/*.js', '**/*.mjs'],

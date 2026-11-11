@@ -1,9 +1,9 @@
 import type { FeedItem } from './bridge';
 import { safeHref } from './render';
+import { readTheme, StorageAccess, THEME_KEY, THEMES } from './theme';
 
-export const THEMES = ['dark', 'light', 'amber', 'green'];
-
-export const THEME_KEY = 'theme';
+export { readTheme, THEME_KEY, THEMES };
+export type { StorageAccess };
 
 const VISIT_KEY = 'visited';
 
@@ -12,7 +12,9 @@ const FEEDS: Record<string, string> = {
   packages: '/api/v1/packages'
 };
 
-export type StorageAccess = () => Storage;
+export const CAMERA_STREAM = '/api/v1/camera/stream';
+
+const CAMERA_STATUS = '/api/v1/camera/status';
 
 export type OpenImpl = (url: string, target: string, features: string) => unknown;
 
@@ -41,17 +43,27 @@ export const applyTheme = (doc: Document, name: string, storage: StorageAccess):
   return true;
 };
 
-export const initialTheme = (storage: StorageAccess, prefersLight: boolean): string => {
-  const stored = read(storage, THEME_KEY);
-  if (stored !== null && THEMES.includes(stored)) {
-    return stored;
-  }
-  return prefersLight ? 'light' : 'dark';
-};
+export const initialTheme = (storage: StorageAccess, prefersLight: boolean): string =>
+  readTheme(storage) ?? (prefersLight ? 'light' : 'dark');
 
-export const readTheme = (storage: StorageAccess): string | null => {
-  const stored = read(storage, THEME_KEY);
-  return stored !== null && THEMES.includes(stored) ? stored : null;
+export const cameraAvailable = async (fetchImpl: typeof fetch, timeoutMs: number): Promise<boolean> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(CAMERA_STATUS, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) {
+      return false;
+    }
+    const body = (await response.json()) as { status?: unknown; data?: { available?: unknown } };
+    return body.status === 'success' && body.data?.available === true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
 };
 
 export const openUrl = (url: string, open: OpenImpl): boolean => {

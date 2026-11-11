@@ -20,7 +20,7 @@ func InitializeContainer() Container {
 	config := NewConfig()
 	cache := feed.NewCache(logger)
 	repositoryFeed := NewRepositoryFeed(config, cache)
-	packageFeed := NewPackageFeed(cache)
+	packageFeed := NewPackageFeed(config, cache)
 	notifier := NewVisitNotifier(config)
 	container := NewContainer(logger, commandBus, queryBus, repositoryFeed, packageFeed, notifier)
 	return container

@@ -212,6 +212,25 @@ func TestCall(t *testing.T) {
 		assert.Equal(t, "repos: could not load the list right now", firstText(t, got))
 	})
 
+	t.Run("setTheme switches the theme the shell reports", func(t *testing.T) {
+		b := newBridge()
+
+		assert.Equal(t, true, b.Call("setTheme", []any{"amber"}))
+
+		lines := asSlice(t, asMap(t, asSlice(t, asMap(t, b.Call("exec", []any{"theme"}))["blocks"])[0])["lines"])
+		assert.Equal(t, "* ", asMap(t, asSlice(t, lines[2])[0])["text"])
+		assert.Equal(t, "amber", asMap(t, asSlice(t, lines[2])[1])["text"])
+	})
+
+	t.Run("setTheme with an unknown theme returns false and keeps the theme", func(t *testing.T) {
+		b := newBridge()
+
+		assert.Equal(t, false, b.Call("setTheme", []any{"neon"}))
+
+		lines := asSlice(t, asMap(t, asSlice(t, asMap(t, b.Call("exec", []any{"theme"}))["blocks"])[0])["lines"])
+		assert.Equal(t, "* ", asMap(t, asSlice(t, lines[0])[0])["text"])
+	})
+
 	t.Run("an unknown feed is an error block from the shell", func(t *testing.T) {
 		got := newBridge().Call("deliverError", []any{"nope"})
 
@@ -250,6 +269,8 @@ func TestCallRejectsBadArguments(t *testing.T) {
 		{"deliver with one bad item among good ones", "deliver", []any{"repos", []any{good, "x"}}},
 		{"deliverError with no arguments", "deliverError", nil},
 		{"deliverError with a number", "deliverError", []any{float64(1)}},
+		{"setTheme with no arguments", "setTheme", nil},
+		{"setTheme with a number", "setTheme", []any{float64(1)}},
 		{"an unknown function", "nope", nil},
 	}
 	for _, tc := range cases {
