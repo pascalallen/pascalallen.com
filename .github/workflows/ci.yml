@@ -29,7 +29,7 @@ jobs:
           if [ -f internal/pascalallen/infrastructure/container/wire.go ]; then
             go generate ./...
           else
-            go run github.com/google/wire/cmd/wire ./cmd/pascalallen
+            bin/wire-gen
           fi
           if [ -n "$(git status --porcelain)" ]; then
             git status --porcelain
