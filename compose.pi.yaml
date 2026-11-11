@@ -1,5 +1,10 @@
 services:
   pascalallen-go:
+    platform: linux/arm64
+    build:
+      context: .
+      args:
+        REQUIRE_CAMERA: "1"
     user: "0:0"
     privileged: true
     volumes:

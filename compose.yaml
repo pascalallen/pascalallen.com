@@ -1,9 +1,7 @@
 services:
   pascalallen-go:
     restart: unless-stopped
-    env_file:
-      - path: .env
-        required: false
+    env_file: .env
     environment:
       PORT: "${PORT:-9990}"
     build:

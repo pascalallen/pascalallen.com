@@ -4,12 +4,16 @@ Production is a Raspberry Pi (arm64) running Docker Compose. Kubernetes is an al
 
 ## Docker Compose on the Raspberry Pi (primary)
 
-`compose.yaml` is the portable base: one service, port `9990` (override with `PORT`), `.env` as `env_file`, restart
-policy `unless-stopped`, no devices, not privileged. `compose.pi.yaml` adds the Pi-only parts: privileged, `/run/udev`,
-`/dev/media0-3`, `/dev/video0`, and `user: "0:0"` so the camera devices are readable. The image itself runs as a
-non-root user; the Pi overlay overrides that because the container is privileged anyway.
+Requires Docker Engine 24+ with Compose v2.20+ (`--progress quiet` is a global Compose flag from that line) and a
+64-bit (arm64) userland; `flock` from util-linux (present on Raspberry Pi OS).
 
-### One-time setup
+`compose.yaml` is the portable base: one service, port `9990` (override with `PORT`), `.env` as a required `env_file`,
+restart policy `unless-stopped`, no devices, not privileged. `compose.pi.yaml` adds the Pi-only parts: `platform:
+linux/arm64`, the build arg `REQUIRE_CAMERA=1` (the image build fails if the camera packages cannot be installed),
+privileged, `/run/udev`, `/dev/media0-3`, `/dev/video0`, and `user: "0:0"` so the camera devices are readable. The image
+itself runs as a non-root user; the Pi overlay overrides that because the container is privileged anyway.
+
+### One-time setup (new Pi)
 
 ```bash
 git clone https://github.com/pascalallen/pascalallen.com.git && cd pascalallen.com
@@ -28,16 +32,65 @@ Add the redeploy job with `crontab -e`, using the absolute path to the clone:
 * * * * * /home/pi/pascalallen.com/scripts/cron-deploy >> /home/pi/pascalallen-deploy.log 2>&1
 ```
 
+### Migrating an existing Pi
+
+The Pi currently runs the old `scripts/cron-deploy`, which never fetches, so merging to `main` changes nothing there.
+Do this once, on the Pi, from the clone:
+
+```bash
+cd ~/pascalallen.com
+git status
+```
+
+If `git status` lists changes, look at them with `git diff`; keep what you need elsewhere (`git stash push -u -m pre-migration`
+is safe) because the next step discards them. When the tree is clean:
+
+```bash
+git fetch origin && git checkout main && git reset --hard origin/main
+bin/down prod
+bin/up pi
+curl -fsS -o /dev/null -w '%{http_code}\n' http://localhost:9990/
+docker compose ps
+crontab -l | grep cron-deploy
+```
+
+The curl must print `200` and the container must show `(healthy)`. The crontab line must still point at
+`scripts/cron-deploy` in this clone (the path did not change). Cron needs nothing else; the new script reads `.env`
+itself.
+
+Optional cleanup of leftovers from the old setup (postgres, rabbitmq and the old named network). Find them first:
+
+```bash
+docker volume ls
+docker network ls
+docker ps -a
+```
+
+If an earlier compose project created volumes, they are named `<project>_<name>` after the clone directory (for example
+`pascalallencom_postgres_data`) and the network is `pascalallen`. Once the new stack is healthy:
+
+```bash
+docker network rm pascalallen
+docker volume rm <the old database volume name from the list above>
+```
+
+Removing the volume is irreversible: it deletes the old database for good. Skip it if you might want that data.
+
 ### What `scripts/cron-deploy` does
 
-- takes a lock so runs never overlap (a stale lock from a dead process is reclaimed)
+- takes a lock so runs never overlap: `flock -n` on `.git/cron-deploy.flock` (released by the kernel on power loss or
+  crash); without `flock` it falls back to a lock directory that is taken over, with an alert, when it is older than
+  2 hours
 - runs `git fetch origin main` and exits quietly when `HEAD` already equals `origin/main`
-- refuses to touch a working tree with local changes: it logs, posts one Slack line per new commit, and leaves the
-  tree alone
-- otherwise checks out `main`, resets to `origin/main`, rebuilds and restarts with `compose.yaml` plus `compose.pi.yaml`,
-  and polls `http://localhost:$PORT/` until it answers
-- on a failed build or health check it resets to the previous commit, rebuilds, and posts a rollback line; the failed
-  commit is remembered in `.git/cron-deploy-failed` so it is not retried every minute (push a new commit to retry)
+- refuses to touch a working tree with local changes, and treats a missing `.env` the same way: it logs, posts one Slack
+  line per new commit, and leaves everything alone
+- otherwise checks out `main`, resets to `origin/main`, builds, restarts with `compose.yaml` plus `compose.pi.yaml`, and
+  polls `http://localhost:$PORT/` until it answers
+- a failed build or failed container start is treated as transient: the tree goes back to the running commit and the
+  commit is retried at most every 15 minutes, up to 8 attempts, with a Slack alert on attempts 1, 4 and 8. After the
+  last attempt it says how to retry: `rm .git/cron-deploy-retry`
+- a failed health check after a successful build marks the commit bad at once, rolls back to the previous commit
+  (rebuild and restart) and says how to retry: `rm .git/cron-deploy-failed` (or push a new commit)
 - posts to `SLACK_DM_URL` from `.env` on deploy, rollback, and failure; the URL is passed to curl on stdin, never echoed
 
 Tests for the decision logic run without Docker: `scripts/cron-deploy.test.sh`.

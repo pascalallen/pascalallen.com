@@ -8,10 +8,27 @@ cd "$ROOT" || exit 1
 BRANCH="${DEPLOY_BRANCH:-main}"
 HEALTH_ATTEMPTS="${HEALTH_ATTEMPTS:-40}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-3}"
+RETRY_INTERVAL="${RETRY_INTERVAL:-900}"
+MAX_ATTEMPTS="${MAX_ATTEMPTS:-8}"
+LOCK_MAX_AGE="${LOCK_MAX_AGE:-7200}"
 GIT_DIR_PATH="$(git rev-parse --git-dir)"
-LOCK="$GIT_DIR_PATH/cron-deploy.lock"
+case "$GIT_DIR_PATH" in
+    /*) ;;
+    *) GIT_DIR_PATH="$PWD/$GIT_DIR_PATH" ;;
+esac
+LOCK_FILE="$GIT_DIR_PATH/cron-deploy.flock"
+LOCK_DIR="$GIT_DIR_PATH/cron-deploy.lock"
 FAILED_MARK="$GIT_DIR_PATH/cron-deploy-failed"
+RETRY_MARK="$GIT_DIR_PATH/cron-deploy-retry"
 ALERTED_MARK="$GIT_DIR_PATH/cron-deploy-alerted"
+
+now() {
+    if [ -n "${DEPLOY_NOW:-}" ]; then
+        echo "$DEPLOY_NOW"
+    else
+        date +%s
+    fi
+}
 
 log() {
     printf '%s cron-deploy: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1"
@@ -37,12 +54,24 @@ notify() {
         --data "{\"text\":\"$1\"}" -K - || log "slack notification failed"
 }
 
+alert_once() {
+    if [ -f "$ALERTED_MARK" ] && [ "$(cat "$ALERTED_MARK")" = "$1" ]; then
+        return 0
+    fi
+    echo "$1" >"$ALERTED_MARK"
+    notify "$2"
+}
+
 compose() {
     docker compose -f compose.yaml -f compose.pi.yaml "$@"
 }
 
-release() {
-    compose --progress quiet build && compose --progress quiet up -d --remove-orphans
+build() {
+    compose --progress quiet build
+}
+
+start() {
+    compose --progress quiet up -d --remove-orphans
 }
 
 healthy() {
@@ -56,26 +85,42 @@ healthy() {
     return 1
 }
 
+lock_age() {
+    local started
+    started="$(cat "$LOCK_DIR/started" 2>/dev/null || echo 0)"
+    echo $(($(now) - started))
+}
+
+take_dir_lock() {
+    mkdir "$LOCK_DIR" 2>/dev/null || return 1
+    echo $$ >"$LOCK_DIR/pid"
+    now >"$LOCK_DIR/started"
+    trap 'rm -rf "$LOCK_DIR"' EXIT
+}
+
 acquire_lock() {
-    if mkdir "$LOCK" 2>/dev/null; then
-        echo $$ >"$LOCK/pid"
+    if [ -z "${DEPLOY_NO_FLOCK:-}" ] && command -v flock >/dev/null 2>&1; then
+        exec 9>"$LOCK_FILE"
+        flock -n 9
+        return
+    fi
+    if take_dir_lock; then
         return 0
     fi
     local holder
-    holder="$(cat "$LOCK/pid" 2>/dev/null || true)"
-    if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null; then
+    holder="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+    if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null && [ "$(lock_age)" -lt "$LOCK_MAX_AGE" ]; then
         return 1
     fi
-    rm -rf "$LOCK"
-    mkdir "$LOCK" 2>/dev/null || return 1
-    echo $$ >"$LOCK/pid"
+    rm -rf "$LOCK_DIR"
+    take_dir_lock || return 1
+    notify "cron-deploy took over a stale lock (holder ${holder:-unknown})."
 }
 
 if ! acquire_lock; then
     log "another deploy is running, exiting"
     exit 0
 fi
-trap 'rm -rf "$LOCK"' EXIT
 
 if ! git fetch --quiet origin "$BRANCH"; then
     log "git fetch failed"
@@ -94,12 +139,29 @@ if [ -f "$FAILED_MARK" ] && [ "$(cat "$FAILED_MARK")" = "$target" ]; then
     exit 0
 fi
 
+attempts=0
+if [ -f "$RETRY_MARK" ]; then
+    read -r r_sha r_attempts r_time <"$RETRY_MARK" || true
+    if [ "${r_sha:-}" = "$target" ]; then
+        attempts="${r_attempts:-0}"
+        if [ "$attempts" -ge "$MAX_ATTEMPTS" ]; then
+            exit 0
+        fi
+        if [ $(($(now) - ${r_time:-0})) -lt "$RETRY_INTERVAL" ]; then
+            exit 0
+        fi
+    fi
+fi
+
 if [ -n "$(git status --porcelain)" ]; then
     log "local changes present, not deploying ${target:0:7}"
-    if [ ! -f "$ALERTED_MARK" ] || [ "$(cat "$ALERTED_MARK")" != "$target" ]; then
-        echo "$target" >"$ALERTED_MARK"
-        notify "Deploy of ${target:0:7} *skipped*: the working tree on the Pi has local changes."
-    fi
+    alert_once "$target:dirty" "Deploy of ${target:0:7} *skipped*: the working tree on the Pi has local changes."
+    exit 1
+fi
+
+if [ ! -f .env ]; then
+    log ".env is missing, not deploying ${target:0:7}"
+    alert_once "$target:env" "Deploy of ${target:0:7} *skipped*: .env is missing on the Pi."
     exit 1
 fi
 
@@ -108,8 +170,42 @@ previous="$(git rev-parse HEAD)"
 git reset --quiet --hard "origin/$BRANCH"
 log "deploying ${previous:0:7} -> ${target:0:7}"
 
-if release && healthy; then
-    rm -f "$FAILED_MARK" "$ALERTED_MARK"
+rollback() {
+    git reset --quiet --hard "$previous"
+    if build && start && healthy; then
+        return 0
+    fi
+    log "rollback to ${previous:0:7} failed too"
+    notify "Deploy of ${target:0:7} *failed* and rollback to ${previous:0:7} is *unhealthy*. Manual action needed."
+    return 1
+}
+
+transient() {
+    attempts=$((attempts + 1))
+    echo "$target $attempts $(now)" >"$RETRY_MARK"
+    log "$1 for ${target:0:7}, attempt $attempts of $MAX_ATTEMPTS"
+    if [ "$attempts" -ge "$MAX_ATTEMPTS" ]; then
+        notify "Deploy of ${target:0:7} *gave up* after $attempts attempts ($1). To retry: rm $RETRY_MARK"
+    elif [ "$attempts" -eq 1 ] || [ $((attempts % 4)) -eq 0 ]; then
+        notify "Deploy of ${target:0:7} hit a transient failure ($1), attempt $attempts of $MAX_ATTEMPTS; retrying in $((RETRY_INTERVAL / 60)) minutes."
+    fi
+}
+
+if ! build; then
+    git reset --quiet --hard "$previous"
+    transient "build failed"
+    exit 1
+fi
+
+if ! start; then
+    if rollback; then
+        transient "container start failed; rolled back to ${previous:0:7}"
+    fi
+    exit 1
+fi
+
+if healthy; then
+    rm -f "$FAILED_MARK" "$RETRY_MARK" "$ALERTED_MARK"
     docker image prune -f >/dev/null 2>&1 || true
     log "deployed ${target:0:7}"
     notify "Deployed ${target:0:7}."
@@ -117,14 +213,8 @@ if release && healthy; then
 fi
 
 echo "$target" >"$FAILED_MARK"
-log "deploy of ${target:0:7} failed, rolling back to ${previous:0:7}"
-git reset --quiet --hard "$previous"
-
-if release && healthy; then
-    notify "Deploy of ${target:0:7} *failed*; rolled back to ${previous:0:7}."
-    exit 1
+log "health check of ${target:0:7} failed, rolling back to ${previous:0:7}"
+if rollback; then
+    notify "Deploy of ${target:0:7} *failed* its health check; rolled back to ${previous:0:7}. To retry this commit: rm $FAILED_MARK"
 fi
-
-log "rollback to ${previous:0:7} failed too"
-notify "Deploy of ${target:0:7} *failed* and rollback to ${previous:0:7} is *unhealthy*. Manual action needed."
 exit 1

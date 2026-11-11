@@ -38,6 +38,16 @@ cat >"$WORK/shims/docker" <<'EOF'
 printf 'docker %s\n' "$*" >>"$STUB_LOG"
 if [ "$1" = "compose" ]; then
     for arg in "$@"; do
+        if [ "$arg" = "build" ] && [ -s "$STUB_BUILD_FAILS" ] && [ "$(cat "$STUB_BUILD_FAILS")" -gt 0 ]; then
+            echo $(($(cat "$STUB_BUILD_FAILS") - 1)) >"$STUB_BUILD_FAILS"
+            printf 'build failed\n' >>"$STUB_LOG"
+            exit 1
+        fi
+        if [ "$arg" = "up" ] && [ -s "$STUB_UP_FAILS" ] && [ "$(cat "$STUB_UP_FAILS")" -gt 0 ]; then
+            echo $(($(cat "$STUB_UP_FAILS") - 1)) >"$STUB_UP_FAILS"
+            printf 'up failed\n' >>"$STUB_LOG"
+            exit 1
+        fi
         if [ "$arg" = "up" ]; then
             printf 'up at %s\n' "$(git rev-parse HEAD)" >>"$STUB_LOG"
         fi
@@ -82,14 +92,22 @@ new_case() {
         git config user.name test
         git checkout -q -b main
         echo one >file
+        printf '.env\n' >.gitignore
         printf 'services: {}\n' >compose.yaml
         printf 'services: {}\n' >compose.pi.yaml
         git add -A
         git commit -q -m one
         git push -q -u origin main
+        printf 'PORT=9942\n' >.env
     )
     export STUB_LOG="$CASE/stub.log"
+    export STUB_BUILD_FAILS="$CASE/build-fails"
     : >"$STUB_LOG"
+    echo 0 >"$STUB_BUILD_FAILS"
+    export STUB_UP_FAILS="$CASE/up-fails"
+    echo 0 >"$STUB_UP_FAILS"
+    export DEPLOY_NOW=1000000
+    export DEPLOY_NO_FLOCK=1
     unset STUB_BAD_SHA
     export PATH="$WORK/shims:$ORIG_PATH"
     export DEPLOY_ROOT="$CASE/repo"
@@ -138,6 +156,8 @@ check "new commit exits zero" test "$RC" -eq 0
 check "new commit moves HEAD to origin main" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
 check "new commit builds with the pi overlay" contains "$STUB_LOG" "docker compose -f compose.yaml -f compose.pi.yaml --progress quiet build"
 check "new commit starts the stack" contains "$STUB_LOG" "up at $sha"
+check "new commit runs up with the overlay files, detached, removing orphans" contains "$STUB_LOG" "docker compose -f compose.yaml -f compose.pi.yaml --progress quiet up -d --remove-orphans"
+check "new commit builds before it starts" test "$(grep -n -m1 ' build$' "$STUB_LOG" | cut -d: -f1)" -lt "$(grep -n -m1 ' up -d' "$STUB_LOG" | cut -d: -f1)"
 check "new commit posts a deployed line" contains "$STUB_LOG" "Deployed ${sha:0:7}"
 check "new commit never prints the slack url" lacks "$OUT" "secret-token"
 check "new commit keeps the slack url out of curl arguments" test "$(grep '^curl-args ' "$STUB_LOG" | grep -c secret-token)" -eq 0
@@ -165,6 +185,9 @@ check "failed health exits nonzero" test "$RC" -ne 0
 check "failed health rolls HEAD back" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$before"
 check "failed health rebuilds the previous commit" contains "$STUB_LOG" "up at $before"
 check "failed health posts a rollback line" contains "$STUB_LOG" "rolled back to ${before:0:7}"
+check "failed health says how to retry with the marker path" contains "$STUB_LOG" "rm $CASE/repo/.git/cron-deploy-failed"
+check "failed health builds twice with the overlay files" test "$(grep -c '^docker compose -f compose.yaml -f compose.pi.yaml --progress quiet build$' "$STUB_LOG")" -eq 2
+check "failed health runs up twice with the full argument list" test "$(grep -c '^docker compose -f compose.yaml -f compose.pi.yaml --progress quiet up -d --remove-orphans$' "$STUB_LOG")" -eq 2
 n="$(grep -c '^docker compose.* build' "$STUB_LOG")"
 run
 check "a failed commit is not retried" test "$(grep -c '^docker compose.* build' "$STUB_LOG")" -eq "$n"
@@ -173,6 +196,64 @@ unset STUB_BAD_SHA
 run
 check "a later good commit deploys" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha3"
 check "a good deploy clears the failure marker" test ! -e "$CASE/repo/.git/cron-deploy-failed"
+
+new_case buildretry
+before="$(git -C "$CASE/repo" rev-parse HEAD)"
+sha="$(push_commit two)"
+echo 2 >"$STUB_BUILD_FAILS"
+run
+check "a failed build exits nonzero" test "$RC" -ne 0
+check "a failed build leaves HEAD on the running commit" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$before"
+check "a failed build never starts the stack" lacks "$STUB_LOG" " up -d"
+check "a failed build does not mark the commit failed" test ! -e "$CASE/repo/.git/cron-deploy-failed"
+check "the first failed build alerts" contains "$STUB_LOG" "transient failure (build failed), attempt 1"
+run
+check "a retry inside the backoff window does nothing" test "$(grep -c '^build failed' "$STUB_LOG")" -eq 1
+export DEPLOY_NOW=$((DEPLOY_NOW + 901))
+run
+check "a retry after the backoff window builds again" test "$(grep -c '^build failed' "$STUB_LOG")" -eq 2
+check "the second failed build does not alert" test "$(grep -c '^slack ' "$STUB_LOG")" -eq 1
+export DEPLOY_NOW=$((DEPLOY_NOW + 901))
+run
+check "the third attempt deploys the commit" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
+check "a successful deploy clears the retry marker" test ! -e "$CASE/repo/.git/cron-deploy-retry"
+
+new_case buildgiveup
+sha="$(push_commit two)"
+echo 99 >"$STUB_BUILD_FAILS"
+export MAX_ATTEMPTS=3
+for _ in 1 2 3; do
+    run
+    export DEPLOY_NOW=$((DEPLOY_NOW + 901))
+done
+run
+check "giving up stops building after the maximum attempts" test "$(grep -c '^build failed' "$STUB_LOG")" -eq 3
+check "giving up says how to retry with the marker path" contains "$STUB_LOG" "*gave up* after 3 attempts (build failed). To retry: rm $CASE/repo/.git/cron-deploy-retry"
+unset MAX_ATTEMPTS
+
+new_case startretry
+before="$(git -C "$CASE/repo" rev-parse HEAD)"
+sha="$(push_commit two)"
+echo 1 >"$STUB_UP_FAILS"
+run
+check "a failed container start exits nonzero" test "$RC" -ne 0
+check "a failed container start rolls the tree back" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$before"
+check "a failed container start restarts the previous commit" contains "$STUB_LOG" "up at $before"
+check "a failed container start is not marked bad" test ! -e "$CASE/repo/.git/cron-deploy-failed"
+check "a failed container start is counted as a retry" contains "$CASE/repo/.git/cron-deploy-retry" "$sha 1"
+export DEPLOY_NOW=$((DEPLOY_NOW + 901))
+run
+check "a failed container start is retried and deploys" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
+
+new_case noenv
+sha="$(push_commit two)"
+before="$(git -C "$CASE/repo" rev-parse HEAD)"
+rm "$CASE/repo/.env"
+run
+check "a missing .env exits nonzero" test "$RC" -ne 0
+check "a missing .env does not deploy" lacks "$STUB_LOG" "docker compose"
+check "a missing .env keeps HEAD" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$before"
+check "a missing .env alerts" contains "$STUB_LOG" ".env is missing"
 
 new_case otherbranch
 sha="$(push_commit two)"
@@ -186,6 +267,7 @@ sha="$(push_commit two)"
 before="$(git -C "$CASE/repo" rev-parse HEAD)"
 mkdir "$CASE/repo/.git/cron-deploy.lock"
 echo $$ >"$CASE/repo/.git/cron-deploy.lock/pid"
+echo "$DEPLOY_NOW" >"$CASE/repo/.git/cron-deploy.lock/started"
 run
 check "concurrent run exits zero" test "$RC" -eq 0
 check "concurrent run does nothing" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$before"
@@ -197,6 +279,35 @@ echo 999999 >"$CASE/repo/.git/cron-deploy.lock/pid"
 run
 check "a stale lock is reclaimed and the deploy runs" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
 check "the lock is released after a run" test ! -d "$CASE/repo/.git/cron-deploy.lock"
+
+new_case oldlock
+sha="$(push_commit two)"
+mkdir "$CASE/repo/.git/cron-deploy.lock"
+echo $$ >"$CASE/repo/.git/cron-deploy.lock/pid"
+echo $((DEPLOY_NOW - 7201)) >"$CASE/repo/.git/cron-deploy.lock/started"
+run
+check "a lock held by a live pid for over two hours is taken over" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
+check "taking over an old lock alerts" contains "$STUB_LOG" "took over a stale lock"
+
+if command -v flock >/dev/null 2>&1; then
+    new_case flocked
+    unset DEPLOY_NO_FLOCK
+    sha="$(push_commit two)"
+    before="$(git -C "$CASE/repo" rev-parse HEAD)"
+    (
+        exec 8>"$CASE/repo/.git/cron-deploy.flock"
+        flock -n 8
+        sleep 3
+    ) &
+    holder=$!
+    sleep 1
+    run
+    check "flock: a run while the lock is held does nothing" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$before"
+    wait "$holder"
+    run
+    check "flock: a leftover unlocked lock file does not block a deploy" test "$(git -C "$CASE/repo" rev-parse HEAD)" = "$sha"
+    check "flock: the lock file stays but is not held" flock -n "$CASE/repo/.git/cron-deploy.flock" true
+fi
 
 printf '\n%s passed, %s failed\n' "$passed" "$failed"
 test "$failed" -eq 0

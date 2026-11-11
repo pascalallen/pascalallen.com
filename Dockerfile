@@ -26,6 +26,8 @@ RUN yarn build
 
 FROM debian:bookworm-slim AS runtime
 
+ARG REQUIRE_CAMERA=0
+
 LABEL org.opencontainers.image.source=https://github.com/pascalallen/pascalallen.com
 LABEL org.opencontainers.image.description="Container image for pascalallen.com"
 LABEL org.opencontainers.image.licenses=MIT
@@ -49,6 +51,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
               gstreamer1.0-libcamera \
               libcamera-ipa \
               rpicam-apps; \
+       fi \
+    && if [ "$REQUIRE_CAMERA" = "1" ]; then \
+         if [ "$(dpkg --print-architecture)" != "arm64" ] \
+            || ! dpkg -s gstreamer1.0-libcamera libcamera-ipa rpicam-apps >/dev/null 2>&1; then \
+           echo "REQUIRE_CAMERA=1 but the camera packages are unavailable on $(dpkg --print-architecture); a 64-bit (arm64) userland is required" >&2; \
+           exit 1; \
+         fi; \
        fi \
     && apt-get purge -y --auto-remove gnupg2 \
     && rm -rf /var/lib/apt/lists/*
