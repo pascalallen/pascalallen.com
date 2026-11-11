@@ -14,4 +14,5 @@ A heading per epic, then one line per merged PR: `- #<n> <slug>: what landed; ev
 - #55 prerender-seo: server pre-render of the boot screen and `/plain`, SEO head, security headers.
 - #56 wasm-bridge: the shell exposed to JavaScript as a TinyGo WASM module with size budget, smoke and parity checks; ADR 0005.
 - #57 live-e2e: live commands end to end and the Playwright e2e suite in `bin/verify` and CI.
-- sweep (issue #47): dead code and the Kubernetes deploy path removed (ADR 0006), `go mod tidy` stable and checked, docs corrected, ADRs 0007-0010, stale precompressed siblings ignored, prose measure and hanging indent fixes, checks for comments, routes and `CLAUDE.md`.
+- #58 sweep: dead code and the Kubernetes deploy path removed (ADR 0006), `go mod tidy` stable and checked, docs corrected, ADRs 0007-0010, stale precompressed siblings ignored, prose measure and hanging indent fixes, checks for comments, routes and `CLAUDE.md`.
+- Final verification on the `revamp` head (2026-11-11, base compose on a Mac, Chrome): transfer sizes with brotli are `shell.wasm` 137,611 bytes, `app.js` 4,749, `wasm_exec.js` 4,368, `app.css` 2,189, `theme.js` 205 and the page 6,991, about 156 KB for a first load; first-render timing was not measured.
