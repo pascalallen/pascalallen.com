@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -28,6 +30,12 @@ func staticEngine(t *testing.T, files map[string]string) *gin.Engine {
 	engine.HEAD("/static/*filepath", handler)
 
 	return engine
+}
+
+func hashOf(body string) string {
+	sum := sha256.Sum256([]byte(body))
+
+	return hex.EncodeToString(sum[:])[:12]
 }
 
 func request(engine *gin.Engine, method, target string, header map[string]string) *httptest.ResponseRecorder {
@@ -127,13 +135,33 @@ func TestServeStatic(t *testing.T) {
 		assert.Contains(t, rec.Header().Get("Content-Type"), "text/css")
 	})
 
-	t.Run("a versioned request is cached as immutable", func(t *testing.T) {
-		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm?v=abc123", map[string]string{"Accept-Encoding": "br"})
+	t.Run("a request carrying the content hash is cached as immutable", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm?v="+hashOf("RAW"), map[string]string{"Accept-Encoding": "br"})
 
 		assert.Equal(t, "public, max-age=31536000, immutable", rec.Header().Get("Cache-Control"))
+		assert.Equal(t, "br", rec.Header().Get("Content-Encoding"))
+		assert.Equal(t, "Accept-Encoding", rec.Header().Get("Vary"))
 	})
 
-	t.Run("an unversioned request must revalidate", func(t *testing.T) {
+	t.Run("the hash is checked against the file being served", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/app.js?v="+hashOf("RAW"), nil)
+
+		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
+	})
+
+	t.Run("a stale hash must revalidate", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm?v="+hashOf("OLD"), nil)
+
+		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
+	})
+
+	t.Run("a junk version must revalidate", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm?v=x", nil)
+
+		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
+	})
+
+	t.Run("a request without a version must revalidate", func(t *testing.T) {
 		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm", nil)
 
 		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
@@ -145,8 +173,46 @@ func TestServeStatic(t *testing.T) {
 		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
 	})
 
+	t.Run("a file without a known hash is never immutable", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/plain.css?v=abc", nil)
+
+		assert.Equal(t, "no-cache", rec.Header().Get("Cache-Control"))
+	})
+
+	t.Run("the ETag is derived from the content hash", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm", nil)
+
+		assert.Equal(t, `"`+hashOf("RAW")+`"`, rec.Header().Get("ETag"))
+	})
+
+	t.Run("each precompressed variant has its own ETag", func(t *testing.T) {
+		br := request(engine, http.MethodGet, "/static/assets/shell.wasm", map[string]string{"Accept-Encoding": "br"})
+		gz := request(engine, http.MethodGet, "/static/assets/shell.wasm", map[string]string{"Accept-Encoding": "gzip"})
+
+		assert.Equal(t, `"`+hashOf("RAW")+`-br"`, br.Header().Get("ETag"))
+		assert.Equal(t, `"`+hashOf("RAW")+`-gzip"`, gz.Header().Get("ETag"))
+		assert.Equal(t, "no-cache", br.Header().Get("Cache-Control"))
+		assert.Equal(t, "Accept-Encoding", br.Header().Get("Vary"))
+	})
+
+	t.Run("a matching If-None-Match gets 304", func(t *testing.T) {
+		etag := `"` + hashOf("RAW") + `-br"`
+
+		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm", map[string]string{"Accept-Encoding": "br", "If-None-Match": etag})
+
+		assert.Equal(t, http.StatusNotModified, rec.Code)
+		assert.Empty(t, rec.Body.String())
+	})
+
+	t.Run("a stale If-None-Match gets the file", func(t *testing.T) {
+		rec := request(engine, http.MethodGet, "/static/assets/shell.wasm", map[string]string{"If-None-Match": `"old"`})
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "RAW", rec.Body.String())
+	})
+
 	t.Run("a HEAD request carries the headers and no body", func(t *testing.T) {
-		rec := request(engine, http.MethodHead, "/static/assets/shell.wasm?v=x", map[string]string{"Accept-Encoding": "br"})
+		rec := request(engine, http.MethodHead, "/static/assets/shell.wasm", map[string]string{"Accept-Encoding": "br"})
 
 		require.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, "br", rec.Header().Get("Content-Encoding"))
@@ -215,4 +281,48 @@ func TestAssetVersion(t *testing.T) {
 	t.Run("is empty when the file is absent", func(t *testing.T) {
 		assert.Empty(t, assetVersion(filepath.Join(t.TempDir(), "missing.wasm")))
 	})
+}
+
+func TestIndexAssets(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "assets"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "app.js"), []byte("abc"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "app.js.br"), []byte("zzz"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "favicon.ico"), []byte("i"), 0o644))
+
+	t.Run("hashes every file keyed by its path under the root", func(t *testing.T) {
+		index := indexAssets(root)
+
+		assert.Equal(t, "ba7816bf8f01", index["assets/app.js"])
+		assert.Equal(t, hashOf("i"), index["favicon.ico"])
+	})
+
+	t.Run("skips precompressed siblings", func(t *testing.T) {
+		assert.NotContains(t, indexAssets(root), "assets/app.js.br")
+	})
+
+	t.Run("a missing root gives an empty index", func(t *testing.T) {
+		assert.Empty(t, indexAssets(filepath.Join(root, "nope")))
+	})
+}
+
+func TestAssetURL(t *testing.T) {
+	asset := assetURL(map[string]string{"assets/app.js": "abc123"})
+
+	t.Run("carries the content hash of a known asset", func(t *testing.T) {
+		assert.Equal(t, "/static/assets/app.js?v=abc123", asset("app.js"))
+	})
+
+	t.Run("falls back to the bare path for an unknown asset", func(t *testing.T) {
+		assert.Equal(t, "/static/assets/app.css", asset("app.css"))
+	})
+}
+
+func TestConfigRegistersTheAssetFunction(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Chdir("../../../..")
+	r := NewRouter()
+	r.Config()
+
+	assert.Contains(t, r.engine.FuncMap, "asset")
 }

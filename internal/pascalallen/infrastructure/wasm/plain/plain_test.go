@@ -294,3 +294,24 @@ func TestCallRecoversFromPanics(t *testing.T) {
 		assert.Equal(t, "shell: exec failed", firstText(t, got))
 	})
 }
+
+func TestCallLazyRecoversFromConversionPanics(t *testing.T) {
+	t.Run("a panic while converting arguments becomes an error result", func(t *testing.T) {
+		got := newBridge().CallLazy("deliver", func() []any { panic("hostile value") })
+
+		assert.Equal(t, "error", firstKind(t, got))
+		assert.Equal(t, "shell: deliver failed", firstText(t, got))
+	})
+
+	t.Run("converted arguments are used when conversion succeeds", func(t *testing.T) {
+		got := newBridge().CallLazy("exec", func() []any { return []any{"whoami"} })
+
+		assert.Equal(t, "visitor", firstText(t, got))
+	})
+
+	t.Run("a nil argument list is treated as no arguments", func(t *testing.T) {
+		got := newBridge().CallLazy("prompt", func() []any { return nil })
+
+		assert.Equal(t, "visitor@pascalallen.com:~$", got)
+	})
+}

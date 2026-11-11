@@ -48,8 +48,14 @@ function assertResult(r) {
 const text = (r) => r.blocks.flatMap((b) => b.lines.map((l) => l.map((s) => s.text).join(''))).join('\n');
 
 async function main() {
+    const logged = [];
+    const originalError = console.error;
+    console.error = (...args) => logged.push(args.join(' '));
     const ready = new Promise((resolve) => {
-        globalThis.__shellReady = resolve;
+        globalThis.__shellReady = () => {
+            resolve();
+            throw new Error('ready hook failed');
+        };
     });
     const go = new Go();
     const { instance } = await WebAssembly.instantiate(fs.readFileSync(wasmPath), go.importObject);
@@ -57,6 +63,9 @@ async function main() {
     await ready;
 
     const sh = globalThis.__shell;
+    assert.equal(logged.length, 1, 'a throwing __shellReady is logged once');
+    assert.match(logged[0], /__shellReady/);
+    console.error = originalError;
     for (const name of ['boot', 'exec', 'complete', 'prompt', 'history', 'commands', 'deliver', 'deliverError']) {
         assert.equal(typeof sh[name], 'function', name);
     }
@@ -131,6 +140,32 @@ async function main() {
         assert.equal(r.blocks[0].kind, 'error');
         assert.equal(r.effects.length, 0);
     }
+
+    const item = (extra) => ({ name: 'n', description: 'd', url: 'https://example.com', meta: 'm', ...extra });
+    const hostile = [
+        [{ get name() { throw 1; }, description: 'd', url: 'u', meta: 'm' }],
+        [new Proxy({}, { ownKeys() { throw 1; } })],
+        [new Proxy({}, { getPrototypeOf() { throw 1; } })],
+        [Object.defineProperty(item(), 'name', { get: () => 'accessor', enumerable: true })],
+        [Object.create({ name: 'inherited', description: 'd', url: 'u', meta: 'm' })],
+        [new Date()],
+        [new (class Item { constructor() { Object.assign(this, item()); } })()],
+    ];
+    for (const items of hostile) {
+        const r = sh.deliver('repos', items);
+        assertResult(r);
+        assert.equal(r.blocks.length, 1);
+        assert.equal(r.blocks[0].kind, 'error');
+        assert.equal(sh.prompt(), 'visitor@pascalallen.com:~$');
+    }
+    const throwingArray = [];
+    Object.defineProperty(throwingArray, '0', { get() { throw 1; }, enumerable: true });
+    const rr = sh.deliver('repos', throwingArray);
+    assert.equal(rr.blocks[0].kind, 'error');
+    const hostileLine = sh.exec(new Proxy({}, { getPrototypeOf() { throw 1; } }));
+    assert.equal(hostileLine.blocks[0].kind, 'error');
+    assert.equal(sh.deliver('repos', [item()]).blocks[0].kind, 'text');
+    assert.equal(sh.deliver('repos', [Object.assign(Object.create(null), item())]).blocks[0].kind, 'text');
 
     const cyclic = {};
     cyclic.self = cyclic;

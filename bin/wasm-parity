@@ -4,6 +4,7 @@ set -euo pipefail
 GO_IMAGE="golang:1.26.11"
 NODE_IMAGE="node:22"
 PACKAGE="./internal/pascalallen/infrastructure/wasm"
+SMOKE="internal/pascalallen/infrastructure/wasm/smoke.cjs"
 DUMP="internal/pascalallen/infrastructure/wasm/dump.cjs"
 OUT="web/static/assets"
 
@@ -58,6 +59,7 @@ else
     ref_dir="/ref"
 fi
 
+run_node "$SMOKE" "$ref_dir/ref.wasm" "$ref_dir/ref_exec.js"
 run_node "$DUMP" "$OUT/shell.wasm" "$OUT/wasm_exec.js" >"$REF/built.json"
 run_node "$DUMP" "$ref_dir/ref.wasm" "$ref_dir/ref_exec.js" >"$REF/reference.json"
 

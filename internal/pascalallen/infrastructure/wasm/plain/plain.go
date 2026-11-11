@@ -70,12 +70,18 @@ func failure(message string) map[string]any {
 	}}})
 }
 
-func (b *Bridge) Call(name string, args []any) (out any) {
+func (b *Bridge) Call(name string, args []any) any {
+	return b.CallLazy(name, func() []any { return args })
+}
+
+func (b *Bridge) CallLazy(name string, convert func() []any) (out any) {
 	defer func() {
 		if r := recover(); r != nil {
 			out = failure(fmt.Sprintf("shell: %s failed", name))
 		}
 	}()
+
+	args := convert()
 
 	switch name {
 	case "boot":
