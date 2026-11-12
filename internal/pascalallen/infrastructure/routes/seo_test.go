@@ -73,8 +73,13 @@ func TestIndexPage(t *testing.T) {
 		assert.Contains(t, body, `<meta name="description" content="Full-stack software engineer`)
 		assert.Contains(t, body, `<link rel="canonical" href="https://example.test/">`)
 		assert.Contains(t, body, `<meta property="og:title"`)
-		assert.Contains(t, body, `<meta property="og:image" content="https://example.test/static/android-chrome-512x512.png">`)
-		assert.Contains(t, body, `<meta name="twitter:card" content="summary">`)
+		assert.Contains(t, body, `<meta property="og:image" content="https://example.test/static/og-image.png">`)
+		assert.Contains(t, body, `<meta property="og:image:width" content="1200">`)
+		assert.Contains(t, body, `<meta property="og:image:height" content="630">`)
+		assert.Contains(t, body, `<meta name="twitter:card" content="summary_large_image">`)
+		assert.Contains(t, body, `<meta name="twitter:image" content="https://example.test/static/og-image.png">`)
+		assert.Contains(t, body, `<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">`)
+		assert.Contains(t, body, `<link rel="icon" href="/static/favicon.ico" sizes="48x48">`)
 		assert.Contains(t, body, `<meta name="theme-color" content="#0e1116">`)
 		assert.Contains(t, body, `<link rel="manifest" href="/static/site.webmanifest">`)
 		assert.NotContains(t, body, "Content-Security-Policy")
@@ -92,6 +97,18 @@ func TestIndexPage(t *testing.T) {
 		assert.Equal(t, "https://example.test", doc["url"])
 		assert.Len(t, doc["sameAs"], 3)
 		assert.NotEmpty(t, doc["knowsAbout"])
+	})
+}
+
+func TestIndexPageWithoutBaseURL(t *testing.T) {
+	t.Setenv("APP_BASE_URL", "")
+	t.Setenv("APP_ENV", "test")
+	body := get(newTestRouter(t), "/").Body.String()
+
+	t.Run("without an image the social card falls back to a summary", func(t *testing.T) {
+		assert.Contains(t, body, `<meta name="twitter:card" content="summary">`)
+		assert.NotContains(t, body, "summary_large_image")
+		assert.NotContains(t, body, "og:image")
 	})
 }
 

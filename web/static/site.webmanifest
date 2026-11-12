@@ -1,7 +1,15 @@
 {
     "name": "Pascal Allen",
-    "short_name": "PA",
+    "short_name": "pascalallen",
+    "description": "Pascal Allen, Senior Software Engineer. A bash-style terminal.",
+    "start_url": "/",
+    "scope": "/",
     "icons": [
+        {
+            "src": "/static/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        },
         {
             "src": "/static/android-chrome-192x192.png",
             "sizes": "192x192",
@@ -13,7 +21,7 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
+    "theme_color": "#0e1116",
+    "background_color": "#0e1116",
     "display": "standalone"
 }

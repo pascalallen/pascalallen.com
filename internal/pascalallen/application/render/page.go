@@ -103,7 +103,7 @@ func (p *Page) head(path string, indexable bool) Head {
 		if indexable {
 			h.Canonical = p.baseURL + path
 		}
-		h.OGImage = p.baseURL + "/static/android-chrome-512x512.png"
+		h.OGImage = p.baseURL + "/static/og-image.png"
 	}
 	return h
 }
